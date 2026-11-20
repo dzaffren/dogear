@@ -1,1 +1,7 @@
 docs/specs/.pages/
+.env
+.auth/
+node_modules/
+/.forge/
+test-results/
+playwright-report/

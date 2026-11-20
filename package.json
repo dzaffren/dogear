@@ -1,0 +1,28 @@
+{
+  "name": "stand-note",
+  "version": "0.1.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "vitest run --dir test",
+    "e2e": "playwright test",
+    "e2e:login": "node e2e/login.mjs",
+    "e2e:setup": "node e2e/setup-site.mjs",
+    "lint": "bash scripts/forge.sh lint",
+    "deploy": "bash scripts/forge.sh deploy --non-interactive -e development"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "vitest": "^5.1.1"
+  },
+  "dependencies": {
+    "@forge/api": "^8.5.0",
+    "@forge/bridge": "7.3.0",
+    "@forge/react": "12.5.0",
+    "@forge/resolver": "2.0.2",
+    "react": "^18.2.0"
+  }
+}
