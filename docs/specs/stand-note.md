@@ -134,7 +134,32 @@ The developer chose each of these on 2026-11-20. This is the record for the proj
 | Unit tests      | Vitest                                                         |
 | e2e tests       | Playwright on the real Jira site, with a login saved by hand   |
 | CI              | None                                                           |
-| Jira site       | A new free developer site, made with a personal Atlassian account |
+| Jira site       | `dzaffren.atlassian.net`, the developer's own site                |
+
+### Spike findings, 2026-11-20
+
+A throwaway hello-world app answered O1, O2 and O5. The spike code is deleted.
+
+- `forge create -t jira-issue-context-ui-kit -s <developer space id> -y <name>` makes the app with no prompts.
+  The developer space is `dzaffren-dev`.
+- The template uses `@forge/react`, `@forge/bridge` and a resolver function, on runtime `nodejs24.x`.
+- `forge deploy --non-interactive -e development`, then `forge install --non-interactive --site
+  dzaffren.atlassian.net --product jira -e development --confirm-scopes`, puts the app on the site.
+- The Forge CLI reads `FORGE_EMAIL` and `FORGE_API_TOKEN` from the environment. The token is in `.env`
+  as `ATLASSIAN_API_KEY`. Git ignores `.env`.
+- UI Kit renders in the main page, not in a frame. Playwright finds the panel header as a button with
+  the module title in its name, and it finds the panel text with a plain text locator.
+- The panel starts collapsed in each new browser session. A test must expand it first.
+- Google refuses sign-in in Playwright's browser. The e2e account is a second Atlassian account with an
+  email and a password. Its saved login is in `e2e/.auth/state.json`, which git ignores.
+- A new account lands on a Jira welcome page until it picks a kind of work. The test account did that once.
+- The site's "Default software scheme" lets each logged-in Jira user edit tickets. A view-only person
+  exists only when the "any logged-in user" grant for Edit Issues is removed. The spike removed the grant
+  through the Jira API, ran the test, and put the grant back.
+- Only the test account can log in to Playwright. The main account can still act in a test through the
+  Jira API with its token.
+- `npm install -g @forge/cli` skipped the install scripts of `cloudflared` and `keytar`. `forge tunnel`
+  may need them.
 
 ## Decisions to record
 
@@ -194,11 +219,11 @@ Status: active
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
 | --- | ---- | ---- | --------- | ----- | ------ | ------ |
-| O1  | Playwright can drive the stand-note panel on the real Jira site, with a login session that the developer saved by hand. D6 and the e2e test rest on it. | unproven | spec p1 | poc | Open | — |
-| O2  | Jira shows the panel by default to a person who can view a ticket but cannot edit it. The docs say that the issue panel module is added by hand and shows only to editors. They do not say for the issue context module. Scenario 4 rests on it. | unproven | spec p1 | poc | Open | — |
+| O1  | Playwright can drive the stand-note panel on the real Jira site, with a login session that the developer saved by hand. D6 and the e2e test rest on it. | unproven | spec p1 | poc | Resolved | Yes, with a condition. A spike script opened PAY-1, expanded a hello-world panel and read the text from its backend call. The account must sign in with an email and a password: Google refuses sign-in in Playwright's browser. 2026-11-20 |
+| O2  | Jira shows the panel by default to a person who can view a ticket but cannot edit it. The docs say that the issue panel module is added by hand and shows only to editors. They do not say for the issue context module. Scenario 4 rests on it. | unproven | spec p1 | poc | Resolved | Yes, for the issue context module. It shows on each ticket with no setup. The test account, with view permission and no edit permission on PAY-1, saw the panel and its content. The panel is last in the right column and starts collapsed. 2026-11-20 |
 | O3  | Which fields does a stand note have? | question | spec p1 | user | Resolved | Done, Next, Watch out, Code. 2026-11-20 |
 | O4  | Who can save or change the note? | question | spec p1 | user | Resolved | Anyone who can edit the ticket. Anyone who can view the ticket can read the note. 2026-11-20 |
-| O5  | The Forge docs ask for Node 24.22.1 or later. The laptop has Node 24.18.1. | flag | spec p1 | poc | Open | — |
+| O5  | The Forge docs ask for Node 24.22.1 or later. The laptop has Node 24.18.1. | flag | spec p1 | poc | Resolved | Forge CLI 15.1.0 refuses Node below 24.22.1. Node 24.22.3 is installed through nvm, and the CLI runs on it. The repo gets an `.nvmrc` file in the build. 2026-11-20 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
