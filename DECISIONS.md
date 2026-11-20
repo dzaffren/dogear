@@ -99,3 +99,13 @@ The UI Kit docs say that `useForm` cannot watch values, set them or clear them.
 Rejected: the `useForm` hook (it cannot watch or reset the fields).
 Source: docs/specs/stand-note.md
 Status: active
+
+## D12 · 2026-11-21 · The agent saves through the app's own MCP tools
+
+Why: the spike proved that Claude Code reaches a `rovo:mcp` tool of the app, and the
+tool writes the issue property as the caller. One tool call saves the whole note, and
+the app checks the note before the write.
+Rejected: the built-in Atlassian MCP tools with a comment that the app reads (the note
+moves out of the issue property of D4, and the app cannot refuse a bad note).
+Source: docs/specs/agent-checkpoint.md
+Status: active
