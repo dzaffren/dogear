@@ -7,17 +7,9 @@ modules:
       render: native
       title: Stand note
       label: Where the work stands
-      status:
-        type: lozenge
-        value:
-          label: No note
-      dynamicProperties:
-        function: tag
   function:
     - key: resolver
       handler: index.handler
-    - key: tag
-      handler: index.tag
 resources:
   - key: main
     path: src/frontend/index.jsx

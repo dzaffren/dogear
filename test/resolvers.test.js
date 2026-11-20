@@ -29,13 +29,12 @@ vi.mock('@forge/api', () => {
   const route = (strings, ...values) =>
     strings.reduce((out, part, i) => out + part + (i < values.length ? encodeURIComponent(values[i]) : ''), '');
   return {
-    default: { asUser: () => ({ requestJira: requestJira('user') }), asApp: () => ({ requestJira: requestJira('app') }) },
+    default: { asUser: () => ({ requestJira: requestJira('user') }) },
     route,
   };
 });
 
 const { getNote, saveNote } = await import('../src/resolvers/index.js');
-const { tag } = await import('../src/tag.js');
 
 const context = (accountId) => ({ accountId, extension: { issue: { key: 'PAY-142' } } });
 const aisyahNote = {
@@ -147,18 +146,5 @@ describe('saveNote', () => {
   it('writes as the user', async () => {
     await saveNote({ payload: texts, context: context('acc-aisyah') });
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
-  });
-});
-
-describe('tag', () => {
-  const payload = { extension: { type: 'jira:issueContext', issue: { key: 'PAY-142' } } };
-
-  it('says No note on a ticket with no stand note', async () => {
-    expect(await tag(payload)).toEqual({ status: { type: 'lozenge', value: { label: 'No note', type: 'default' } } });
-  });
-
-  it('gives the age of the note', async () => {
-    jira.property = aisyahNote;
-    expect(await tag(payload)).toEqual({ status: { type: 'lozenge', value: { label: '2 days ago', type: 'inprogress' } } });
   });
 });

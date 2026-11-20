@@ -3,9 +3,8 @@ import api, { route } from '@forge/api';
 import { cleanNote, PROPERTY_KEY } from '../lib/note';
 
 // Reads the stand note of a ticket. A ticket with no property has no note.
-// `requester` is api.asUser() or api.asApp().
-export const readNote = async (requester, issueKey) => {
-  const response = await requester.requestJira(route`/rest/api/3/issue/${issueKey}/properties/${PROPERTY_KEY}`);
+const readNote = async (issueKey) => {
+  const response = await api.asUser().requestJira(route`/rest/api/3/issue/${issueKey}/properties/${PROPERTY_KEY}`);
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`Jira answered ${response.status} to the note read`);
   return (await response.json()).value;
@@ -30,7 +29,7 @@ const issueKeyOf = (context) => context.extension.issue.key;
 
 export const getNote = async ({ context }) => {
   const issueKey = issueKeyOf(context);
-  const [note, edit] = await Promise.all([readNote(api.asUser(), issueKey), canEdit(issueKey)]);
+  const [note, edit] = await Promise.all([readNote(issueKey), canEdit(issueKey)]);
   return {
     note,
     savedByName: note ? await displayName(note.savedBy) : null,
