@@ -3,11 +3,15 @@ import api, { route } from '@forge/api';
 import { cleanNote, PROPERTY_KEY } from '../lib/note';
 
 // Reads the stand note of a ticket. A ticket with no property has no note.
+// Anyone who can edit the ticket can write the property through Jira's API, so the
+// texts go through cleanNote here too, and the panel always gets four strings.
 const readNote = async (issueKey) => {
   const response = await api.asUser().requestJira(route`/rest/api/3/issue/${issueKey}/properties/${PROPERTY_KEY}`);
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`Jira answered ${response.status} to the note read`);
-  return (await response.json()).value;
+  const value = (await response.json()).value;
+  const texts = cleanNote(value);
+  return texts && { ...value, ...texts };
 };
 
 const canEdit = async (issueKey) => {

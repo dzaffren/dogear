@@ -72,6 +72,17 @@ describe('getNote', () => {
     });
   });
 
+  it('gives text for each field when the stored note has other types', async () => {
+    jira.property = { ...aisyahNote, done: null, code: 42 };
+    const { note } = await getNote({ context: context('acc-hafiz') });
+    expect(note).toEqual({ ...aisyahNote, done: '', code: '' });
+  });
+
+  it('returns no note when the stored note has no text', async () => {
+    jira.property = { ...aisyahNote, done: '', next: null, watchOut: 7, code: '' };
+    expect((await getNote({ context: context('acc-hafiz') })).note).toBeNull();
+  });
+
   it('reads as the user', async () => {
     await getNote({ context: context('acc-hafiz') });
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
