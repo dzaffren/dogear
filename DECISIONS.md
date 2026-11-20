@@ -73,3 +73,29 @@ that only editors see, or a Jira admin switches it on for the site, and it is no
 a view-only person).
 Source: docs/specs/stand-note.md
 Status: active
+
+## D9 · 2026-11-20 · The panel loads and saves through a resolver
+
+Why: the server stamps the author and the time, so "2 days ago" is right on each person's
+machine, and the server takes the ticket from the Forge context.
+Rejected: Jira calls straight from the panel (the browser's clock and the browser's word
+for the author).
+Source: docs/specs/stand-note.md
+Status: active
+
+## D10 · 2026-11-20 · A separate view-only project for the e2e tests
+
+Why: scenario 4 needs a person who cannot edit, and the site's default scheme lets each
+logged-in user edit. A project with its own scheme keeps Payments and Operations as they are.
+Rejected: a switch of the shared scheme in each test run (a run that stops halfway leaves two
+projects read-only for the test account).
+Source: docs/specs/stand-note.md
+Status: active
+
+## D11 · 2026-11-20 · The form keeps its fields in React state
+
+Why: Save is disabled while all four fields are empty, and Cancel puts the saved text back.
+The UI Kit docs say that `useForm` cannot watch values, set them or clear them.
+Rejected: the `useForm` hook (it cannot watch or reset the fields).
+Source: docs/specs/stand-note.md
+Status: active
