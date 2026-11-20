@@ -143,6 +143,12 @@ describe('saveNote', () => {
     expect(jira.property).toBe(aisyahNote);
   });
 
+  it('writes nothing when the name of the person cannot be read', async () => {
+    jira.property = aisyahNote;
+    await expect(saveNote({ payload: texts, context: context('acc-unknown') })).rejects.toThrow();
+    expect(jira.property).toBe(aisyahNote);
+  });
+
   it('writes as the user', async () => {
     await saveNote({ payload: texts, context: context('acc-aisyah') });
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);

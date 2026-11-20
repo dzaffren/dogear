@@ -44,6 +44,8 @@ export const saveNote = async ({ payload, context }) => {
   const texts = cleanNote(payload);
   if (!texts) throw new Error('A stand note needs text in one or more fields');
   if (!(await canEdit(issueKey))) throw new Error('No permission to edit this ticket');
+  // Read the name before the write, so an error after this point never hides a saved note.
+  const savedByName = await displayName(context.accountId);
 
   const note = { v: 1, ...texts, savedBy: context.accountId, savedAt: new Date().toISOString() };
   const response = await api.asUser().requestJira(route`/rest/api/3/issue/${issueKey}/properties/${PROPERTY_KEY}`, {
@@ -54,7 +56,7 @@ export const saveNote = async ({ payload, context }) => {
   if (!response.ok) throw new Error(`Jira answered ${response.status} to the note save`);
   console.log(`stand-note saved issue=${issueKey}`);
 
-  return { note, savedByName: await displayName(context.accountId), canEdit: true, now: note.savedAt };
+  return { note, savedByName, canEdit: true, now: note.savedAt };
 };
 
 const resolver = new Resolver();
