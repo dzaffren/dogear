@@ -443,6 +443,16 @@ Single chunk. The e2e tests need the deployed app, and one `package.json` holds 
 
 Recorded as D9, D10, D11.
 
+## Review
+
+2026-11-21 · 6 raw findings, 3 survived, 3 fixed, 2 leads need validation.
+
+- correctness · `src/resolvers/index.js:57` · `saveNote` reads the author's name before the write, so a failed read never hides a saved note · `e53d38c`
+- correctness · `src/frontend/NoteView.jsx:16` · `readNote` runs the stored texts through `cleanNote`, so a non-string field no longer breaks the panel · `eba98ae`
+- A03 Software Supply Chain Failures · `package.json:23` · `@forge/bridge` 7.3.0 and `@forge/react` 12.5.0 in place of the pre-release builds · `3d366b2`
+- needs validation · `src/resolvers/index.js:35` · whether Jira refuses `GET /rest/api/3/user` to a person without the "Browse users and groups" global permission, which would make `getNote` fail for that reader · as the test account, open `https://dzaffren.atlassian.net/rest/api/3/mypermissions?permissions=USER_PICKER`, and read Jira Settings, System, Global permissions
+- needs validation · `src/resolvers/index.js:46` · whether the Forge runtime writes a thrown resolver error to `forge logs`, so a refused save leaves a trace · run `bash scripts/forge.sh logs -e development` after a refused save, or read the Forge logs docs on uncaught function errors
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
