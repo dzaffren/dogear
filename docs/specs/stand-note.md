@@ -1,6 +1,6 @@
 # Stand note
 
-**Version:** v1 · **Status:** Refined · **Type:** Skeleton · **Project type:** Web UI
+**Version:** v1 · **Status:** Built · **Type:** Skeleton · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** None
@@ -53,8 +53,7 @@ Scenario: Save the first note
   Given ticket PAY-142 "Add refund endpoint" has no stand note
   And Aisyah Rahman can edit PAY-142
   When Aisyah opens PAY-142
-  Then the Stand note header in the right column shows the tag "No note"
-  When she expands Stand note
+  And she expands Stand note
   Then the panel says "No stand note yet"
   And Save is not available while all four fields are empty
   When she types Done "Endpoint and validation are written"
@@ -68,8 +67,7 @@ Scenario: Save the first note
 Scenario: Read the note on a ticket that changed hands
   Given Aisyah saved a stand note on PAY-142 on 2026-11-24 at 16:40
   When Hafiz Omar opens PAY-142 on 2026-11-26 at 09:15
-  Then the Stand note header shows the tag "2 days ago"
-  When he expands Stand note
+  And he expands Stand note
   Then the panel shows Done, Next, Watch out and Code as Aisyah saved them
   And the panel says "Saved by Aisyah Rahman, 2 days ago"
 
@@ -104,7 +102,7 @@ Scenario: The save fails
 **In:**
 
 - A Stand note panel in the right column of the Jira ticket view. It starts collapsed.
-- A tag on the collapsed header: "No note", or the age of the note, such as "2 days ago".
+- The collapsed header has the fixed label "Where the work stands".
 - Four short free-text fields: Done, Next, Watch out, Code. Each holds up to 1,000
   characters. Each is optional, but a save needs text in one or more of them.
 - One note for each ticket. A save replaces the note.
@@ -123,6 +121,7 @@ Scenario: The save fails
 - A production deploy and the install link for judges — `judge-ready-entry`.
 - The history of earlier notes — no slice yet.
 - A warning when two people edit at the same time — no slice yet.
+- A tag on the collapsed header with the age of the note — no slice yet. Jira does not show it (O11).
 - A control that clears the note — no slice yet.
 - CI — not planned. The tests run by hand before each deploy.
 
@@ -142,7 +141,7 @@ show the real components. The build shows the real panel on `dzaffren.atlassian.
 
 ```mermaid
 flowchart LR
-    C["Collapsed header + tag"] -- "person expands" --> L[Loading]
+    C["Collapsed header"] -- "person expands" --> L[Loading]
     L -- "no note" --> E["Empty: form, or text only for a viewer"]
     L -- "note found" --> R[Read view]
     L -- "Jira does not answer" --> X[Load error]
@@ -161,14 +160,13 @@ read view and the form with Edit, Save and Cancel.
 ### The collapsed header
 
 ```
-> Stand note   Where the work stands        [ No note ]      grey tag
-> Stand note   Where the work stands        [ 2 days ago ]   blue tag
+> Stand note   Where the work stands
 ```
 
 - Title: `Stand note`. Label: `Where the work stands`.
-- Tag with no note: `No note`.
-- Tag with a note: the age of the note. `Just now` under 1 minute, then `5 min ago`,
-  `3 hours ago`, `2 days ago`.
+- No tag. Jira on the site shows no lozenge for this module (O11).
+- The age of the note is in the saved line: `just now` under 1 minute, then `5 min ago`,
+  `3 hours ago`, `2 days ago`. Days are rounded (O13).
 
 ### Read view
 
@@ -225,8 +223,8 @@ v Stand note   Where the work stands        [ No note ]
 ```
 
 **Components used:** Stack, Inline, Text, Label, TextArea, Textfield, Form, FormFooter, Button,
-LoadingButton, SectionMessage, Spinner, User, Link, Code. The header tag is the `status` lozenge
-of the issue context module.
+LoadingButton, SectionMessage, Spinner, Link, Code. The saved line shows the name from Jira's
+user API as plain text (O12).
 
 **The two craft checks.** A one-line prompt gives a single notes box. This panel has four fields
 named for a handover, opens on the read view, and shows the age of the note before a click. Next
@@ -278,8 +276,7 @@ A throwaway hello-world app answered O1, O2 and O5. The spike code is deleted.
 ### Approach
 
 The app is one Forge app at the repo root. The panel is UI Kit code that calls two backend
-functions, `getNote` and `saveNote`, and a third function gives Jira the tag for the collapsed
-header. The note is one JSON value in the Jira issue property `stand-note` on the ticket.
+functions, `getNote` and `saveNote`. The note is one JSON value in the Jira issue property `stand-note` on the ticket.
 
 The backend reads and writes as the person who uses the panel, so Jira's own permissions apply.
 The backend takes the ticket from the Forge context and stamps the author and the time. The
@@ -294,24 +291,20 @@ flowchart TB
     end
     subgraph forge["Forge functions"]
         RES["resolver: getNote, saveNote (src/resolvers/index.js)"]
-        TAG["tag (src/tag.js)"]
     end
     subgraph jira["Jira Cloud"]
         PROP[("issue property stand-note")]
         PERM["mypermissions: EDIT_ISSUES"]
-        HEAD["collapsed header of the panel"]
+        USER["user: display name"]
     end
     UI -- "invoke getNote / saveNote, four texts" --> RES
     RES -- "note, canEdit, server time" --> UI
     RES -- "GET and PUT as the user" --> PROP
     RES -- "GET as the user" --> PERM
-    HEAD -- "asks for the tag, with the ticket" --> TAG
-    TAG -- "GET as the app" --> PROP
-    TAG -- "lozenge: No note, or the age" --> HEAD
+    RES -- "GET as the user" --> USER
 ```
 
-The panel talks only to the resolver, the resolver talks to Jira as the user, and Jira asks the
-tag function for the text on the collapsed header.
+The panel talks only to the resolver, and the resolver talks to Jira as the user.
 
 ```mermaid
 sequenceDiagram
@@ -334,8 +327,8 @@ sequenceDiagram
 flowchart LR
     T["Four texts typed in the browser"] -- "untrusted strings" --> C["saveNote: cleanNote, then stamp savedBy and savedAt"]
     C -- "JSON, 4,200 characters at most" --> PR[("issue property stand-note")]
-    PR -- "JSON" --> G["getNote and tag"]
-    G -- "plain text and an age" --> V["Panel and header, shown as text"]
+    PR -- "JSON" --> G["getNote"]
+    G -- "plain text and an age" --> V["Panel, shown as text"]
 ```
 
 The four texts are the only input from the browser, the backend cleans and stamps them, and the
@@ -347,15 +340,14 @@ The repo has no app code yet, so each file is new.
 
 | File | What changes | Why |
 | ---- | ------------ | --- |
-| `manifest.yml` | One `jira:issueContext` module `stand-note-panel`: title `Stand note`, label `Where the work stands`, status lozenge `No note`, `dynamicProperties` to `tag`, resolver to `resolver`. Two function modules. Scopes `read:jira-work` and `write:jira-work`. Runtime `nodejs24.x`. | All scenarios, D8 |
+| `manifest.yml` | One `jira:issueContext` module `stand-note-panel`: title `Stand note`, label `Where the work stands`, resolver to `resolver`. One function module. Scopes `read:jira-work`, `write:jira-work` and `read:jira-user` (O12). Runtime `nodejs24.x`. | All scenarios, D8 |
 | `package.json`, `package-lock.json` | Dependencies `@forge/react`, `@forge/bridge`, `@forge/resolver`, `@forge/api`. Dev dependencies `vitest`, `@playwright/test`. The npm scripts in the test plan. | D5, D6 |
 | `.nvmrc` | `24.22.3` | O5 |
 | `scripts/forge.sh` | Loads `.env`, sets `FORGE_API_TOKEN` from `ATLASSIAN_API_KEY`, switches to the Node in `.nvmrc`, runs `forge` with the arguments it gets. | Deploy with no secret on screen |
-| `src/index.js` | Exports `handler` (the resolver) and `tag`. | Forge entry points |
+| `src/index.js` | Exports `handler` (the resolver). | Forge entry point |
 | `src/resolvers/index.js` | `getNote`: reads the property and the edit permission as the user, returns the note, `canEdit` and the server time. `saveNote`: cleans the texts, checks the edit permission, writes the property, logs one line. | Scenarios 1 to 5 |
-| `src/tag.js` | The `dynamicProperties` handler. Reads the property as the app and returns the lozenge. | Scenarios 1 and 2 |
 | `src/lib/note.js` | `PROPERTY_KEY`, and `cleanNote(input)`: trim, cap each field at 1,000 characters, refuse a note with four empty fields. | Scenario 1, the limits in Scope |
-| `src/lib/age.js` | `ageLabel(savedAt, now)`: `Just now`, `5 min ago`, `3 hours ago`, `2 days ago`. The panel and the tag both use it. | Scenarios 1 and 2 |
+| `src/lib/age.js` | `ageLabel(savedAt, now)`: `Just now`, `5 min ago`, `3 hours ago`, `2 days ago`. | Scenarios 1 and 2 |
 | `src/frontend/index.jsx` | `App`: loading, load error, and the switch between the read view and the form. | All scenarios |
 | `src/frontend/NoteView.jsx` | The read view: the filled fields, the saved line, the Edit button for an editor. | Scenarios 2 and 4 |
 | `src/frontend/NoteForm.jsx` | The form: four fields in React state, Save disabled while all are empty, Cancel, the save error. | Scenarios 1, 3 and 5 |
@@ -395,8 +387,7 @@ JSON, and `e2e/jira.js` has the delete call that removes one.
 | Added | Triggered by |
 | ----- | ------------ |
 | Resolver functions `getNote` and `saveNote` | Scenario 2: "2 days ago" must be right on each person's machine, so the server stamps the time. Scenario 4: the server checks the edit permission. |
-| `tag` function | Scenarios 1 and 2: the tag on the collapsed header. |
-| `src/lib/note.js` and `src/lib/age.js` | The resolver, the tag and the panel share the limits and the age text. The unit tests need them apart from Forge. |
+| `src/lib/note.js` and `src/lib/age.js` | The resolver and the panel share the limits and the age text. The unit tests need them apart from Forge. |
 | `scripts/forge.sh` | The token is in `.env` under another name, and the default Node is too old for the Forge CLI. |
 | `e2e/setup-site.mjs` and the view-only project | Scenario 4 needs a person who cannot edit. |
 | `@playwright/test`, `vitest` | D6. |
@@ -405,7 +396,7 @@ JSON, and `e2e/jira.js` has the delete call that removes one.
 
 |                      |     |
 | -------------------- | --- |
-| **Load**             | One `getNote` call for each expand of the panel, one `tag` call for each ticket view, one `saveNote` for each save. A team of ten makes some hundreds of calls a day. The Forge free allowance is 200,000 GB-seconds of function time for each month. |
+| **Load**             | One `getNote` call for each expand of the panel, one `saveNote` for each save. A team of ten makes some hundreds of calls a day. The Forge free allowance is 200,000 GB-seconds of function time for each month. |
 | **Breaks first**     | At 10 times the load, nothing in the app. Jira's rate limit for REST calls is the first limit, and the panel then shows the load error. |
 | **Security surface** | Callers: a person who can open the ticket. Jira refuses the read for a person who cannot view the ticket, and `saveNote` refuses a person without `EDIT_ISSUES`. The ticket comes from the Forge context, not from the browser. Input: four strings, trimmed and capped on the server, shown as plain text. Code becomes a link only when it starts with `https://`. Secrets: none in the app. `.env` is for the CLI and the tests, and git ignores it. Stored: the four texts, an account ID and a time. An editor can also change the property through Jira's own API, so `savedBy` is not proof of the author. |
 | **Proof it works**   | `forge logs -e development` shows `stand-note saved issue=PAY-1` after a save. |
@@ -440,10 +431,10 @@ Single chunk. The e2e tests need the deployed app, and one `package.json` holds 
 
 | Risk | Mitigation |
 | ---- | ---------- |
-| The tag does not show on the collapsed header before the first expand (O7). | The header keeps the fixed label `Where the work stands`. Scenarios 1 and 2 then check the tag after an expand, and the build says so. |
+| The tag does not show on the collapsed header before the first expand (O7). | Happened: no tag shows at all (O11). The header keeps the fixed label `Where the work stands`. |
 | Playwright cannot block the save request (O9). | Scenario 5 gets a hand check, walked once. The unit test covers the refusal on the server. |
-| The `tag` function cannot read the property as the app. | Read it as the user. If Jira gives the function no user, the tag stays `Stand note` with no age. |
-| The `User` component hides the name because of a privacy setting. | The saved line shows the name that `getNote` reads from Jira's user API. |
+| The `User` component hides the name because of a privacy setting. | The saved line shows the name that `getNote` reads from Jira's user API (O12). |
+| Jira collapses the panel again a few seconds after the ticket loads (O14). | The e2e test expands again until the content shows. |
 | The saved login of the test account expires. | `npm run e2e:login`, a hand login of about 20 seconds. |
 | The npm install of the Forge CLI skipped two install scripts, so `forge tunnel` may fail. | The plan uses `forge deploy` only. Allow the scripts when the tunnel is needed. |
 | The app name `Stand Note` is a working name. | The name can change in the developer console before the entry goes in. |
@@ -466,6 +457,10 @@ Recorded as D9, D10, D11.
 | O8  | How do the automated tests get a person who can view a ticket but cannot edit it? | question | spec p3 | user | Resolved | A separate test project with its own permission scheme, made once by a script through the Jira API. Drafted as D10. 2026-11-20 |
 | O9  | Playwright can pick out the save request and block it, so that scenario 5 has an automated test. | unproven | spec p3 | user | Accepted risk | The build tries the block first. If it fails, scenario 5 gets a hand check, and the unit tests cover the server side. Accepted 2026-11-20 |
 | O10 | The build registers the real app, and Forge shows its agreement again: Developer Terms, Privacy Policy, and billing over the free allowance. | flag | spec p3 | user | Resolved | The build passes `--accept-terms` in the `dzaffren-dev` developer space. The working name is Stand Note. 2026-11-20 |
+| O11 | Scenarios 1 and 2 said "Then the Stand note header in the right column shows the tag "No note"" and "Then the Stand note header shows the tag "2 days ago"". | flag | build | user | Decided alone | Chose: drop the tag and the `tag` function. Jira calls the `dynamicProperties` function on expand and collapse, but the issue view shows no lozenge, also not the static one in the manifest. The header keeps the fixed label. Other: keep the function and wait for Jira to show it. Undo: `git revert 030ad50`, and put back the two scenario lines. 2026-11-21 |
+| O12 | The saved line needs the author's name. The plan named the `User` component and the scopes `read:jira-work` and `write:jira-work`. | flag | build | user | Decided alone | Chose: `getNote` and `saveNote` read the name from `GET /rest/api/3/user` as the user, so the line is one plain text. `forge lint` then asks for the scope `read:jira-user`, which the manifest now has. Other: the `User` component inside the line, with no new scope. Undo: swap the name text for `<User accountId>` in `src/frontend/NoteView.jsx`, drop `displayName` in `src/resolvers/index.js`, and drop the scope. 2026-11-21 |
+| O13 | Scenario 2 needs "2 days ago" for a note from 16:40 two days before 09:15, which is 40 hours. | flag | build | user | Decided alone | Chose: `ageLabel` rounds the days, so 36 to 59 hours is "2 days ago". Other: calendar days in the reader's time zone, which the server does not know. Undo: change `Math.round` to `Math.floor` in `src/lib/age.js`, and change scenario 2 to "1 day ago". 2026-11-21 |
+| O14 | Jira re-renders the ticket a few seconds after it loads and collapses the panel again. An early click in the e2e test then leaves the panel collapsed or empty. It hit 1 to 3 of 5 tests in a run. | flag | build | user | Decided alone | Chose: `openPanel` in the e2e test expands again until the panel content shows, for up to 90 seconds. Other: wait a fixed 20 seconds after each page load, which also passed 8 of 8 runs. Undo: replace the `toPass` loop in `e2e/stand-note.spec.js` with a fixed wait. A person who clicks in the first seconds may see the panel close once. 2026-11-21 |
 
 _Never delete this section or its rows. See references/ledger.md._
 

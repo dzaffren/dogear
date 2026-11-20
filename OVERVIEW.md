@@ -10,10 +10,10 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 
 | Task    | Command          |
 | ------- | ---------------- |
-| install | `not set up yet` |
-| run     | `not set up yet` |
-| test    | `not set up yet` |
-| lint    | `not set up yet` |
+| install | `npm install`    |
+| run     | `npm run deploy` |
+| test    | `npm test`, then `npm run e2e` after a deploy |
+| lint    | `npm run lint`   |
 
 ## Where things are
 
