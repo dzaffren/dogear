@@ -1,6 +1,6 @@
 # Stand note
 
-**Version:** v1 · **Status:** Built · **Type:** Skeleton · **Project type:** Web UI
+**Version:** v1 · **Status:** Shipped · **Type:** Skeleton · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** None
