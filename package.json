@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --dir test",
     "e2e": "playwright test",
     "e2e:login": "node e2e/login.mjs",
     "e2e:setup": "node e2e/setup-site.mjs",

@@ -36,24 +36,17 @@ const testAccountId = async (page) => (await (await page.request.get('/rest/api/
 const panelContent = (page) =>
   page.getByText('No stand note yet').or(page.getByText(/^Saved by /)).or(page.getByLabel('Done')).first();
 
-// Opens the ticket and expands the panel. Jira sometimes leaves a panel empty after the
-// expand, with no spinner and no content. One reload brings it back.
+// Opens the ticket and expands the panel. Jira re-renders the ticket a few seconds after
+// it loads and collapses the panel again, so expand until the panel content shows.
 const openPanel = async (page, key) => {
-  for (let attempt = 1; ; attempt++) {
-    await page.goto(`/browse/${key}`);
-    const header = page.getByRole('button', { name: /^Stand note/ });
-    await expect(header).toContainText('Where the work stands');
-    await expect(async () => {
-      if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
-      await expect(header).toHaveAttribute('aria-expanded', 'true', { timeout: 2_000 });
-    }).toPass();
-    try {
-      await expect(panelContent(page)).toBeVisible({ timeout: 20_000 });
-      return;
-    } catch (error) {
-      if (attempt === 2) throw error;
-    }
-  }
+  await page.goto(`/browse/${key}`);
+  const header = page.getByRole('button', { name: /^Stand note/ });
+  await expect(header).toContainText('Where the work stands');
+  await expect(async () => {
+    if ((await header.getAttribute('aria-expanded')) === 'true') await header.click();
+    await header.click();
+    await expect(panelContent(page)).toBeVisible({ timeout: 10_000 });
+  }).toPass({ timeout: 90_000 });
 };
 
 const expectReadView = async (page, texts) => {
