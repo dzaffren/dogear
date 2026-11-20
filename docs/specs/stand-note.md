@@ -53,6 +53,8 @@ Scenario: Save the first note
   Given ticket PAY-142 "Add refund endpoint" has no stand note
   And Aisyah Rahman can edit PAY-142
   When Aisyah opens PAY-142
+  Then the Stand note header in the right column shows the tag "No note"
+  When she expands Stand note
   Then the panel says "No stand note yet"
   And Save is not available while all four fields are empty
   When she types Done "Endpoint and validation are written"
@@ -66,13 +68,16 @@ Scenario: Save the first note
 Scenario: Read the note on a ticket that changed hands
   Given Aisyah saved a stand note on PAY-142 on 2026-11-24 at 16:40
   When Hafiz Omar opens PAY-142 on 2026-11-26 at 09:15
+  Then the Stand note header shows the tag "2 days ago"
+  When he expands Stand note
   Then the panel shows Done, Next, Watch out and Code as Aisyah saved them
   And the panel says "Saved by Aisyah Rahman, 2 days ago"
 
 Scenario: A new save replaces the note
   Given PAY-142 has the stand note that Aisyah saved
   And Hafiz Omar can edit PAY-142
-  When Hafiz changes Done to "Endpoint, validation and idempotency check are written"
+  When Hafiz expands Stand note
+  And he changes Done to "Endpoint, validation and idempotency check are written"
   And he changes Next to "Write the tests for partial refunds"
   And he selects Save
   Then the panel shows Hafiz's text in Done and Next
@@ -82,7 +87,7 @@ Scenario: A new save replaces the note
 Scenario: A person who can only view the ticket reads the note
   Given PAY-142 has the stand note that Hafiz saved
   And Tan Mei Ling can view PAY-142 but cannot edit it
-  When Mei Ling opens PAY-142
+  When Mei Ling opens PAY-142 and expands Stand note
   Then the panel shows the four fields and "Saved by Hafiz Omar"
   And the panel has no Edit control and no Save control
 
@@ -98,7 +103,8 @@ Scenario: The save fails
 
 **In:**
 
-- A stand-note panel on the Jira ticket view.
+- A Stand note panel in the right column of the Jira ticket view. It starts collapsed.
+- A tag on the collapsed header: "No note", or the age of the note, such as "2 days ago".
 - Four short free-text fields: Done, Next, Watch out, Code. Each holds up to 1,000
   characters. Each is optional, but a save needs text in one or more of them.
 - One note for each ticket. A save replaces the note.
@@ -215,6 +221,17 @@ GitLab CI (the same).
 Source: docs/specs/stand-note.md
 Status: active
 
+## D8 · 2026-11-20 · The stand note sits in the issue context spot
+
+Why: the spike proved that this spot shows on each ticket with no setup, also to a person
+who can view the ticket but cannot edit it. Its collapsed header can carry a tag for each
+ticket.
+Rejected: the issue panel in the main column (a person adds it to each ticket with a button
+that only editors see, or a Jira admin switches it on for the site, and it is not proved for
+a view-only person).
+Source: docs/specs/stand-note.md
+Status: active
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
@@ -224,6 +241,8 @@ Status: active
 | O3  | Which fields does a stand note have? | question | spec p1 | user | Resolved | Done, Next, Watch out, Code. 2026-11-20 |
 | O4  | Who can save or change the note? | question | spec p1 | user | Resolved | Anyone who can edit the ticket. Anyone who can view the ticket can read the note. 2026-11-20 |
 | O5  | The Forge docs ask for Node 24.22.1 or later. The laptop has Node 24.18.1. | flag | spec p1 | poc | Resolved | Forge CLI 15.1.0 refuses Node below 24.22.1. Node 24.22.3 is installed through nvm, and the CLI runs on it. The repo gets an `.nvmrc` file in the build. 2026-11-20 |
+| O6  | Where does the stand note sit on the ticket? The spike showed that the issue context spot is last in the right column and starts collapsed. | question | poc | user | Resolved | The right column, with a tag on the collapsed header that shows "No note" or the age of the note. Drafted as D8. 2026-11-20 |
+| O7  | The tag shows on the collapsed header before a person expands the panel. The docs are not clear on when Jira asks the app for the tag. | unproven | poc | user | Accepted risk | The build finds out. If the tag does not show before the first expand, the header keeps a fixed label. Accepted 2026-11-20 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
@@ -233,6 +252,9 @@ _Never delete this section or its rows. See references/ledger.md._
 - **UI Kit** — Forge's set of ready-made screen parts, such as forms and buttons.
 - **Custom UI** — the other Forge way to build a screen: our own web page in a frame.
 - **Module** — one place where a Forge app adds something to Jira, such as a panel on a ticket.
+- **Issue context** — the Forge module that adds a collapsible panel to the right column of a ticket.
+- **Issue panel** — the Forge module that adds a panel to the main column of a ticket.
+- **Tag** — the small coloured label on the collapsed panel header. Atlassian calls it a lozenge.
 - **Jira issue property** — a small piece of data that an app attaches to one ticket.
 - **Stand note** — the short note on a ticket that says where the work stands.
 - **Walking skeleton** — the thinnest app that runs through each layer and is deployed.
