@@ -35,7 +35,7 @@ stand note, so that I ask for a note before the person is out.
 
 ```mermaid
 flowchart LR
-    N((Nurul, lead)) -- "opens Stand notes in the Payments sidebar" --> P[At-risk page]
+    N((Nurul, lead)) -- "opens Stand notes in the Payments project" --> P[At-risk page]
     P -- "asks for in-progress tickets" --> J[(Jira project PAY)]
     J -- "Updated time and stand note of each ticket" --> P
     P -- "rows: No note, or note behind the last change" --> N
@@ -75,7 +75,7 @@ Scenario: A lead sees the tickets at risk
     | PAY-155 | Add webhook retries       | To Do       | Hafiz Omar    | none             | 2026-11-25 15:00 |
     | PAY-139 | Rotate the sandbox keys   | Done        | Hafiz Omar    | none             | 2026-11-20 12:00 |
   And Nurul Huda can view project Payments
-  When Nurul opens Stand notes in the Payments sidebar
+  When Nurul opens Stand notes in the Payments project
   Then the page says "2 of 3 in-progress tickets are at risk"
   And the first row shows PAY-150, "Add partial refunds", Hafiz Omar and "No note"
   And the second row shows PAY-142, "Add refund endpoint", Aisyah Rahman and "Note is 2 days behind"
@@ -86,27 +86,27 @@ Scenario: A saved note takes the ticket off the list
   When Nurul selects PAY-150 in the row
   Then Jira opens ticket PAY-150
   When Hafiz Omar saves a stand note on PAY-150
-  And Nurul opens Stand notes in the Payments sidebar again
+  And Nurul opens Stand notes in the Payments project again
   Then the page says "1 of 3 in-progress tickets are at risk"
   And the page has no row for PAY-150
 
 Scenario: No ticket is at risk
   Given each in-progress ticket in project Payments has a stand note
   And no ticket changed more than 1 hour after its note was saved
-  When Nurul opens Stand notes in the Payments sidebar
+  When Nurul opens Stand notes in the Payments project
   Then the page says "No ticket is at risk"
   And the page says "Each of the 3 in-progress tickets has a current stand note."
 
 Scenario: The project has more than 100 in-progress tickets
   Given project Operations has 240 in-progress tickets
   And 37 of the 100 most recently updated tickets are at risk
-  When Nurul opens Stand notes in the Operations sidebar
+  When Nurul opens Stand notes in the Operations project
   Then the page says "37 of 100 in-progress tickets are at risk"
   And the page says "Checked the 100 most recently updated of 240 in-progress tickets."
 
 Scenario: The list does not load
   Given Nurul can view project Payments
-  When she opens Stand notes in the Payments sidebar and Jira does not answer
+  When she opens Stand notes in the Payments project and Jira does not answer
   Then the page says "The list did not load. Reload the page."
   And the page shows no rows and no count
 ```
@@ -115,7 +115,7 @@ Scenario: The list does not load
 
 **In:**
 
-- A page named Stand notes in the sidebar of each Jira project. It lists the tickets of
+- A page named Stand notes in the row of tabs of each Jira project. It lists the tickets of
   that project only.
 - The page checks each ticket whose status is in Jira's In Progress category. In Review
   counts, because Jira puts it in that category.
@@ -149,6 +149,105 @@ Scenario: The list does not load
 - A scheduled report by email or chat — no slice yet.
 - A production deploy and the install link for judges — `judge-ready-entry`.
 
+## Interface
+
+**Design system:** Forge UI Kit, as in `stand-note` (D3). The page adds no tokens and no
+components of its own. UI Kit follows the Jira theme, light or dark.
+
+**Motion tier:** 0. UI Kit gives the app no control of motion. The spinner is Atlassian's.
+
+**Reference:** Jira's own work list, for one dense row for each ticket with the key as the
+link. From Linear: colour only where it means something. Here the two lozenge colours are
+the only colour on the page.
+
+**Preview:** the wireframes below. UI Kit renders only inside Jira, so an HTML copy would
+not show the real components. The build shows the real page on `dzaffren.atlassian.net`.
+
+```mermaid
+flowchart LR
+    O["Person opens Stand notes in the project"] --> L[Loading]
+    L -- "one or more tickets at risk" --> T["List: count line, rule line, table"]
+    L -- "in-progress tickets, none at risk" --> E["Empty: No ticket is at risk"]
+    L -- "no in-progress tickets" --> Z["Empty: No ticket is in progress"]
+    L -- "Jira does not answer" --> X[Load error]
+    T -- "selects a ticket key" --> I[Jira ticket view]
+    T -- "more than 100 in progress" --> C["List, with the Checked line"]
+```
+
+A person opens the page, waits for one load, and gets the list, one of two empty views, or
+the load error. A ticket key opens the ticket.
+
+### Where the page is
+
+- Module title: `Stand notes`. Jira shows it at the top of the page.
+- The Forge docs say that a project page shows in the row of tabs of the project, next to
+  Board and List. The build confirms the spot on the site (O11).
+
+### List
+
+```
+Stand notes
+
+2 of 3 in-progress tickets are at risk
+A ticket is at risk when it has no stand note, or when it changed more than 1 hour
+after its note was saved.
+
+Ticket                          Assignee        Stand note                  Last change
+PAY-150  Add partial refunds    Hafiz Omar      [ No note ]                 3 hours ago
+PAY-142  Add refund endpoint    Aisyah Rahman   [ Note is 2 days behind ]   4 hours ago
+PAY-147  Add refund webhooks    Unassigned      [ Note is 5 hours behind ]  20 min ago
+                                                saved outside Stand Note
+```
+
+- The count line is a heading. The rule line under it is small, subtle text.
+- Ticket: the key is a link that opens the ticket in the same tab. The summary is plain text.
+- Assignee: the display name as plain text, or `Unassigned`.
+- Stand note: a lozenge. `No note` is red. `Note is 2 days behind` is yellow.
+- A note that Stand Note did not sign gets a second, small line: `saved outside Stand Note`.
+- Last change: the age of Jira's Updated time, in the words of the panel: `20 min ago`,
+  `3 hours ago`, `2 days ago`.
+- The rows are in the order of O5. A person cannot sort the columns.
+- All rows are on one page, 100 at most. The table has no pager.
+
+### The Checked line
+
+```
+37 of 100 in-progress tickets are at risk
+A ticket is at risk when it has no stand note, or when it changed more than 1 hour
+after its note was saved.
+Checked the 100 most recently updated of 240 in-progress tickets.
+```
+
+The line shows only when the project has more than 100 in-progress tickets.
+
+### The two empty views
+
+```
+            No ticket is at risk
+   Each of the 3 in-progress tickets has a current stand note.
+
+            No ticket is in progress
+   The list checks the tickets whose status is in progress.
+```
+
+Each view takes the place of the count line, the rule line and the table.
+
+### Loading and the load error
+
+```
+  (spinner)                                    label: Loading the at-risk list
+
+  (!) The list did not load. Reload the page.  in place of the page content
+```
+
+**Components used:** Stack, Inline, Heading, Text, DynamicTable, Link, Lozenge, EmptyState,
+SectionMessage, Spinner.
+
+**The two craft checks.** A one-line prompt gives a table of all tickets with a status
+column. This page lists only the tickets that need a note, says how many of how many, and
+puts the ticket to chase first on top. Next to Jira's work list it has the same row rhythm,
+and the lozenge is the only colour.
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
@@ -163,6 +262,7 @@ Scenario: The list does not load
 | O8  | How does the list treat a note that Stand Note did not sign? | question | spec p1 | user | Resolved | It counts by its saved time, and the row says "saved outside Stand Note". 2026-11-21 |
 | O9  | Which 100 tickets does the page check when the project has more? | question | spec p1 | user | Resolved | The 100 most recently updated. 2026-11-21 |
 | O10 | The `stand-note` spec left "a warning that work moved after the note was saved" to this slice. Does the ticket panel show it too? | question | spec p1 | user | Resolved | No. This slice ships the list only. The panel warning is a new slice, `stale-note-warning`. 2026-11-21 |
+| O11 | Pause 1 says the page is in the sidebar of the project. The Forge docs say that a `jira:projectPage` shows in the row of tabs of the project. Nobody saw it on the site yet. | flag | spec p2 | user | Resolved | The row of tabs is fine. The scenarios now say "in the Payments project", and the build confirms the spot on the site. 2026-11-21 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
@@ -171,7 +271,7 @@ _Never delete this section or its rows. See references/ledger.md._
 - **Stand note** — the short note on a ticket that says where the work stands: done, next, watch out.
 - **At risk** — an in-progress ticket with no stand note, or with a note that is behind the last change.
 - **Lead** — the person who watches the work of a team or a Jira project.
-- **Project page** — a page that a Forge app adds to the sidebar of a Jira project.
+- **Project page** — a page that a Forge app adds to the row of tabs of a Jira project.
 - **Status category** — Jira's three groups of statuses: To Do, In Progress and Done.
 - **Updated time** — the time of the last change that Jira recorded on a ticket.
 - **Grace time** — the 1 hour after a save in which a change does not make the note out of date.
