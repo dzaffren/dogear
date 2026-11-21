@@ -11,8 +11,22 @@ modules:
     - key: stand-note-mcp
       name: Stand Note
       tools:
+        - get-stand-note
         - save-stand-note
   action:
+    - key: get-stand-note
+      name: Get stand note
+      function: get-stand-note-fn
+      actionVerb: GET
+      description: >-
+        Reads the stand note of a Jira ticket: what is done, what is next, what to watch out
+        for, and where the code is. Call it when work on a ticket starts, and before each save.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: true
+          description: The Jira ticket key, such as PAY-142.
     - key: save-stand-note
       name: Save stand note
       function: save-stand-note-fn
@@ -50,6 +64,8 @@ modules:
   function:
     - key: resolver
       handler: index.handler
+    - key: get-stand-note-fn
+      handler: index.getStandNote
     - key: save-stand-note-fn
       handler: index.saveStandNote
 resources:

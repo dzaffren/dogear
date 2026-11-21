@@ -91,3 +91,77 @@ describe('saveStandNote', () => {
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
   });
 });
+
+describe('getStandNote', () => {
+  it('gives the note with the saved line and the filled fields', async () => {
+    jira.property = aisyahNote;
+    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe(
+      [
+        'Stand note on PAY-142',
+        'Saved by Aisyah Rahman through an agent, 2 days ago',
+        'Done: Endpoint and validation are written',
+        'Next: Add the idempotency check',
+        'Watch out: The sandbox rejects amounts over RM 5,000',
+        'Code: feat/pay-142-refund',
+      ].join('\n')
+    );
+  });
+
+  it('leaves out empty fields and the agent words for a note that a person saved', async () => {
+    jira.property = { ...aisyahNote, watchOut: '', code: '', savedBy: 'acc-hafiz', via: undefined };
+    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
+      [
+        'Stand note on PAY-142',
+        'Saved by Hafiz Omar, 2 days ago',
+        'Done: Endpoint and validation are written',
+        'Next: Add the idempotency check',
+      ].join('\n')
+    );
+  });
+
+  it('says when the ticket has no stand note', async () => {
+    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe('PAY-142 has no stand note.');
+  });
+
+  it('says when Jira has no such ticket for the person', async () => {
+    expect(await getStandNote({ issueKey: 'PAY-999' }, context('acc-hafiz'))).toBe(
+      'Jira has no ticket PAY-999 that you can see.'
+    );
+  });
+
+  it('says when Jira fails', async () => {
+    jira.readStatus = 503;
+    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe(
+      'Jira did not answer the read. Try again.'
+    );
+  });
+
+  it('reads as the person', async () => {
+    jira.property = aisyahNote;
+    await getStandNote({ issueKey: 'PAY-142' }, context('acc-hafiz'));
+    expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
+  });
+});
+
+describe('a second agent carries on', () => {
+  it('replaces the whole note, so the fields it does not send are empty', async () => {
+    jira.property = aisyahNote;
+    const reply = await saveStandNote(
+      {
+        issueKey: 'PAY-142',
+        done: 'Endpoint, validation and idempotency check are written',
+        next: 'Write the tests for partial refunds',
+      },
+      context('acc-hafiz')
+    );
+    expect(reply).toBe('Saved the stand note on PAY-142.');
+    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
+      [
+        'Stand note on PAY-142',
+        'Saved by Hafiz Omar through an agent, just now',
+        'Done: Endpoint, validation and idempotency check are written',
+        'Next: Write the tests for partial refunds',
+      ].join('\n')
+    );
+  });
+});

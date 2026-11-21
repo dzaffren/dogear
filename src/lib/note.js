@@ -3,6 +3,8 @@ export const PROPERTY_KEY = 'stand-note';
 
 export const FIELDS = ['done', 'next', 'watchOut', 'code'];
 
+export const LABELS = { done: 'Done', next: 'Next', watchOut: 'Watch out', code: 'Code' };
+
 export const MAX_LENGTH = 1000;
 
 // Turns the texts from the browser into a note: each field trimmed and capped.
