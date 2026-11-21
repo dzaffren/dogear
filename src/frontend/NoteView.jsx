@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Code, Link, Stack, Text } from '@forge/react';
-import { ageLabel } from '../lib/age';
+import { savedLine } from '../lib/age';
 
 const Field = ({ label, children }) => (
   <Stack space="space.050">
@@ -26,7 +26,6 @@ const CodeValue = ({ code }) =>
   );
 
 const NoteView = ({ note, savedByName, canEdit, now, onEdit }) => {
-  const age = ageLabel(note.savedAt, now);
   return (
     <Stack space="space.200">
       {note.done && (
@@ -50,7 +49,7 @@ const NoteView = ({ note, savedByName, canEdit, now, onEdit }) => {
         </Field>
       )}
       <Text size="small" color="color.text.subtlest">
-        {`Saved by ${savedByName}, ${age.charAt(0).toLowerCase()}${age.slice(1)}`}
+        {savedLine(note, savedByName, now)}
       </Text>
       {canEdit && (
         <Stack alignInline="start">

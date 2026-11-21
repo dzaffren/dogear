@@ -1,6 +1,7 @@
 import Resolver from '@forge/resolver';
 import api, { route } from '@forge/api';
 import { cleanNote, PROPERTY_KEY } from '../lib/note';
+import { sign } from '../lib/signature';
 
 // Reads the stand note of a ticket. A ticket with no property has no note.
 // Anyone who can edit the ticket can write the property through Jira's API, so the
@@ -22,7 +23,7 @@ const canEdit = async (issueKey) => {
   return (await response.json()).permissions?.EDIT_ISSUES?.havePermission === true;
 };
 
-const displayName = async (accountId) => {
+export const displayName = async (accountId) => {
   const response = await api.asUser().requestJira(route`/rest/api/3/user?accountId=${accountId}`);
   if (!response.ok) throw new Error(`Jira answered ${response.status} to the user read`);
   return (await response.json()).displayName;
@@ -52,6 +53,7 @@ export const saveNote = async ({ payload, context }) => {
   const savedByName = await displayName(context.accountId);
 
   const note = { v: 1, ...texts, savedBy: context.accountId, savedAt: new Date().toISOString() };
+  note.sig = sign(issueKey, note, process.env.NOTE_SIGNING_KEY);
   const response = await api.asUser().requestJira(route`/rest/api/3/issue/${issueKey}/properties/${PROPERTY_KEY}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

@@ -99,3 +99,40 @@ The UI Kit docs say that `useForm` cannot watch values, set them or clear them.
 Rejected: the `useForm` hook (it cannot watch or reset the fields).
 Source: docs/specs/stand-note.md
 Status: active
+
+## D12 · 2026-11-21 · The agent saves through the app's own MCP tools
+
+Why: the spike proved that Claude Code reaches a `rovo:mcp` tool of the app, and the
+tool writes the issue property as the caller. One tool call saves the whole note, and
+the app checks the note before the write.
+Rejected: the built-in Atlassian MCP tools with a comment that the app reads (the note
+moves out of the issue property of D4, and the app cannot refuse a bad note).
+Source: docs/specs/agent-checkpoint.md
+Status: active
+
+## D13 · 2026-11-21 · The agent's tools call Jira as the person
+
+Why: Jira's own permissions then decide who saves and who reads a note (D4), and the
+author is the person. The spike proved that this works after one Allow access in the panel.
+Rejected: calls as the app (they work with no consent, but the app must check the view
+and edit permissions itself, and Jira sees the app as the writer).
+Source: docs/specs/agent-checkpoint.md
+Status: active
+
+## D14 · 2026-11-21 · A rule text tells the agent when to save
+
+Why: a block in `CLAUDE.md` or `AGENTS.md` needs no build, and it works in each agent
+that reads such a file.
+Rejected: a Claude Code hook (more build, and it works only in Claude Code), the tools
+alone (the note goes missing when the person forgets to ask).
+Source: docs/specs/agent-checkpoint.md
+Status: active
+
+## D15 · 2026-11-21 · The e2e test calls the MCP tools with the MCP SDK and a saved login
+
+Why: the test then calls the same endpoint as an agent, with the same result on each run.
+Atlassian's OAuth server lets a client register itself and gives refresh tokens.
+Rejected: `claude -p` inside the test (a model in each run: slow, not free, and not the
+same each time), a hand walk only (no automated proof of scenarios 1 to 4).
+Source: docs/specs/agent-checkpoint.md
+Status: active
