@@ -230,6 +230,9 @@ The line shows only when the project has more than 100 in-progress tickets.
    The list checks the tickets whose status is in progress.
 ```
 
+When the project has more than 100 in-progress tickets, the first view says:
+`Each of the 100 most recently updated of about 240 in-progress tickets has a current stand note.`
+
 Each view takes the place of the count line, the rule line and the table.
 
 ### Loading and the load error
@@ -448,6 +451,7 @@ Recorded as D16, D17, D18, D19, D20.
 | O15 | Which project does the e2e test use, so that "2 of 3" is exact? | question | spec p3 | user | Resolved | A new project `SNR`, made once by `e2e/setup-site.mjs`. Drafted as D20. 2026-11-21 |
 | O16 | The build branches off the default branch. `main` does not have the `stand-note` and `agent-checkpoint` code yet. | flag | build | user | Decided alone | Chose: build on `feat/at-risk-list`, which starts from `feat/agent-checkpoint`. Other: branch off `main` and lose the app that this slice changes. Undo: after the two earlier branches merge, run `git rebase main` on `feat/at-risk-list`. 2026-11-21 |
 | O17 | Scenario 1 has PAY-151 in the status In Review. Project `SNR` uses the classic Kanban workflow, which has no In Review status. | flag | build | user | Decided alone | Chose: the e2e test keeps the current ticket in In Progress, which is in the same status category, so the JQL treats both the same. The scenario text stays. Other: a workflow with In Review for `SNR`, made by the setup script. Undo: give `SNR` a workflow with In Review, and move "Fix the settlement report" there in `e2e/at-risk-list.spec.js`. 2026-11-21 |
+| O18 | The approved first empty view said "Each of the 3 in-progress tickets has a current stand note." With more than 100 in-progress tickets it said "Each of the 100", and the page did not say that the project has about 240. | flag | review | user | Decided alone | Chose: with more than 100, the line says "Each of the 100 most recently updated of about 240 in-progress tickets has a current stand note." Other: show the Checked line under the empty view. Undo: revert the review fix commit, which puts back the old line. 2026-11-21 |
 
 _Never delete this section or its rows. See references/ledger.md._
 

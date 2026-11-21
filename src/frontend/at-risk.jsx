@@ -13,6 +13,7 @@ import ForgeReconciler, {
 } from '@forge/react';
 import { invoke } from '@forge/bridge';
 import { ageLabel, behindLabel } from '../lib/age';
+import { currentLine } from '../lib/summary';
 
 const HEAD = {
   cells: [
@@ -92,14 +93,7 @@ const App = () => {
   }
   if (rows.length === 0) {
     return (
-      <EmptyState
-        header="No ticket is at risk"
-        description={
-          checked === 1
-            ? 'The 1 in-progress ticket has a current stand note.'
-            : `Each of the ${checked} in-progress tickets has a current stand note.`
-        }
-      />
+      <EmptyState header="No ticket is at risk" description={currentLine(checked, inProgress)} />
     );
   }
 
