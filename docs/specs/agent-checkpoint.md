@@ -489,34 +489,7 @@ Single chunk. The e2e tests need the deployed app, and one `package.json` holds 
 
 ### Decisions to record
 
-```markdown
-## D13 · 2026-11-21 · The agent's tools call Jira as the person
-
-Why: Jira's own permissions then decide who saves and who reads a note (D4), and the
-author is the person. The spike proved that this works after one Allow access in the panel.
-Rejected: calls as the app (they work with no consent, but the app must check the view
-and edit permissions itself, and Jira sees the app as the writer).
-Source: docs/specs/agent-checkpoint.md
-Status: active
-
-## D14 · 2026-11-21 · A rule text tells the agent when to save
-
-Why: a block in `CLAUDE.md` or `AGENTS.md` needs no build, and it works in each agent
-that reads such a file.
-Rejected: a Claude Code hook (more build, and it works only in Claude Code), the tools
-alone (the note goes missing when the person forgets to ask).
-Source: docs/specs/agent-checkpoint.md
-Status: active
-
-## D15 · 2026-11-21 · The e2e test calls the MCP tools with the MCP SDK and a saved login
-
-Why: the test then calls the same endpoint as an agent, with the same result on each run.
-Atlassian's OAuth server lets a client register itself and gives refresh tokens.
-Rejected: `claude -p` inside the test (a model in each run: slow, not free, and not the
-same each time), a hand walk only (no automated proof of scenarios 1 to 4).
-Source: docs/specs/agent-checkpoint.md
-Status: active
-```
+Recorded as D13, D14, D15.
 
 ## Spike findings, 2026-11-21
 
@@ -553,6 +526,7 @@ A throwaway Forge app answered O1. The spike code is deleted, and the app is uni
 | O8  | An e2e test script can sign in to `https://mcp.atlassian.com/forge/<appId>` with a saved login and call the save tool, with no person at the OAuth screen. | unproven | spec p1 | user | Accepted risk | The build tries the saved login first. If it fails, a person walks the MCP save in Claude Code, and Playwright still checks the panel after it. The unit tests cover the tool function. Accepted 2026-11-21 |
 | O9  | The Forge docs say Rovo must be active on the site for a `rovo:mcp` module. The tools worked on `dzaffren.atlassian.net`, and nobody checked a site with no Rovo. A judge's site may have none. | flag | spec p1 | user | Accepted risk | This slice runs only on the developer site, where the tools work. `judge-ready-entry` tests a clean site and writes the setup guide from the result. Accepted 2026-11-21 |
 | O10 | Scenario 5 has no automated e2e test. A script cannot take away a person's consent, so each test account allows access only once. | flag | spec p3 | user | Accepted risk | A unit test covers the refusal text for the save and the read. The spike on 2026-11-21 showed the real refusal and the fix on the site. No hand walk. Accepted 2026-11-21 |
+| O11 | The build branches off the default branch. `main` does not have the `stand-note` code yet, because `feat/stand-note` is not merged. | flag | build | user | Decided alone | Chose: build on `feat/agent-checkpoint`, which starts from `feat/stand-note`. Other: branch off `main` and lose the panel that this slice changes. Undo: after `feat/stand-note` merges, run `git rebase main` on `feat/agent-checkpoint`. 2026-11-21 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
