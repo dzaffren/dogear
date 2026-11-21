@@ -17,3 +17,10 @@ export const cleanNote = (input) => {
   }
   return FIELDS.some((field) => note[field] !== '') ? note : null;
 };
+
+// The fields whose text is longer than MAX_LENGTH after a trim, each with its label and
+// length. The agent's save refuses these, so that no text is cut in silence.
+export const tooLong = (input) =>
+  FIELDS.filter((field) => typeof input?.[field] === 'string' && input[field].trim().length > MAX_LENGTH).map(
+    (field) => ({ label: LABELS[field], length: input[field].trim().length })
+  );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanNote, MAX_LENGTH } from '../src/lib/note';
+import { cleanNote, MAX_LENGTH, tooLong } from '../src/lib/note';
 
 describe('cleanNote', () => {
   it('keeps the four texts, trimmed', () => {
@@ -40,5 +40,19 @@ describe('cleanNote', () => {
   it('refuses a note with four empty fields', () => {
     expect(cleanNote({ done: ' ', next: '', watchOut: '\n' })).toBeNull();
     expect(cleanNote(undefined)).toBeNull();
+  });
+});
+
+describe('tooLong', () => {
+  it('names each field over 1,000 characters, with its length after a trim', () => {
+    expect(tooLong({ done: 'a'.repeat(1240), next: 'b'.repeat(1000), code: ` ${'c'.repeat(1001)} ` })).toEqual([
+      { label: 'Done', length: 1240 },
+      { label: 'Code', length: 1001 },
+    ]);
+  });
+
+  it('finds nothing in a note within the limits, or a field that is not text', () => {
+    expect(tooLong({ done: 'Endpoint and validation are written', next: 42 })).toEqual([]);
+    expect(tooLong(undefined)).toEqual([]);
   });
 });

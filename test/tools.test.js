@@ -86,6 +86,50 @@ describe('saveStandNote', () => {
     expect(jira.property).toMatchObject({ savedBy: 'acc-aisyah', savedAt: '2026-11-26T01:15:00.000Z', via: 'agent' });
   });
 
+  it('refuses a text that is too long and names the field', async () => {
+    jira.property = aisyahNote;
+    const reply = await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts, done: 'a'.repeat(1240) }, context('acc-hafiz'));
+    expect(reply).toBe('Done has 1,240 characters. The limit is 1,000.');
+    expect(jira.calls).toEqual([]);
+  });
+
+  it('names each field that is too long', async () => {
+    const reply = await saveStandNote(
+      { issueKey: 'PAY-142', done: 'a'.repeat(1240), watchOut: 'b'.repeat(1001) },
+      context('acc-hafiz')
+    );
+    expect(reply).toBe(
+      'Done has 1,240 characters. The limit is 1,000. Watch out has 1,001 characters. The limit is 1,000.'
+    );
+  });
+
+  it('refuses a note with four empty fields', async () => {
+    const reply = await saveStandNote({ issueKey: 'PAY-142', done: '  ' }, context('acc-hafiz'));
+    expect(reply).toBe('A stand note needs text in Done, Next, Watch out or Code.');
+    expect(jira.calls).toEqual([]);
+  });
+
+  it('refuses a person who cannot edit the ticket', async () => {
+    jira.property = aisyahNote;
+    jira.canEdit = false;
+    const reply = await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-hafiz'));
+    expect(reply).toBe('You cannot edit PAY-142, so the note was not saved.');
+    expect(jira.property).toBe(aisyahNote);
+  });
+
+  it('says when Jira has no such ticket for the person', async () => {
+    const reply = await saveStandNote({ issueKey: 'PAY-999', ...aisyahTexts }, context('acc-hafiz'));
+    expect(reply).toBe('Jira has no ticket PAY-999 that you can see.');
+  });
+
+  it("says when Jira refuses the write", async () => {
+    jira.property = aisyahNote;
+    jira.putStatus = 503;
+    const reply = await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-hafiz'));
+    expect(reply).toBe('Jira did not answer the save. The note was not saved. Try again.');
+    expect(jira.property).toBe(aisyahNote);
+  });
+
   it('writes as the person', async () => {
     await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-aisyah'));
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
