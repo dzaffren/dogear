@@ -1,6 +1,6 @@
 # Agent checkpoint
 
-**Version:** v1 · **Status:** Draft · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note
@@ -286,6 +286,238 @@ take the four handover fields, refuse a long text in place of a silent cut, and 
 how to get past the consent step. Next to `getJiraIssue`, the inputs are as short, and the
 replies are shorter, because an agent pays for each word it reads.
 
+## Technical plan
+
+### Approach
+
+The app gets one `rovo:mcp` module with two tools. Each tool is a Forge function in
+`src/tools/index.js` that calls Jira as the person and returns one plain text. The save
+writes the same issue property as the panel, with one new field: `via: "agent"`. The panel
+reads that field and adds "through an agent" to the saved line.
+
+A tool never throws. It catches each failure and returns the refusal text, because the
+spike proved only that a returned string reaches the agent.
+
+Relies on: D1, D2, D4, D5, D6, D7, D9, D12, D13, D14, D15
+
+```mermaid
+flowchart TB
+    subgraph laptop["Developer's laptop"]
+        CC["Claude Code, with the rule text in CLAUDE.md"]
+    end
+    subgraph atlassian["Atlassian"]
+        MCP["mcp.atlassian.com/forge/appId"]
+    end
+    subgraph forge["Forge functions"]
+        TOOLS["getStandNote, saveStandNote (src/tools/index.js)"]
+        RES["resolver getNote, saveNote (src/resolvers/index.js)"]
+    end
+    subgraph jira["Jira Cloud"]
+        PROP[("issue property stand-note")]
+    end
+    subgraph browser["Browser: Jira ticket view"]
+        UI["Stand note panel (src/frontend/NoteView.jsx)"]
+    end
+    CC -- "OAuth sign-in, then issueKey and four texts" --> MCP
+    MCP -- "inputs, principal.accountId" --> TOOLS
+    TOOLS -- "one reply text" --> MCP
+    TOOLS -- "GET and PUT as the person, via: agent" --> PROP
+    UI -- "invoke getNote" --> RES
+    RES -- "GET as the person" --> PROP
+    RES -- "note with via, author's name, server time" --> UI
+```
+
+Claude Code reaches the two tool functions through Atlassian's MCP server, the tools write
+the same property as the panel, and the panel reads the new `via` field.
+
+```mermaid
+sequenceDiagram
+    participant G as Aisyah's agent
+    participant M as Atlassian MCP server
+    participant T as saveStandNote
+    participant J as Jira REST API
+    G->>M: save-stand-note(PAY-142, done, next, watchOut, code)
+    M->>T: payload, context.principal.accountId
+    T->>T: tooLong, then cleanNote
+    T->>J: GET mypermissions EDIT_ISSUES for PAY-142, as the person
+    alt the person did not allow access
+        J-->>T: NeedsAuthenticationError
+        T-->>G: "Open the Stand note panel ... Then save again."
+    else the person can edit
+        J-->>T: havePermission true
+        T->>J: PUT property stand-note (texts, savedBy, savedAt, via agent)
+        J-->>T: 200 or 201
+        T-->>M: "Saved the stand note on PAY-142."
+        M-->>G: tool result
+    end
+```
+
+```mermaid
+flowchart LR
+    A["Four texts and a ticket key from an agent"] -- "untrusted strings" --> S["saveStandNote: length check, cleanNote, stamp savedBy from Forge"]
+    S -- "JSON with via: agent" --> PR[("issue property stand-note")]
+    PR -- "JSON" --> R["getStandNote"]
+    R -- "plain text with the author's name" --> B["Second agent: untrusted text in its context"]
+    PR -- "JSON" --> P["Panel, shown as plain text"]
+```
+
+The texts from one agent go through the length check into the property, and a second
+agent gets them back as plain text with the author's name.
+
+### Changes
+
+| File | What changes | Why |
+| ---- | ------------ | --- |
+| `manifest.yml` | One `rovo:mcp` module `stand-note-mcp`, name `Stand Note`, with the tools `get-stand-note` and `save-stand-note`. Two `action` modules with the descriptions and inputs of "Interface". Two `function` modules: `index.getStandNote` and `index.saveStandNote`. No new scope. | All scenarios, D12 |
+| `src/tools/index.js` (new) | `getStandNote(payload, context)`: one `GET /rest/api/3/issue/{key}?fields=summary&properties=stand-note` as the person, then the name of the author, then the reply text. `saveStandNote(payload, context)`: `tooLong`, `cleanNote`, `GET mypermissions`, `PUT` the property with `via: "agent"`, one log line. Each catches `NeedsAuthenticationError` from `@forge/api` and returns the consent text. | Scenarios 1 to 5 |
+| `src/index.js:1` | Also exports `getStandNote` and `saveStandNote`. | Forge entry point |
+| `src/lib/note.js:6` | `LABELS` for the four fields, and `tooLong(input)`: the fields with more than `MAX_LENGTH` characters after a trim, each with its label and length. | Scenario 4 |
+| `src/lib/age.js:5` | `savedLine(note, name, now)`: "Saved by Aisyah Rahman through an agent, 2 days ago", or the line with no "through an agent". | Scenarios 1 and 2. The panel and the read tool give the same words. |
+| `src/resolvers/index.js:25` | `displayName` gets an `export`. Nothing else changes: `readNote` at line 8 already passes `via` to the panel, and `saveNote` at line 54 builds a new note with no `via`. | Scenario 2. A save in the panel removes "through an agent". |
+| `src/frontend/NoteView.jsx:53` | The saved line comes from `savedLine`. | Scenario 1 |
+| `test/tools.test.js` (new) | Unit tests of the two tools, with `@forge/api` mocked as in `test/resolvers.test.js:6`. The mock also throws `NeedsAuthenticationError`. | Test plan |
+| `test/note.test.js`, `test/age.test.js`, `test/resolvers.test.js` | Tests for `tooLong` and `savedLine`. Two resolver tests: `getNote` passes `via` on, and `saveNote` drops it. | Test plan |
+| `e2e/panel.js` (new) | `panelContent`, `openPanel` and `expectReadView`, moved from `e2e/stand-note.spec.js:36-55`. The old spec imports them. | The new spec needs the same helpers. |
+| `e2e/mcp.js` (new) | `callTool(name, args)`: an MCP client that signs in with the saved login in `e2e/.auth/mcp.json` and adds `_development` to the tool name. | Scenarios 1 to 4, O8 |
+| `e2e/mcp-login.mjs` (new) | The hand login for MCP, once: it prints the Atlassian sign-in link, waits for the callback on localhost, and saves the login. | O8 |
+| `e2e/agent-checkpoint.spec.js` (new) | Scenarios 1 to 4. | Test plan |
+| `package.json`, `package-lock.json` | Dev dependency `@modelcontextprotocol/sdk`. Script `e2e:mcp-login`. | D15 |
+| `README.md:11` | Under "Install and run": the admin switch, the `claude mcp add` command, the Allow access step, and the rule text. | O6, scenario 5 |
+
+Reusing: `cleanNote`, `FIELDS`, `MAX_LENGTH` and `PROPERTY_KEY` from `src/lib/note.js`,
+`ageLabel` from `src/lib/age.js`, `displayName` from the resolver, the `@forge/api` mock
+of `test/resolvers.test.js`, and `jira`, `getNote`, `setNote`, `deleteNote` and
+`findOrCreateIssue` from `e2e/jira.js`.
+
+Checked on the site on 2026-11-21, as the main account:
+
+- `GET /rest/api/3/issue/PAY-1?fields=summary&properties=stand-note` answers 200 with
+  `"properties": {}` when the ticket has no note. It answers 404 for PAY-99999. One call
+  tells "no note" from "no such ticket".
+- `GET /rest/api/3/mypermissions?issueKey=PAY-99999&permissions=EDIT_ISSUES` answers 404.
+- `node_modules/@forge/api/out/api/fetch.js:72` throws `NeedsAuthenticationError` with the
+  message "Authentication Required". The spike saw that message.
+- Atlassian's OAuth server for MCP lets a new client register itself, and it gives refresh
+  tokens. A test script can therefore keep a login. The script itself is not proved (O8).
+
+### Data
+
+The note in the issue property `stand-note` gets one optional field:
+
+```json
+{
+  "v": 1,
+  "done": "Endpoint and validation are written",
+  "next": "Add the idempotency check",
+  "watchOut": "The sandbox rejects amounts over RM 5,000",
+  "code": "feat/pay-142-refund",
+  "savedBy": "712020:0f6c1c1e-0000-4000-8000-000000000142",
+  "savedAt": "2026-11-24T08:40:00.000Z",
+  "via": "agent"
+}
+```
+
+**Migration:** none. The field is new and optional, and `v` stays 1. A note with no `via`
+is a note that a person saved.
+**Reverse:** `forge deploy` of the commit before. The old panel ignores `via`, and the
+test "getNote passes via on" proves that an old note and a new note both load.
+
+### Earn-it
+
+| Added | Triggered by |
+| ----- | ------------ |
+| `rovo:mcp` module, two actions, two functions | Scenarios 1 to 5, D12 |
+| `src/tools/index.js` | The tools take the ticket key from the agent and answer in text. The resolver takes the ticket from the Forge context and answers in JSON for the panel. |
+| `via` field in the note | Scenario 1: the panel says "through an agent" (O2). |
+| `tooLong` | Scenario 4: the app names the field and its length. `cleanNote` cuts in silence. |
+| `savedLine` | Scenarios 1 and 2: the panel and the read tool must give the same line. |
+| `e2e/panel.js` | A second spec file needs `openPanel`. |
+| `e2e/mcp.js`, `e2e/mcp-login.mjs`, `@modelcontextprotocol/sdk` | The e2e test of scenarios 1 to 4 calls the tools as an agent does (O8, D15). |
+
+### Non-functionals
+
+|                      |     |
+| -------------------- | --- |
+| **Load**             | An agent saves 5 to 20 times in a work day for each developer, and reads a few times. A save is two Jira calls, and a read is two. A team of ten makes some hundreds of function runs a day. |
+| **Breaks first**     | At 10 times the load, Jira's rate limit for REST calls. The agent then gets "Jira did not answer the save. The note was not saved. Try again." Atlassian states no limit for the MCP server. |
+| **Security surface** | Callers: a person who signs in on Atlassian's OAuth screen, on a site where an admin turned on the tools. The tools call Jira as that person, so Jira refuses a ticket that the person cannot see or edit. Input: a ticket key and four strings from an agent, all untrusted. The key goes only into a `route` path. The texts are checked for length, trimmed, stored as JSON and shown as plain text. `savedBy` comes from Forge's `principal.accountId`, not from the agent. Secrets: none in the app. The e2e login is in `e2e/.auth/mcp.json`, which git ignores. Stored: the note, plus `via`. A note is text that a second agent reads, so a person who can edit the ticket can put instructions in it. A Jira comment read through Atlassian's own tools has the same exposure. |
+| **Proof it works**   | `forge logs -e development` shows `stand-note saved issue=PAY-1 via=agent` after an agent's save. |
+| **Rollout**          | No flag. The admin switch "Expose tools to MCP-compatible apps" is off for the app until the developer turns it on, and off again stops the tools while the panel stays. Rollback is `forge deploy` of the commit before. |
+
+### Test plan
+
+In the e2e tests, the main account is the person whose agent calls the tools. The test
+account in the browser reads the panel. The two accounts have the same display name, so
+the tests check the author by account ID through the Jira API.
+
+| Scenario | Test | Command |
+| -------- | ---- | ------- |
+| 1 An agent saves the note | `e2e/agent-checkpoint.spec.js` "an agent saves and the panel shows it" · `test/tools.test.js` · `test/age.test.js` | `npm run e2e` · `npm test` |
+| 2 A second agent reads the note and carries on | `e2e/agent-checkpoint.spec.js` "a second agent reads and saves". The main account sets the property through the API with `savedAt` two days back. · `test/tools.test.js` · `test/resolvers.test.js` | `npm run e2e` · `npm test` |
+| 3 An agent reads a ticket with no note | `e2e/agent-checkpoint.spec.js` "a ticket with no note" · `test/tools.test.js` | `npm run e2e` · `npm test` |
+| 4 The app refuses a text that is too long | `e2e/agent-checkpoint.spec.js` "refuses a long text" · `test/tools.test.js` · `test/note.test.js` | `npm run e2e` · `npm test` |
+| 5 The person did not allow access yet | `test/tools.test.js` "returns the consent text", for the save and the read. No e2e test: a script cannot take a person's consent away (O10). | `npm test` |
+| No edit permission, no such ticket, all fields empty, Jira fails | `test/tools.test.js` | `npm test` |
+
+Other commands: `npm run lint` runs `forge lint`. `npm run deploy` deploys to the
+development environment. `npm run e2e:mcp-login` saves the MCP login.
+
+**E2E:** `e2e/agent-checkpoint.spec.js`, after `npm run deploy`. The repo has no MCP client
+for tests, so `e2e/mcp.js` and `e2e/mcp-login.mjs` are work in this slice.
+
+**Hand steps, once, after the first deploy.** The build cannot do them:
+
+1. In Atlassian Administration, open Stand Note under Connected apps and turn on "Expose
+   tools to MCP-compatible apps".
+2. As the main account, open the Stand note panel on a ticket and select Allow access.
+3. Run `npm run e2e:mcp-login` and sign in as the main account.
+
+### Chunks
+
+Single chunk. The e2e tests need the deployed app, and one `package.json` holds both parts.
+
+### Risks
+
+| Risk | Mitigation |
+| ---- | ---------- |
+| The test script cannot keep an MCP login (O8). | A person walks scenarios 1 to 4 once in Claude Code, and Playwright still checks the panel. The unit tests cover the tool functions. |
+| The build needs three hand steps after the deploy, so it cannot finish the e2e run alone. | The build runs the unit tests and the deploy first, and names the hand steps in its report. |
+| `rovo:mcp` is in Preview, and Atlassian can change it before 2026-12-22. | The tools are two thin functions over the same property as the panel. If the module breaks, the panel still works, and the fallback of shape O5 is still open. |
+| The tool names end in `_development` now and may differ in production. | `e2e/mcp.js` holds the ending in one constant. `judge-ready-entry` checks the production names. |
+| A note can hold text that tries to steer the second agent. | Only a person who can edit the ticket can write it, and the reply names that person. The exposure is the same as for a Jira comment. |
+| `forge lint` refuses an input with `required: false`. | Not seen in the docs. If it does, the four texts become required and an empty string means "no text". |
+
+### Decisions to record
+
+```markdown
+## D13 · 2026-11-21 · The agent's tools call Jira as the person
+
+Why: Jira's own permissions then decide who saves and who reads a note (D4), and the
+author is the person. The spike proved that this works after one Allow access in the panel.
+Rejected: calls as the app (they work with no consent, but the app must check the view
+and edit permissions itself, and Jira sees the app as the writer).
+Source: docs/specs/agent-checkpoint.md
+Status: active
+
+## D14 · 2026-11-21 · A rule text tells the agent when to save
+
+Why: a block in `CLAUDE.md` or `AGENTS.md` needs no build, and it works in each agent
+that reads such a file.
+Rejected: a Claude Code hook (more build, and it works only in Claude Code), the tools
+alone (the note goes missing when the person forgets to ask).
+Source: docs/specs/agent-checkpoint.md
+Status: active
+
+## D15 · 2026-11-21 · The e2e test calls the MCP tools with the MCP SDK and a saved login
+
+Why: the test then calls the same endpoint as an agent, with the same result on each run.
+Atlassian's OAuth server lets a client register itself and gives refresh tokens.
+Rejected: `claude -p` inside the test (a model in each run: slow, not free, and not the
+same each time), a hand walk only (no automated proof of scenarios 1 to 4).
+Source: docs/specs/agent-checkpoint.md
+Status: active
+```
+
 ## Spike findings, 2026-11-21
 
 A throwaway Forge app answered O1. The spike code is deleted, and the app is uninstalled.
@@ -320,6 +552,7 @@ A throwaway Forge app answered O1. The spike code is deleted, and the app is uni
 | O7  | A person changes the note in the panel between an agent's read and the agent's save. | question | spec p1 | user | Resolved | The later save wins, with no warning, as in the panel. The rule text tells the agent to read the note before each save. 2026-11-21 |
 | O8  | An e2e test script can sign in to `https://mcp.atlassian.com/forge/<appId>` with a saved login and call the save tool, with no person at the OAuth screen. | unproven | spec p1 | user | Accepted risk | The build tries the saved login first. If it fails, a person walks the MCP save in Claude Code, and Playwright still checks the panel after it. The unit tests cover the tool function. Accepted 2026-11-21 |
 | O9  | The Forge docs say Rovo must be active on the site for a `rovo:mcp` module. The tools worked on `dzaffren.atlassian.net`, and nobody checked a site with no Rovo. A judge's site may have none. | flag | spec p1 | user | Accepted risk | This slice runs only on the developer site, where the tools work. `judge-ready-entry` tests a clean site and writes the setup guide from the result. Accepted 2026-11-21 |
+| O10 | Scenario 5 has no automated e2e test. A script cannot take away a person's consent, so each test account allows access only once. | flag | spec p3 | user | Accepted risk | A unit test covers the refusal text for the save and the read. The spike on 2026-11-21 showed the real refusal and the fix on the site. No hand walk. Accepted 2026-11-21 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
@@ -347,4 +580,7 @@ _Never delete this section or its rows. See references/ledger.md._
 - **Playwright** — a tool that drives a real browser from a test.
 - **`/poc`** — a short spike with throwaway code that answers one risky question.
 - **Idempotency check** — a check that stops the same request from being done twice. It is example text in a scenario.
+- **MCP SDK** — `@modelcontextprotocol/sdk`, the official code library for a program that calls MCP tools.
+- **Refresh token** — a saved key that gets a new login with no person at the sign-in screen.
+- **Rate limit** — the number of calls that a service accepts in a set time.
 - **D1, D4, D12** — entries in `DECISIONS.md`.
