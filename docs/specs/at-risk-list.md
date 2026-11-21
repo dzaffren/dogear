@@ -1,6 +1,6 @@
 # At-risk list
 
-**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Built · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note, agent-checkpoint
@@ -418,7 +418,7 @@ Single chunk. The e2e test needs the deployed app, and `manifest.yml` and
 | A Lozenge does not render inside a DynamicTable cell (O12). The docs show only a Link in a cell. | The cell shows the same words as plain text. |
 | A Link with `/browse/PAY-150` does not open the ticket from a project page (O12). | The key calls `router.navigate` from `@forge/bridge`, which is in the app. |
 | The resolver of a project page does not get `context.extension.project.key` (O12). The docs name the field for the page, not for the resolver. | The build logs the context once. `project.id` works in the JQL too. |
-| Jira puts the page under "More" in the row of tabs, and the e2e test does not find it (O11). | The test opens the page by its URL, `/jira/software/c/projects/SNR/apps/<appId>/<envId>`, read once from the browser. |
+| Jira puts the page under "More" in the row of tabs, and the e2e test does not find it (O11). | The test opens the page by its URL, `/jira/software/projects/SNR/apps/<appId>/<envId>`, read once from the browser. |
 | Jira's count is "about", so the Checked line can be off by a few (O13). | The line says "about". The count shows only for a project with more than 100. |
 | This branch starts from `feat/agent-checkpoint`, which is not in `main` yet. | Merge `feat/stand-note` and `feat/agent-checkpoint` first, then rebase this branch on `main`. |
 | A hand edit of a ticket in `SNR` changes the counts of the e2e test. | The test sets the status and the note of each `SNR` ticket at its start. |
@@ -441,11 +441,13 @@ Recorded as D16, D17, D18, D19, D20.
 | O8  | How does the list treat a note that Stand Note did not sign? | question | spec p1 | user | Resolved | It counts by its saved time, and the row says "saved outside Stand Note". 2026-11-21 |
 | O9  | Which 100 tickets does the page check when the project has more? | question | spec p1 | user | Resolved | The 100 most recently updated. 2026-11-21 |
 | O10 | The `stand-note` spec left "a warning that work moved after the note was saved" to this slice. Does the ticket panel show it too? | question | spec p1 | user | Resolved | No. This slice ships the list only. The panel warning is a new slice, `stale-note-warning`. 2026-11-21 |
-| O11 | Pause 1 says the page is in the sidebar of the project. The Forge docs say that a `jira:projectPage` shows in the row of tabs of the project. Nobody saw it on the site yet. | flag | spec p2 | user | Resolved | The row of tabs is fine. The scenarios now say "in the Payments project", and the build confirms the spot on the site. 2026-11-21 |
-| O12 | The page rests on UI Kit pieces that nobody saw on the site: a Lozenge and a Link inside DynamicTable cells, a link that opens `/browse/PAY-150`, and the project key in the resolver context of a project page. | unproven | spec p3 | user | Accepted risk | The build finds out. Each piece has a fallback in Risks: plain text, `router.navigate`, and `project.id`. Accepted 2026-11-21 |
+| O11 | Pause 1 says the page is in the sidebar of the project. The Forge docs say that a `jira:projectPage` shows in the row of tabs of the project. Nobody saw it on the site yet. | flag | spec p2 | user | Resolved | The row of tabs is fine. The scenarios now say "in the Payments project", and the build confirms the spot on the site. 2026-11-21 The build saw it: the tab Stand notes sits under More in the row of tabs, and moves into the row after a visit. 2026-11-21 |
+| O12 | The page rests on UI Kit pieces that nobody saw on the site: a Lozenge and a Link inside DynamicTable cells, a link that opens `/browse/PAY-150`, and the project key in the resolver context of a project page. | unproven | spec p3 | user | Resolved | Yes, each one. On the site the Lozenge renders inside the table cell, the Link to `/browse/SNR-2` opens the ticket in the same tab, and the resolver gets `context.extension.project.key`. No fallback was needed. Was Accepted risk 2026-11-21. Resolved 2026-11-21 |
 | O13 | Jira's search gives no total. The count in the Checked line comes from `search/approximate-count`, which Jira does not promise is exact. | flag | spec p3 | user | Resolved | The line says "of about 240". Scenario 4 changed by one word. 2026-11-21 |
 | O14 | An e2e test of scenario 4 needs 101 or more in-progress tickets on the site. | flag | spec p3 | user | Accepted risk | A unit test feeds `getAtRisk` a search of 100 tickets and a count of 240. No e2e test and no hand walk. Accepted 2026-11-21 |
 | O15 | Which project does the e2e test use, so that "2 of 3" is exact? | question | spec p3 | user | Resolved | A new project `SNR`, made once by `e2e/setup-site.mjs`. Drafted as D20. 2026-11-21 |
+| O16 | The build branches off the default branch. `main` does not have the `stand-note` and `agent-checkpoint` code yet. | flag | build | user | Decided alone | Chose: build on `feat/at-risk-list`, which starts from `feat/agent-checkpoint`. Other: branch off `main` and lose the app that this slice changes. Undo: after the two earlier branches merge, run `git rebase main` on `feat/at-risk-list`. 2026-11-21 |
+| O17 | Scenario 1 has PAY-151 in the status In Review. Project `SNR` uses the classic Kanban workflow, which has no In Review status. | flag | build | user | Decided alone | Chose: the e2e test keeps the current ticket in In Progress, which is in the same status category, so the JQL treats both the same. The scenario text stays. Other: a workflow with In Review for `SNR`, made by the setup script. Undo: give `SNR` a workflow with In Review, and move "Fix the settlement report" there in `e2e/at-risk-list.spec.js`. 2026-11-21 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
