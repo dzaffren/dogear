@@ -143,6 +143,149 @@ Scenario: The person did not allow access yet
   switch — `judge-ready-entry`.
 - The history of earlier notes — no slice yet.
 
+## Interface
+
+This slice has two interfaces. The main one is for an agent: two MCP tools. The other is
+one changed line in the Stand note panel.
+
+```mermaid
+flowchart LR
+    AG[Agent] -- "get-stand-note: issueKey" --> R{Read}
+    AG -- "save-stand-note: issueKey, done, next, watchOut, code" --> S{Save}
+    R -- "note found" --> N["Note text: author, age, the filled fields"]
+    R -- "no note" --> E0["PAY-143 has no stand note."]
+    S -- "saved" --> OK["Saved the stand note on PAY-142."]
+    S -- "text too long, or all empty" --> E1["Refusal that names the field"]
+    S -- "no Allow access yet" --> E2["How to allow access"]
+    R -- "no Allow access yet" --> E2
+    S -- "no permission, or no such ticket" --> E3["Plain refusal"]
+    R -- "no such ticket" --> E3
+```
+
+The agent calls one tool to read and one to save, and each call ends in one plain text:
+the note, a confirmation, or a refusal that says what to do.
+
+### The MCP server
+
+- Name in the manifest: `Stand Note`.
+- Name in Claude Code: `stand-note`, from `claude mcp add --transport http stand-note <url>`.
+- In the development environment, each tool name ends in `_development`.
+
+### Tool: `get-stand-note`
+
+Description, as the agent sees it:
+
+> Reads the stand note of a Jira ticket: what is done, what is next, what to watch out
+> for, and where the code is. Call it when work on a ticket starts, and before each save.
+
+| Input      | Type   | Required | Description |
+| ---------- | ------ | -------- | ----------- |
+| `issueKey` | string | yes      | The Jira ticket key, such as PAY-142. |
+
+The reply is plain text. It has only the fields that hold text:
+
+```
+Stand note on PAY-142
+Saved by Aisyah Rahman through an agent, 2 days ago
+Done: Endpoint and validation are written
+Next: Add the idempotency check
+Watch out: The sandbox rejects amounts over RM 5,000
+Code: feat/pay-142-refund
+```
+
+When a person saved the note in the panel, the second line is `Saved by Hafiz Omar, 2 days ago`.
+
+### Tool: `save-stand-note`
+
+Description, as the agent sees it:
+
+> Saves the stand note of a Jira ticket, so that a teammate or their agent can carry on.
+> The save replaces the whole note: send each field that is still true. Call it after
+> each finished step, and before the session stops.
+
+| Input      | Type   | Required | Description |
+| ---------- | ------ | -------- | ----------- |
+| `issueKey` | string | yes      | The Jira ticket key, such as PAY-142. |
+| `done`     | string | no       | What is finished. 1,000 characters at most. |
+| `next`     | string | no       | The next step. 1,000 characters at most. |
+| `watchOut` | string | no       | Traps, and what you tried that failed. 1,000 characters at most. |
+| `code`     | string | no       | The branch name, or a link to the code. 1,000 characters at most. |
+
+The reply is `Saved the stand note on PAY-142.`
+
+### Refusals
+
+Each refusal is one plain text, and the note on the ticket stays as it was.
+
+| Case | Tool | Reply |
+| ---- | ---- | ----- |
+| A field has more than 1,000 characters | save | `Done has 1,240 characters. The limit is 1,000.` One sentence pair for each long field. |
+| All four fields are empty | save | `A stand note needs text in Done, Next, Watch out or Code.` |
+| The person did not allow access yet | save | `Open the Stand note panel on a Jira ticket once and select Allow access. Then save again.` |
+| The person did not allow access yet | read | `Open the Stand note panel on a Jira ticket once and select Allow access. Then read again.` |
+| The person cannot edit the ticket | save | `You cannot edit PAY-142, so the note was not saved.` |
+| Jira has no such ticket, or the person cannot view it | both | `Jira has no ticket PAY-999 that you can see.` |
+| Jira fails for another reason | both | `Jira did not answer the save. The note was not saved. Try again.` For the read: `Jira did not answer the read. Try again.` |
+
+### The rule text
+
+The README gives this block for a repo's `CLAUDE.md` or `AGENTS.md`:
+
+```markdown
+## Stand note
+
+Each Jira ticket has a stand note: Done, Next, Watch out, Code. Keep it current with
+the `stand-note` MCP tools.
+
+- Take the ticket key from the branch name: `feat/pay-142-refund` is PAY-142. If the
+  branch has no key, ask me.
+- When you start work on a ticket, read its stand note first. Carry on from Next, and
+  obey Watch out.
+- Save the stand note after each finished step, and before you stop.
+- Read the note before each save. A save replaces the whole note, so send each field
+  that is still true.
+- Write for a teammate who did not see this session. Keep each field under 1,000
+  characters.
+```
+
+### The panel: the saved line
+
+```
+v Stand note   Where the work stands
+  Done
+  Endpoint and validation are written
+  Next
+  Add the idempotency check
+  Watch out
+  The sandbox rejects amounts over RM 5,000
+  Code
+  feat/pay-142-refund
+  Saved by Aisyah Rahman through an agent, 2 days ago
+  [ Edit ]
+```
+
+- The words `through an agent` show only when the last save came through the tool.
+- The line stays one plain text, in the same small grey style as today. No icon, no tag.
+- Each other state of the panel is the same as in `stand-note`.
+
+**Design system:** Forge UI Kit (D3). The slice adds no component and no token.
+
+**Motion tier:** 0. UI Kit gives the app no control of motion.
+
+**Components used:** Text, which holds the saved line today.
+
+**Preview:** the wireframe above. UI Kit renders only inside Jira, so the build shows the real
+line on `dzaffren.atlassian.net`.
+
+**Reference:** Atlassian's own MCP tools, such as `getJiraIssue`: a verb first, and the ticket
+key as the first input. For the refusals, Stripe's API errors: each one says what is wrong and
+what to do next.
+
+**The two craft checks.** A one-line prompt gives one tool that takes a free text. These tools
+take the four handover fields, refuse a long text in place of a silent cut, and tell the agent
+how to get past the consent step. Next to `getJiraIssue`, the inputs are as short, and the
+replies are shorter, because an agent pays for each word it reads.
+
 ## Spike findings, 2026-11-21
 
 A throwaway Forge app answered O1. The spike code is deleted, and the app is uninstalled.
@@ -176,7 +319,7 @@ A throwaway Forge app answered O1. The spike code is deleted, and the app is uni
 | O6  | The app cannot make an agent save. What ships so that the agent saves and reads the note without a request each time? | question | spec p1 | user | Resolved | A rule text for `CLAUDE.md` or `AGENTS.md`, in the README. No hook. 2026-11-21 |
 | O7  | A person changes the note in the panel between an agent's read and the agent's save. | question | spec p1 | user | Resolved | The later save wins, with no warning, as in the panel. The rule text tells the agent to read the note before each save. 2026-11-21 |
 | O8  | An e2e test script can sign in to `https://mcp.atlassian.com/forge/<appId>` with a saved login and call the save tool, with no person at the OAuth screen. | unproven | spec p1 | user | Accepted risk | The build tries the saved login first. If it fails, a person walks the MCP save in Claude Code, and Playwright still checks the panel after it. The unit tests cover the tool function. Accepted 2026-11-21 |
-| O9  | The Forge docs say Rovo must be active on the site for a `rovo:mcp` module. The tools worked on `dzaffren.atlassian.net`, and nobody checked a site with no Rovo. A judge's site may have none. | flag | spec p1 | user | Open | — |
+| O9  | The Forge docs say Rovo must be active on the site for a `rovo:mcp` module. The tools worked on `dzaffren.atlassian.net`, and nobody checked a site with no Rovo. A judge's site may have none. | flag | spec p1 | user | Accepted risk | This slice runs only on the developer site, where the tools work. `judge-ready-entry` tests a clean site and writes the setup guide from the result. Accepted 2026-11-21 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
