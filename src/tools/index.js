@@ -1,4 +1,4 @@
-import api, { route } from '@forge/api';
+import api, { NeedsAuthenticationError, route } from '@forge/api';
 import { savedLine } from '../lib/age';
 import { cleanNote, FIELDS, LABELS, MAX_LENGTH, PROPERTY_KEY, tooLong } from '../lib/note';
 import { displayName } from '../resolvers';
@@ -9,6 +9,10 @@ const READ_FAILED = 'Jira did not answer the read. Try again.';
 const noTicket = (issueKey) => `Jira has no ticket ${issueKey} that you can see.`;
 
 const count = (n) => n.toLocaleString('en-US');
+
+// Forge throws NeedsAuthenticationError on a call as the person until the person selects
+// Allow access in a panel of this app. The MCP sign-in does not count as that consent.
+const allowAccess = (verb) => `Open the Stand note panel on a Jira ticket once and select Allow access. Then ${verb} again.`;
 
 // The read tool of the agent. One Jira call tells "no note" from "no such ticket".
 export const getStandNote = async (payload) => {
@@ -30,6 +34,7 @@ export const getStandNote = async (payload) => {
       ...FIELDS.filter((field) => texts[field]).map((field) => `${LABELS[field]}: ${texts[field]}`),
     ].join('\n');
   } catch (error) {
+    if (error instanceof NeedsAuthenticationError) return allowAccess('read');
     console.log(`stand-note read failed issue=${issueKey}: ${error.message}`);
     return READ_FAILED;
   }
@@ -66,6 +71,7 @@ export const saveStandNote = async (payload, context) => {
     console.log(`stand-note saved issue=${issueKey} via=agent`);
     return `Saved the stand note on ${issueKey}.`;
   } catch (error) {
+    if (error instanceof NeedsAuthenticationError) return allowAccess('save');
     console.log(`stand-note save failed issue=${issueKey}: ${error.message}`);
     return SAVE_FAILED;
   }

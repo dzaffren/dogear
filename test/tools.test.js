@@ -209,3 +209,22 @@ describe('a second agent carries on', () => {
     );
   });
 });
+
+describe('a person who did not allow access yet', () => {
+  it('save returns the consent text and leaves the note as it was', async () => {
+    jira.property = aisyahNote;
+    jira.consent = false;
+    expect(await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-meiling'))).toBe(
+      'Open the Stand note panel on a Jira ticket once and select Allow access. Then save again.'
+    );
+    expect(jira.property).toBe(aisyahNote);
+  });
+
+  it('read returns the consent text', async () => {
+    jira.property = aisyahNote;
+    jira.consent = false;
+    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-meiling'))).toBe(
+      'Open the Stand note panel on a Jira ticket once and select Allow access. Then read again.'
+    );
+  });
+});
