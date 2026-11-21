@@ -136,3 +136,51 @@ Rejected: `claude -p` inside the test (a model in each run: slow, not free, and 
 same each time), a hand walk only (no automated proof of scenarios 1 to 4).
 Source: docs/specs/agent-checkpoint.md
 Status: active
+
+## D16 · 2026-11-21 · The at-risk list is a project page
+
+Why: a lead watches one project or team, and a project page needs no setup by the lead.
+It lists the tickets of that project only.
+Rejected: a global page (one list for all projects, which no lead owns), a dashboard gadget
+(the lead must make a dashboard first, and a judge may have none).
+Source: docs/specs/at-risk-list.md
+Status: active
+
+## D17 · 2026-11-21 · A note is behind when Jira's Updated time is more than 1 hour after the save
+
+Why: Jira has the Updated time on each ticket, and it counts each change. An agent often
+saves the note and then moves the ticket, so a change in the first hour does not count.
+A save of the note does not change the Updated time (probe, 2026-11-21).
+Rejected: only comments and status moves (a second read of the history for each ticket),
+only changes by the assignee (misses the work of a pair or of an agent), no grace time
+(most agent saves show as behind at once), a grace time of 1 day (misses a handover in the
+same afternoon).
+Source: docs/specs/at-risk-list.md
+Status: active
+
+## D18 · 2026-11-21 · The list reads the notes through Jira search with the `properties` field
+
+Why: one search call returns each in-progress ticket with its note (probe, 2026-11-21).
+The server then compares the two times, which JQL cannot do.
+Rejected: JQL on an indexed property through `jira:entityProperty` (JQL cannot compare the
+saved time with the Updated time, and it needs an index module), one property read for
+each ticket (101 calls for one visit).
+Source: docs/specs/at-risk-list.md
+Status: active
+
+## D19 · 2026-11-21 · UI Kit for the Stand notes page
+
+Why: the page is one table with a heading, two empty views and an error, and UI Kit has
+each of them with the Jira look. D3 left the choice open for each module.
+Rejected: Custom UI (more code, and it needs a design system of our own first).
+Source: docs/specs/at-risk-list.md
+Status: active
+
+## D20 · 2026-11-21 · A separate project, SNR, for the at-risk e2e test
+
+Why: "2 of 3 in-progress tickets are at risk" is exact only when the test owns each
+in-progress ticket of the project. The setup script makes the project once, as for SNV (D10).
+Rejected: Payments (hand work and the other tests change its in-progress tickets, so the
+test must move them on each run).
+Source: docs/specs/at-risk-list.md
+Status: active

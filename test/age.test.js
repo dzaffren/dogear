@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ageLabel, savedLine } from '../src/lib/age';
+import { ageLabel, behindLabel, savedLine } from '../src/lib/age';
 
 const now = '2026-11-26T01:15:00.000Z';
 const before = (ms) => new Date(Date.parse(now) - ms).toISOString();
@@ -55,5 +55,17 @@ describe('savedLine', () => {
 
   it('names no person when the app cannot confirm the author', () => {
     expect(savedLine({ ...note, via: 'agent' }, null, now)).toBe('Saved outside Stand Note, 2 days ago');
+  });
+});
+
+describe('behindLabel', () => {
+  it('says how far the note is behind, in the words of ageLabel', () => {
+    expect(behindLabel(61 * MIN)).toBe('Note is 1 hour behind');
+    expect(behindLabel(3 * HOUR + 20 * MIN)).toBe('Note is 3 hours behind');
+    expect(behindLabel(26 * HOUR)).toBe('Note is 1 day behind');
+  });
+
+  it('says 2 days behind for the note of scenario 1, 40 hours and 30 minutes behind', () => {
+    expect(behindLabel(40 * HOUR + 30 * MIN)).toBe('Note is 2 days behind');
   });
 });

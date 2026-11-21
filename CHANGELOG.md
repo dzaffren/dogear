@@ -12,6 +12,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Anyone who can view the ticket reads the note with its author and age; anyone who can edit the ticket can change it.
 - A coding agent such as Claude Code reads and saves the stand note of a ticket through two MCP tools, and the panel says when an agent saved the note.
 - An agent gets a plain refusal that says what to fix: a field over 1,000 characters, a ticket the person cannot edit, or access not yet allowed in the panel.
+- A lead opens Stand notes in a Jira project and sees each in-progress ticket that has no stand note, or a note saved more than 1 hour before the ticket last changed.
+- The at-risk list puts the tickets with no note first, then says how far each other note is behind, such as "Note is 2 days behind".
 
 ### Security
 
