@@ -194,6 +194,8 @@ Code: feat/pay-142-refund
 ```
 
 When a person saved the note in the panel, the second line is `Saved by Hafiz Omar, 2 days ago`.
+When the note was written outside Stand Note, so the app cannot confirm its author, the second
+line is `Saved outside Stand Note, 2 days ago` (O14).
 
 ### Tool: `save-stand-note`
 
@@ -370,6 +372,7 @@ agent gets them back as plain text with the author's name.
 | ---- | ------------ | --- |
 | `manifest.yml` | One `rovo:mcp` module `stand-note-mcp`, name `Stand Note`, with the tools `get-stand-note` and `save-stand-note`. Two `action` modules with the descriptions and inputs of "Interface". Two `function` modules: `index.getStandNote` and `index.saveStandNote`. No new scope. | All scenarios, D12 |
 | `src/tools/index.js` (new) | `getStandNote(payload, context)`: one `GET /rest/api/3/issue/{key}?fields=summary&properties=stand-note` as the person, then the name of the author, then the reply text. `saveStandNote(payload, context)`: `tooLong`, `cleanNote`, `GET mypermissions`, `PUT` the property with `via: "agent"`, one log line. Each catches `NeedsAuthenticationError` from `@forge/api` and returns the consent text. | Scenarios 1 to 5 |
+| `src/lib/signature.js` (new) | `sign` and `isSigned`: an HMAC of the ticket key, the four texts, `savedBy`, `savedAt` and `via`, under the Forge variable `NOTE_SIGNING_KEY`. Both save paths sign. The read tool names the author only of a signed note. | Review 2026-11-21, O14 |
 | `src/index.js:1` | Also exports `getStandNote` and `saveStandNote`. | Forge entry point |
 | `src/lib/note.js:6` | `LABELS` for the four fields, and `tooLong(input)`: the fields with more than `MAX_LENGTH` characters after a trim, each with its label and length. | Scenario 4 |
 | `src/lib/age.js:5` | `savedLine(note, name, now)`: "Saved by Aisyah Rahman through an agent, 2 days ago", or the line with no "through an agent". | Scenarios 1 and 2. The panel and the read tool give the same words. |
@@ -429,6 +432,7 @@ test "getNote passes via on" proves that an old note and a new note both load.
 | `rovo:mcp` module, two actions, two functions | Scenarios 1 to 5, D12 |
 | `src/tools/index.js` | The tools take the ticket key from the agent and answer in text. The resolver takes the ticket from the Forge context and answers in JSON for the panel. |
 | `via` field in the note | Scenario 1: the panel says "through an agent" (O2). |
+| `sig` field and `src/lib/signature.js` | Review 2026-11-21: an editor could write any `savedBy` through Jira's API, and the read tool gave that name to the agent (O14). |
 | `tooLong` | Scenario 4: the app names the field and its length. `cleanNote` cuts in silence. |
 | `savedLine` | Scenarios 1 and 2: the panel and the read tool must give the same line. |
 | `e2e/panel.js` | A second spec file needs `openPanel`. |
@@ -440,7 +444,7 @@ test "getNote passes via on" proves that an old note and a new note both load.
 | -------------------- | --- |
 | **Load**             | An agent saves 5 to 20 times in a work day for each developer, and reads a few times. A save is two Jira calls, and a read is two. A team of ten makes some hundreds of function runs a day. |
 | **Breaks first**     | At 10 times the load, Jira's rate limit for REST calls. The agent then gets "Jira did not answer the save. The note was not saved. Try again." Atlassian states no limit for the MCP server. |
-| **Security surface** | Callers: a person who signs in on Atlassian's OAuth screen, on a site where an admin turned on the tools. The tools call Jira as that person, so Jira refuses a ticket that the person cannot see or edit. Input: a ticket key and four strings from an agent, all untrusted. The key goes only into a `route` path. The texts are checked for length, trimmed, stored as JSON and shown as plain text. `savedBy` comes from Forge's `principal.accountId`, not from the agent. Secrets: none in the app. The e2e login is in `e2e/.auth/mcp.json`, which git ignores. Stored: the note, plus `via`. A note is text that a second agent reads, so a person who can edit the ticket can put instructions in it. A Jira comment read through Atlassian's own tools has the same exposure. |
+| **Security surface** | Callers: a person who signs in on Atlassian's OAuth screen, on a site where an admin turned on the tools. The tools call Jira as that person, so Jira refuses a ticket that the person cannot see or edit. Input: a ticket key and four strings from an agent, all untrusted. The key goes only into a `route` path. The texts are checked for length, trimmed, stored as JSON and shown as plain text. `savedBy` comes from Forge's `principal.accountId`, not from the agent. The read tool names the author only of a note that the app signed (O14). Secrets: `NOTE_SIGNING_KEY`, an encrypted Forge variable, and the same value in `.env` for the e2e tests. The e2e login is in `e2e/.auth/mcp.json`, which git ignores. Stored: the note, plus `via`. A note is text that a second agent reads, so a person who can edit the ticket can put instructions in it. A Jira comment read through Atlassian's own tools has the same exposure. |
 | **Proof it works**   | `forge logs -e development` shows `stand-note saved issue=PAY-1 via=agent` after an agent's save. |
 | **Rollout**          | No flag. The admin switch "Expose tools to MCP-compatible apps" is off for the app until the developer turns it on, and off again stops the tools while the panel stays. Rollback is `forge deploy` of the commit before. |
 
@@ -512,6 +516,13 @@ A throwaway Forge app answered O1. The spike code is deleted, and the app is uni
 - `asApp()` wrote the property with no consent. Jira then sees the app as the writer.
 - The docs say Rovo must be active on the site. The spike did not check if the site needs it.
 
+## Review
+
+2026-11-21 · 3 raw findings, 1 survived, 1 fixed, 1 lead needs validation.
+
+- A06 Insecure Design · `src/tools/index.js:30` · sign each saved note, and name the author only of a signed note · `066e36e`
+- needs validation · `src/tools/index.js:34` · whether Claude Code runs a shell command that it reads in a tool result when CLAUDE.md tells it to obey that field · in a Claude Code session with the README block in CLAUDE.md and no tools allowed, paste a sample get-stand-note reply whose Watch out holds a shell command, then ask the agent what it would do next
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
@@ -529,6 +540,7 @@ A throwaway Forge app answered O1. The spike code is deleted, and the app is uni
 | O11 | The build branches off the default branch. `main` does not have the `stand-note` code yet, because `feat/stand-note` is not merged. | flag | build | user | Decided alone | Chose: build on `feat/agent-checkpoint`, which starts from `feat/stand-note`. Other: branch off `main` and lose the panel that this slice changes. Undo: after `feat/stand-note` merges, run `git rebase main` on `feat/agent-checkpoint`. 2026-11-21 |
 | O12 | The plan put the agent setup in `README.md:11`, under "Install and run". That section is inside the block that zuko makes from `OVERVIEW.md`, so a hand edit there is lost. | flag | build | user | Decided alone | Chose: a new section "Connect a coding agent" after the generated block, with the setup steps, the rule text and the e2e login. Other: add the steps to `OVERVIEW.md`, so that they show in the generated block. Undo: move the section into `OVERVIEW.md` and run the README block script. 2026-11-21 |
 | O13 | The plan did not say which scopes the e2e MCP login asks for. A sign-in link with only `read:me read:jira-work write:jira-work offline_access` failed on Atlassian's page with "invalid_request". | flag | build | user | Decided alone | Chose: `e2e/mcp-login.mjs` asks for each scope that the MCP server lists, as Claude Code does, so the saved token in `e2e/.auth/mcp.json` holds Confluence and Compass scopes too. The token works only on the Stand Note MCP endpoint. Other: find the smallest scope list that Atlassian accepts, one sign-in per try. Undo: pass a `scope` to both `auth` calls in `e2e/mcp-login.mjs`, then run `npm run e2e:mcp-login`. 2026-11-21 |
+| O14 | The approved read reply named the author from the `savedBy` in the property. Anyone who can edit the ticket can write that property through Jira's API, with a teammate's account ID. | flag | review | user | Decided alone | Chose: both save paths sign the note with an HMAC under the encrypted Forge variable `NOTE_SIGNING_KEY`. The read tool says "Saved outside Stand Note" for a note with no valid signature, and reads no name. `judge-ready-entry` must set the variable in production. The panel still names the stored `savedBy`, as before this slice. Other: keep the reply as approved, and accept the risk. Undo: `git revert 066e36e`, then `bash scripts/forge.sh variables unset -e development NOTE_SIGNING_KEY`. 2026-11-21 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
