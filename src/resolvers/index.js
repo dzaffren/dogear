@@ -1,6 +1,7 @@
 import Resolver from '@forge/resolver';
 import api, { route } from '@forge/api';
 import { cleanNote, PROPERTY_KEY } from '../lib/note';
+import { MAX_CHECKED, riskRows } from '../lib/risk';
 import { sign } from '../lib/signature';
 
 // Reads the stand note of a ticket. A ticket with no property has no note.
@@ -31,6 +32,9 @@ export const displayName = async (accountId) => {
 
 // The ticket always comes from the Forge context, never from the browser.
 const issueKeyOf = (context) => context.extension.issue.key;
+
+// The project page gets its project from the Forge context too. The browser sends no input.
+const projectKeyOf = (context) => context.extension.project.key;
 
 export const getNote = async ({ context }) => {
   const issueKey = issueKeyOf(context);
@@ -65,8 +69,41 @@ export const saveNote = async ({ payload, context }) => {
   return { note, savedByName, canEdit: true, now: note.savedAt };
 };
 
+const searchJira = async (searchRoute, body) => {
+  const response = await api.asUser().requestJira(searchRoute, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`Jira answered ${response.status} to the search`);
+  return response.json();
+};
+
+// The at-risk list of the project page. One search as the person returns the most recently
+// updated in-progress tickets with their notes (D18). Jira leaves out each ticket that the
+// person cannot view. The note texts stay on the server: the page gets only the rows.
+export const getAtRisk = async ({ context }) => {
+  const projectKey = projectKeyOf(context);
+  const jql = `project = "${projectKey}" AND statusCategory = "In Progress" ORDER BY updated DESC`;
+  const { issues, isLast } = await searchJira(route`/rest/api/3/search/jql`, {
+    jql,
+    maxResults: MAX_CHECKED,
+    fields: ['summary', 'assignee', 'updated'],
+    properties: [PROPERTY_KEY],
+  });
+  // The search gives no total. Jira's count is approximate, so it never goes below the
+  // number of tickets checked.
+  const inProgress = isLast
+    ? issues.length
+    : Math.max(issues.length, (await searchJira(route`/rest/api/3/search/approximate-count`, { jql })).count);
+  const rows = riskRows(issues, process.env.NOTE_SIGNING_KEY);
+  console.log(`at-risk list project=${projectKey} checked=${issues.length} atRisk=${rows.length}`);
+  return { rows, checked: issues.length, inProgress, now: new Date().toISOString() };
+};
+
 const resolver = new Resolver();
 resolver.define('getNote', getNote);
 resolver.define('saveNote', saveNote);
+resolver.define('getAtRisk', getAtRisk);
 
 export const handler = resolver.getDefinitions();

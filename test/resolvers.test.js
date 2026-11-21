@@ -1,7 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// A fake Jira for one ticket. Each test sets the note, the edit permission and the answers.
-const jira = vi.hoisted(() => ({ property: null, canEdit: true, putStatus: 200, calls: [] }));
+// A fake Jira for one ticket and one search. Each test sets the note, the edit permission,
+// the search result and the answers.
+const jira = vi.hoisted(() => ({
+  property: null,
+  canEdit: true,
+  putStatus: 200,
+  search: { issues: [], isLast: true },
+  searchStatus: 200,
+  count: 0,
+  calls: [],
+}));
 
 vi.mock('@forge/api', () => {
   const json = (status, body) => ({
@@ -22,6 +31,8 @@ vi.mock('@forge/api', () => {
     if (path === '/rest/api/3/mypermissions?issueKey=PAY-142&permissions=EDIT_ISSUES') {
       return json(200, { permissions: { EDIT_ISSUES: { havePermission: jira.canEdit } } });
     }
+    if (path === '/rest/api/3/search/jql' && method === 'POST') return json(jira.searchStatus, jira.search);
+    if (path === '/rest/api/3/search/approximate-count' && method === 'POST') return json(200, { count: jira.count });
     if (path === '/rest/api/3/user?accountId=acc-aisyah') return json(200, { displayName: 'Aisyah Rahman' });
     if (path === '/rest/api/3/user?accountId=acc-hafiz') return json(200, { displayName: 'Hafiz Omar' });
     return json(500, {});
@@ -34,8 +45,8 @@ vi.mock('@forge/api', () => {
   };
 });
 
-const { getNote, saveNote } = await import('../src/resolvers/index.js');
-const { isSigned } = await import('../src/lib/signature.js');
+const { getAtRisk, getNote, saveNote } = await import('../src/resolvers/index.js');
+const { isSigned, sign } = await import('../src/lib/signature.js');
 
 const context = (accountId) => ({ accountId, extension: { issue: { key: 'PAY-142' } } });
 const aisyahNote = {
@@ -49,7 +60,15 @@ const aisyahNote = {
 };
 
 beforeEach(() => {
-  Object.assign(jira, { property: null, canEdit: true, putStatus: 200, calls: [] });
+  Object.assign(jira, {
+    property: null,
+    canEdit: true,
+    putStatus: 200,
+    search: { issues: [], isLast: true },
+    searchStatus: 200,
+    count: 0,
+    calls: [],
+  });
   vi.useFakeTimers({ now: new Date('2026-11-26T01:15:00.000Z'), toFake: ['Date'] });
   vi.stubEnv('NOTE_SIGNING_KEY', 'test-signing-key');
 });
@@ -176,6 +195,97 @@ describe('saveNote', () => {
 
   it('writes as the user', async () => {
     await saveNote({ payload: texts, context: context('acc-aisyah') });
+    expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
+  });
+});
+
+describe('getAtRisk', () => {
+  const projectContext = (key) => ({ accountId: 'acc-nurul', extension: { project: { key } } });
+  const ticket = (key, summary, assignee, updated, note) => ({
+    key,
+    fields: { summary, assignee: assignee && { displayName: assignee }, updated },
+    properties: note ? { 'stand-note': note } : {},
+  });
+  const signedNote = (issueKey, savedAt) => {
+    const note = { ...aisyahNote, savedAt };
+    return { ...note, sig: sign(issueKey, note, 'test-signing-key') };
+  };
+  // Scenario 1: the three in-progress tickets of Payments, in Malaysia time.
+  const scenario1 = [
+    ticket('PAY-150', 'Add partial refunds', 'Hafiz Omar', '2026-11-26T11:00:00.000+0800', null),
+    ticket('PAY-151', 'Fix the settlement report', 'Aisyah Rahman', '2026-11-26T10:20:00.000+0800', signedNote('PAY-151', '2026-11-26T02:00:00.000Z')),
+    ticket('PAY-142', 'Add refund endpoint', 'Aisyah Rahman', '2026-11-26T09:10:00.000+0800', signedNote('PAY-142', '2026-11-24T08:40:00.000Z')),
+  ];
+  const searchBody = () => JSON.parse(jira.calls.find((call) => call.path === '/rest/api/3/search/jql').body);
+
+  it('gives the tickets at risk, the number checked and the server time', async () => {
+    jira.search = { issues: scenario1, isLast: true };
+    const result = await getAtRisk({ context: projectContext('PAY') });
+    expect(result).toEqual({
+      rows: [
+        expect.objectContaining({ key: 'PAY-150', assignee: 'Hafiz Omar', gapMs: null }),
+        expect.objectContaining({ key: 'PAY-142', assignee: 'Aisyah Rahman', outside: false }),
+      ],
+      checked: 3,
+      inProgress: 3,
+      now: '2026-11-26T01:15:00.000Z',
+    });
+  });
+
+  it('sends no note text to the page', async () => {
+    jira.search = { issues: scenario1, isLast: true };
+    const result = await getAtRisk({ context: projectContext('PAY') });
+    expect(JSON.stringify(result)).not.toContain('idempotency');
+  });
+
+  it('searches the in-progress tickets of the project in the context, newest change first, 100 at most', async () => {
+    await getAtRisk({ context: projectContext('PAY'), payload: { projectKey: 'OPS' } });
+    expect(searchBody()).toEqual({
+      jql: 'project = "PAY" AND statusCategory = "In Progress" ORDER BY updated DESC',
+      maxResults: 100,
+      fields: ['summary', 'assignee', 'updated'],
+      properties: ['stand-note'],
+    });
+  });
+
+  it('getAtRisk gives no rows', async () => {
+    jira.search = { issues: [scenario1[1]], isLast: true };
+    expect(await getAtRisk({ context: projectContext('PAY') })).toMatchObject({ rows: [], checked: 1, inProgress: 1 });
+  });
+
+  it('asks for no count when the search has all the tickets', async () => {
+    jira.search = { issues: scenario1, isLast: true };
+    await getAtRisk({ context: projectContext('PAY') });
+    expect(jira.calls.some((call) => call.path === '/rest/api/3/search/approximate-count')).toBe(false);
+  });
+
+  it("getAtRisk checks 100 and gives Jira's count", async () => {
+    const issues = Array.from({ length: 100 }, (_, i) =>
+      ticket(`OPS-${i + 1}`, `Ticket ${i + 1}`, null, '2026-11-26T01:00:00.000Z', i < 37 ? null : signedNote(`OPS-${i + 1}`, '2026-11-26T00:30:00.000Z'))
+    );
+    jira.search = { issues, isLast: false, nextPageToken: 'next' };
+    jira.count = 240;
+    const result = await getAtRisk({ context: projectContext('OPS') });
+    expect(result).toMatchObject({ checked: 100, inProgress: 240 });
+    expect(result.rows).toHaveLength(37);
+    const count = jira.calls.find((call) => call.path === '/rest/api/3/search/approximate-count');
+    expect(JSON.parse(count.body)).toEqual({ jql: 'project = "OPS" AND statusCategory = "In Progress" ORDER BY updated DESC' });
+  });
+
+  it('never gives fewer in progress than it checked, when the count is low', async () => {
+    jira.search = { issues: scenario1, isLast: false };
+    jira.count = 2;
+    expect((await getAtRisk({ context: projectContext('PAY') })).inProgress).toBe(3);
+  });
+
+  it("getAtRisk passes on Jira's refusal", async () => {
+    jira.searchStatus = 503;
+    await expect(getAtRisk({ context: projectContext('PAY') })).rejects.toThrow();
+  });
+
+  it('searches as the user', async () => {
+    jira.search = { issues: scenario1, isLast: false };
+    await getAtRisk({ context: projectContext('PAY') });
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
   });
 });
