@@ -21,6 +21,7 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 
 - A person saves a short note on a Jira ticket that says where the work stands, and anyone who opens the ticket reads it.
 - A coding agent such as Claude Code saves the stand note on a Jira ticket as it works, and a second agent reads the note and carries on.
+- A lead opens one page in a Jira project and sees each in-progress ticket that has no stand note, or a note that is behind the last work.
 
 ## Docs
 
@@ -30,6 +31,13 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 - [Changelog](CHANGELOG.md)
 
 <!-- zuko:end -->
+
+## The at-risk list
+
+Each Jira project gets a tab named Stand notes. Jira may put it under More in the row of
+tabs. It lists the in-progress tickets of the project that have no stand note, or a note
+saved more than 1 hour before the last change of the ticket. Run `npm run e2e:setup` once
+to make the project `SNR`, which the e2e test of this list uses.
 
 ## Connect a coding agent
 

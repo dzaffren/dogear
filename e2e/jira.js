@@ -33,6 +33,28 @@ export const findOrCreateIssue = async (projectKey, summary) => {
   return created.key;
 };
 
+// Moves the ticket to the status with this name, through the transition that leads there.
+export const moveTo = async (issueKey, statusName) => {
+  const issue = await jira('GET', `/rest/api/3/issue/${issueKey}?fields=status`);
+  if (issue.fields.status.name === statusName) return;
+  const { transitions } = await jira('GET', `/rest/api/3/issue/${issueKey}/transitions`);
+  const transition = transitions.find((t) => t.to.name === statusName);
+  if (!transition) throw new Error(`${issueKey} has no transition to ${statusName}`);
+  await jira('POST', `/rest/api/3/issue/${issueKey}/transitions`, { transition: { id: transition.id } });
+};
+
+// Changes the description, so that Jira's Updated time of the ticket is now.
+export const touch = (issueKey) =>
+  jira('PUT', `/rest/api/3/issue/${issueKey}`, {
+    fields: {
+      description: {
+        type: 'doc',
+        version: 1,
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: `Touched by the e2e test at ${new Date().toISOString()}` }] }],
+      },
+    },
+  });
+
 const propertyPath = (issueKey) => `/rest/api/3/issue/${issueKey}/properties/${PROPERTY_KEY}`;
 
 export const getNote = async (issueKey) => (await jira('GET', propertyPath(issueKey)))?.value ?? null;

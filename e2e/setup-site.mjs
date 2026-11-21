@@ -1,10 +1,12 @@
-// One-time site setup for scenario 4 (D10): a project where the test account can view
-// tickets but not edit them. Run it again safely; it skips what already exists.
+// One-time site setup. For stand-note scenario 4 (D10): a project where the test account can
+// view tickets but not edit them. For the at-risk list (D20): a project whose in-progress
+// tickets only the e2e test touches. Run it again safely; it skips what already exists.
 import { jira, mainAccountId } from './jira.js';
 
 process.loadEnvFile('.env');
 
 export const VIEW_ONLY_PROJECT = 'SNV';
+export const AT_RISK_PROJECT = 'SNR';
 const SCHEME_NAME = 'Stand note view-only scheme';
 
 const me = await mainAccountId();
@@ -41,3 +43,17 @@ if (!(await jira('GET', `/rest/api/3/project/${VIEW_ONLY_PROJECT}`))) {
 
 await jira('PUT', `/rest/api/3/project/${VIEW_ONLY_PROJECT}/permissionscheme`, { id: scheme.id });
 console.log(`${VIEW_ONLY_PROJECT} uses "${SCHEME_NAME}".`);
+
+// The at-risk project keeps the site's default permission scheme, so the test account can
+// view and edit its tickets.
+if (!(await jira('GET', `/rest/api/3/project/${AT_RISK_PROJECT}`))) {
+  await jira('POST', '/rest/api/3/project', {
+    key: AT_RISK_PROJECT,
+    name: 'At-risk tests',
+    projectTypeKey: 'software',
+    projectTemplateKey: 'com.pyxis.greenhopper.jira:gh-simplified-kanban-classic',
+    leadAccountId: me,
+    assigneeType: 'UNASSIGNED',
+  });
+  console.log(`Made the project ${AT_RISK_PROJECT}.`);
+}
