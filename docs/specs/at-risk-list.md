@@ -1,6 +1,6 @@
 # At-risk list
 
-**Version:** v1 · **Status:** Built · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Shipped · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note, agent-checkpoint
@@ -434,7 +434,7 @@ Recorded as D16, D17, D18, D19, D20.
 
 2026-11-21 · 3 raw findings, 1 survived, 1 fixed.
 
-- correctness · `src/frontend/at-risk.jsx:95` · the empty view says "Each of the 100 most recently updated of about 240" when the project has more than 100 · `8f20e70`
+- correctness · `src/frontend/at-risk.jsx:95` · the empty view says "Each of the 100 most recently updated of about 240" when the project has more than 100 · `d144e48`
 
 ## Open items
 

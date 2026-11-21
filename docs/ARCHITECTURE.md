@@ -1,6 +1,6 @@
 # CodegeistHackathon · architecture
 
-**Status:** Active · **Updated:** 2026-11-21 by /ship agent-checkpoint
+**Status:** Active · **Updated:** 2026-11-21 by /ship at-risk-list
 
 ## Context
 
