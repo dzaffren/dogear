@@ -1,6 +1,7 @@
 import api, { NeedsAuthenticationError, route } from '@forge/api';
 import { savedLine } from '../lib/age';
 import { cleanNote, FIELDS, LABELS, MAX_LENGTH, PROPERTY_KEY, tooLong } from '../lib/note';
+import { isSigned, sign } from '../lib/signature';
 import { displayName } from '../resolvers';
 
 const SAVE_FAILED = 'Jira did not answer the save. The note was not saved. Try again.';
@@ -27,7 +28,9 @@ export const getStandNote = async (payload) => {
     const value = issue.properties?.[PROPERTY_KEY];
     const texts = cleanNote(value);
     if (!texts) return `${issue.key} has no stand note.`;
-    const name = await displayName(value.savedBy);
+    // Name the author only when Stand Note signed the note. Anyone who can edit the ticket
+    // can write the property through Jira's API, with any savedBy.
+    const name = isSigned(issue.key, value, process.env.NOTE_SIGNING_KEY) ? await displayName(value.savedBy) : null;
     return [
       `Stand note on ${issue.key}`,
       savedLine(value, name, new Date().toISOString()),
@@ -62,6 +65,7 @@ export const saveStandNote = async (payload, context) => {
       return `You cannot edit ${issueKey}, so the note was not saved.`;
     }
     const note = { v: 1, ...texts, savedBy: context.principal.accountId, savedAt: new Date().toISOString(), via: 'agent' };
+    note.sig = sign(issueKey, note, process.env.NOTE_SIGNING_KEY);
     const response = await api.asUser().requestJira(route`/rest/api/3/issue/${issueKey}/properties/${PROPERTY_KEY}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

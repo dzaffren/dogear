@@ -48,6 +48,10 @@ vi.mock('@forge/api', () => {
 });
 
 const { getStandNote, saveStandNote } = await import('../src/tools/index.js');
+const { isSigned, sign } = await import('../src/lib/signature.js');
+
+const KEY = 'test-signing-key';
+const signed = (note) => ({ ...note, sig: sign('PAY-142', note, KEY) });
 
 // What Forge passes to a tool function: the inputs, and the caller in `principal`.
 const context = (accountId) => ({ principal: { accountId } });
@@ -58,24 +62,27 @@ const aisyahTexts = {
   watchOut: 'The sandbox rejects amounts over RM 5,000',
   code: 'feat/pay-142-refund',
 };
-const aisyahNote = {
+const aisyahNote = signed({
   v: 1,
   ...aisyahTexts,
   savedBy: 'acc-aisyah',
   savedAt: '2026-11-24T08:40:00.000Z',
   via: 'agent',
-};
+});
 
 beforeEach(() => {
   Object.assign(jira, { property: null, canEdit: true, consent: true, putStatus: 200, readStatus: 200, calls: [] });
   vi.useFakeTimers({ now: new Date('2026-11-26T01:15:00.000Z'), toFake: ['Date'] });
+  vi.stubEnv('NOTE_SIGNING_KEY', KEY);
 });
 
 describe('saveStandNote', () => {
   it('saves the note with the author, the server time and via agent', async () => {
     const reply = await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-aisyah'));
     expect(reply).toBe('Saved the stand note on PAY-142.');
-    expect(jira.property).toEqual({ ...aisyahNote, savedAt: '2026-11-26T01:15:00.000Z' });
+    const { sig, ...note } = aisyahNote;
+    expect(jira.property).toEqual(signed({ ...note, savedAt: '2026-11-26T01:15:00.000Z' }));
+    expect(isSigned('PAY-142', jira.property, KEY)).toBe(true);
   });
 
   it('takes the author from Forge, not from the agent', async () => {
@@ -152,7 +159,8 @@ describe('getStandNote', () => {
   });
 
   it('leaves out empty fields and the agent words for a note that a person saved', async () => {
-    jira.property = { ...aisyahNote, watchOut: '', code: '', savedBy: 'acc-hafiz', via: undefined };
+    const { sig, ...note } = aisyahNote;
+    jira.property = signed({ ...note, watchOut: '', code: '', savedBy: 'acc-hafiz', via: undefined });
     expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
       [
         'Stand note on PAY-142',
@@ -161,6 +169,21 @@ describe('getStandNote', () => {
         'Next: Add the idempotency check',
       ].join('\n')
     );
+  });
+
+  it('names no person for a note written outside Stand Note', async () => {
+    jira.property = { ...aisyahNote, savedBy: 'acc-hafiz' };
+    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
+      [
+        'Stand note on PAY-142',
+        'Saved outside Stand Note, 2 days ago',
+        'Done: Endpoint and validation are written',
+        'Next: Add the idempotency check',
+        'Watch out: The sandbox rejects amounts over RM 5,000',
+        'Code: feat/pay-142-refund',
+      ].join('\n')
+    );
+    expect(jira.calls.some((call) => call.path.startsWith('/rest/api/3/user'))).toBe(false);
   });
 
   it('says when the ticket has no stand note', async () => {

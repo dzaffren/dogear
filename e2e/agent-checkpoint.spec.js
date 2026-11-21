@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { sign } from '../src/lib/signature.js';
 import { deleteNote, findOrCreateIssue, getNote, jira, mainAccountId, setNote } from './jira.js';
 import { callTool } from './mcp.js';
 import { expectReadView, openPanel } from './panel.js';
@@ -25,13 +26,12 @@ let noNoteKey;
 let mainId;
 let mainName;
 
-const agentNote = (texts, ageMs) => ({
-  v: 1,
-  ...texts,
-  savedBy: mainId,
-  savedAt: new Date(Date.now() - ageMs).toISOString(),
-  via: 'agent',
-});
+// A note as the save tool writes it, signed with the key in .env, which is the same as the
+// Forge variable NOTE_SIGNING_KEY.
+const agentNote = (texts, ageMs) => {
+  const note = { v: 1, ...texts, savedBy: mainId, savedAt: new Date(Date.now() - ageMs).toISOString(), via: 'agent' };
+  return { ...note, sig: sign(issueKey, note, process.env.NOTE_SIGNING_KEY) };
+};
 
 test.beforeAll(async () => {
   issueKey = await findOrCreateIssue('PAY', 'Add refund endpoint');
@@ -78,6 +78,13 @@ test('a ticket with no note', async () => {
   await deleteNote(noNoteKey);
 
   expect(await callTool('get-stand-note', { issueKey: noNoteKey })).toBe(`${noNoteKey} has no stand note.`);
+});
+
+test('names no person for a note written outside Stand Note', async () => {
+  const { sig, ...unsigned } = agentNote(aisyahTexts, 2 * DAY);
+  await setNote(issueKey, unsigned);
+
+  expect((await callTool('get-stand-note', { issueKey })).split('\n')[1]).toBe('Saved outside Stand Note, 2 days ago');
 });
 
 test('refuses a long text', async () => {

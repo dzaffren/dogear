@@ -12,9 +12,12 @@ export const ageLabel = (savedAt, now) => {
 };
 
 // The saved line under a note, such as "Saved by Aisyah Rahman through an agent, 2 days ago".
-// The panel and the agent's read tool give the same words.
+// The panel and the agent's read tool give the same words. A null name means that the app
+// cannot confirm who wrote the note.
 export const savedLine = (note, name, now) => {
   const age = ageLabel(note.savedAt, now);
+  const when = `${age.charAt(0).toLowerCase()}${age.slice(1)}`;
+  if (name === null) return `Saved outside Stand Note, ${when}`;
   const via = note.via === 'agent' ? ' through an agent' : '';
-  return `Saved by ${name}${via}, ${age.charAt(0).toLowerCase()}${age.slice(1)}`;
+  return `Saved by ${name}${via}, ${when}`;
 };

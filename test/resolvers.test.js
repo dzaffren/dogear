@@ -35,6 +35,7 @@ vi.mock('@forge/api', () => {
 });
 
 const { getNote, saveNote } = await import('../src/resolvers/index.js');
+const { isSigned } = await import('../src/lib/signature.js');
 
 const context = (accountId) => ({ accountId, extension: { issue: { key: 'PAY-142' } } });
 const aisyahNote = {
@@ -50,6 +51,7 @@ const aisyahNote = {
 beforeEach(() => {
   Object.assign(jira, { property: null, canEdit: true, putStatus: 200, calls: [] });
   vi.useFakeTimers({ now: new Date('2026-11-26T01:15:00.000Z'), toFake: ['Date'] });
+  vi.stubEnv('NOTE_SIGNING_KEY', 'test-signing-key');
 });
 
 describe('getNote', () => {
@@ -110,7 +112,8 @@ describe('saveNote', () => {
 
   it('writes the cleaned texts with the author and the server time', async () => {
     const result = await saveNote({ payload: texts, context: context('acc-aisyah') });
-    expect(jira.property).toEqual({ ...aisyahNote, savedAt: '2026-11-26T01:15:00.000Z' });
+    expect(jira.property).toEqual({ ...aisyahNote, savedAt: '2026-11-26T01:15:00.000Z', sig: expect.any(String) });
+    expect(isSigned('PAY-142', jira.property, 'test-signing-key')).toBe(true);
     expect(result).toEqual({
       note: jira.property,
       savedByName: 'Aisyah Rahman',

@@ -71,6 +71,8 @@ In the development environment, each tool name ends in `_development`.
 ### e2e tests for the agent tools
 
 `npm run e2e` also calls the tools through the MCP server, as the main account. Do steps
-1 and 2 as the main account first. Then run `npm run e2e:mcp-login` once, open the link
+1 and 2 as the main account first. The tests sign notes with `NOTE_SIGNING_KEY` from
+`.env`, which must be the same value as the Forge variable of that name:
+`bash scripts/forge.sh variables set --encrypt -e development NOTE_SIGNING_KEY <value>`. Then run `npm run e2e:mcp-login` once, open the link
 that it prints, and sign in as the main account. It saves the login in
 `e2e/.auth/mcp.json`, which git ignores.

@@ -52,4 +52,8 @@ describe('savedLine', () => {
       'Saved by Aisyah Rahman through an agent, just now'
     );
   });
+
+  it('names no person when the app cannot confirm the author', () => {
+    expect(savedLine({ ...note, via: 'agent' }, null, now)).toBe('Saved outside Stand Note, 2 days ago');
+  });
 });
