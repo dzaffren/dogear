@@ -10,3 +10,11 @@ export const ageLabel = (savedAt, now) => {
   if (hours < 24) return plural(hours, 'hour');
   return plural(Math.round(hours / 24), 'day');
 };
+
+// The saved line under a note, such as "Saved by Aisyah Rahman through an agent, 2 days ago".
+// The panel and the agent's read tool give the same words.
+export const savedLine = (note, name, now) => {
+  const age = ageLabel(note.savedAt, now);
+  const via = note.via === 'agent' ? ' through an agent' : '';
+  return `Saved by ${name}${via}, ${age.charAt(0).toLowerCase()}${age.slice(1)}`;
+};

@@ -22,7 +22,7 @@ const canEdit = async (issueKey) => {
   return (await response.json()).permissions?.EDIT_ISSUES?.havePermission === true;
 };
 
-const displayName = async (accountId) => {
+export const displayName = async (accountId) => {
   const response = await api.asUser().requestJira(route`/rest/api/3/user?accountId=${accountId}`);
   if (!response.ok) throw new Error(`Jira answered ${response.status} to the user read`);
   return (await response.json()).displayName;

@@ -83,6 +83,11 @@ describe('getNote', () => {
     expect((await getNote({ context: context('acc-hafiz') })).note).toBeNull();
   });
 
+  it('passes on via agent, so the panel says an agent saved the note', async () => {
+    jira.property = { ...aisyahNote, via: 'agent' };
+    expect((await getNote({ context: context('acc-hafiz') })).note.via).toBe('agent');
+  });
+
   it('reads as the user', async () => {
     await getNote({ context: context('acc-hafiz') });
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
@@ -133,6 +138,12 @@ describe('saveNote', () => {
       code: '',
       savedBy: 'acc-hafiz',
     });
+  });
+
+  it('drops via agent, because a person saved this note in the panel', async () => {
+    jira.property = { ...aisyahNote, via: 'agent' };
+    await saveNote({ payload: { ...texts, via: 'agent' }, context: context('acc-hafiz') });
+    expect(jira.property).not.toHaveProperty('via');
   });
 
   it('refuses a note with four empty fields', async () => {
