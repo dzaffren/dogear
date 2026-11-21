@@ -1,6 +1,6 @@
 # Agent checkpoint
 
-**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Built · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note
