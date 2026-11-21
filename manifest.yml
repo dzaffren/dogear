@@ -7,9 +7,67 @@ modules:
       render: native
       title: Stand note
       label: Where the work stands
+  rovo:mcp:
+    - key: stand-note-mcp
+      name: Stand Note
+      tools:
+        - get-stand-note
+        - save-stand-note
+  action:
+    - key: get-stand-note
+      name: Get stand note
+      function: get-stand-note-fn
+      actionVerb: GET
+      description: >-
+        Reads the stand note of a Jira ticket: what is done, what is next, what to watch out
+        for, and where the code is. Call it when work on a ticket starts, and before each save.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: true
+          description: The Jira ticket key, such as PAY-142.
+    - key: save-stand-note
+      name: Save stand note
+      function: save-stand-note-fn
+      actionVerb: UPDATE
+      description: >-
+        Saves the stand note of a Jira ticket, so that a teammate or their agent can carry on.
+        The save replaces the whole note: send each field that is still true. Call it after
+        each finished step, and before the session stops.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: true
+          description: The Jira ticket key, such as PAY-142.
+        done:
+          title: Done
+          type: string
+          required: false
+          description: What is finished. 1,000 characters at most.
+        next:
+          title: Next
+          type: string
+          required: false
+          description: The next step. 1,000 characters at most.
+        watchOut:
+          title: Watch out
+          type: string
+          required: false
+          description: Traps, and what you tried that failed. 1,000 characters at most.
+        code:
+          title: Code
+          type: string
+          required: false
+          description: The branch name, or a link to the code. 1,000 characters at most.
   function:
     - key: resolver
       handler: index.handler
+    - key: get-stand-note-fn
+      handler: index.getStandNote
+    - key: save-stand-note-fn
+      handler: index.saveStandNote
 resources:
   - key: main
     path: src/frontend/index.jsx

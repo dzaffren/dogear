@@ -9,10 +9,12 @@
     "e2e": "playwright test",
     "e2e:login": "node e2e/login.mjs",
     "e2e:setup": "node e2e/setup-site.mjs",
+    "e2e:mcp-login": "node e2e/mcp-login.mjs",
     "lint": "bash scripts/forge.sh lint",
     "deploy": "bash scripts/forge.sh deploy --non-interactive -e development"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@playwright/test": "^1.65.1",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
