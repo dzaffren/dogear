@@ -1,6 +1,6 @@
 # Pick-up brief
 
-**Version:** v1 · **Status:** Draft · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note
@@ -305,9 +305,204 @@ This brief has the note's own four headings, says `Not known` in place of a gues
 counts its own sources. Next to Jira's Details panel it has the same label-over-value
 rhythm, and the lozenge is the only colour.
 
-## Decisions to record
+## Technical plan
 
-Approved with pause 1 on 2026-11-21. `/build` appends them to `DECISIONS.md`.
+### Approach
+
+The panel gets one new resolver function, `getBrief`. It reads the ticket from Jira as the
+person, checks the site's count for today, and sends the ticket's text to Claude Haiku
+through Forge LLM. It checks the model's answer and sends the four texts to the panel.
+
+The rules, the ticket text, the answer check and the source line are plain functions in
+`src/lib/brief.js`, so unit tests cover them with no Forge. The count is one number for
+each UTC day in Forge's key-value store.
+
+A spike on `dzaffren.atlassian.net` on 2026-11-23 made the real call three times (O13).
+A ticket of 8,349 input tokens came back in 2.3 to 2.7 seconds, for about 0.9 US cent. A
+probe on the same day showed that Jira's REST API v2 gives the description and each
+comment as plain text, and the history newest first.
+
+Relies on: D2, D3, D5, D6, D7, D9, D11, D13, and D21 to D28 drafted here.
+
+```mermaid
+flowchart TB
+    subgraph browser["Browser: Jira ticket view"]
+        UI["Stand note panel (index.jsx, BriefView.jsx, NoteForm.jsx)"]
+    end
+    subgraph forge["Forge"]
+        RES["resolver getBrief (src/resolvers/index.js)"]
+        LIB["ticketText, hasEnough, parseBrief, sourceLine (src/lib/brief.js)"]
+        KVS[("Key-value store: briefs:2026-11-26 = 12")]
+        LLM["Forge LLM: claude-haiku-4-5-20251001"]
+    end
+    subgraph jira["Jira Cloud"]
+        API["REST: issue with changelog, comments, remote links"]
+    end
+    UI -- "invoke getBrief, no input" --> RES
+    RES -- "status, four texts, source line" --> UI
+    RES -- "3 GETs as the person, ticket key from the context" --> API
+    RES -- "ticket data, model answer" --> LIB
+    RES -- "get the count, then set count + 1" --> KVS
+    RES -- "rules and ticket text" --> LLM
+    LLM -- "JSON with done, next, watchOut, code" --> RES
+```
+
+The panel talks only to the resolver. The resolver reads Jira as the person, asks the
+model, and keeps the count.
+
+```mermaid
+sequenceDiagram
+    participant U as Aisyah
+    participant P as Stand note panel
+    participant R as resolver getBrief
+    participant J as Jira REST API
+    participant K as Key-value store
+    participant M as Forge LLM
+    U->>P: selects Build a brief from Jira on PAY-163
+    P->>R: invoke getBrief
+    R->>J: GET issue with changelog, GET newest 30 comments, GET remote links
+    J-->>R: ticket data
+    R->>R: hasEnough: a description, a comment or a link
+    R->>K: get briefs:2026-11-26
+    K-->>R: 12
+    R->>M: chat: rules, ticket text, 600 output tokens at most
+    M-->>R: JSON text
+    R->>R: parseBrief: four texts or null, 300 characters each
+    R->>K: set briefs:2026-11-26 = 13
+    R-->>P: status brief, four texts, source line
+    P-->>U: Brief from Jira
+```
+
+```mermaid
+flowchart LR
+    C["Forge context: ticket key"] -- "trusted, set by Jira" --> R["getBrief"]
+    J[("Jira: description, comments, history, links")] -- "only what the person can view" --> R
+    R -- "ticket text, cut to the caps" --> M["Claude Haiku, hosted by Atlassian"]
+    M -- "four short texts" --> R
+    R -- "four texts and the source line, shown as plain text" --> V["Panel"]
+    R -. "ticket text and the brief are not stored and not logged" .-> X["nothing kept"]
+```
+
+The ticket's text leaves Jira only for the model that Atlassian hosts. The app keeps one
+number for each day and nothing else.
+
+### Changes
+
+| File | What changes | Why |
+| ---- | ------------ | --- |
+| `manifest.yml:17` | A new `llm` module before `rovo:mcp`: key `brief-llm`, model `claude`. | Scenario 1, D21 |
+| `manifest.yml:87` | A new scope, `storage:app`. `forge lint` names any other scope that is missing. | Scenario 5 |
+| `package.json:23` | Two new dependencies: `@forge/llm` (1.0.10 on npm) and `@forge/kvs` (2.1.2 on npm). | Scenarios 1, 5 |
+| `src/lib/brief.js` (new) | `MODEL`, `MAX_BRIEFS`, the caps and `RULES`. `ticketText(issue, comments, links)` gives the text for the model and the counts of its parts. `hasEnough(issue, comments, links)`. `parseBrief(content)` reads the model's answer. `sourceLine(counts, newestCommentAt, now)`. `countKey(now)` gives `briefs:2026-11-26`. | Scenarios 1, 2, 4, 5 |
+| `src/resolvers/index.js:34` | A new `readTicket(issueKey)` near `readNote`: three GETs as the person, in parallel. A new `getBrief`, in the order of the sequence diagram, with one log line. | Scenarios 1 to 5 |
+| `src/resolvers/index.js:107` | `resolver.define('getBrief', getBrief)`. | All scenarios |
+| `src/frontend/BriefView.jsx` (new) | The brief view: the heading with the `AI` lozenge, the caveat line, four headings, the source line, and `Use as stand note` for an editor. | Scenarios 1, 3 |
+| `src/frontend/NoteView.jsx:5` | Exports `Field` and `CodeValue`, so the brief view has the same labels and the same code look. | Scenario 1 |
+| `src/frontend/NoteForm.jsx:47` | Shows its `children` under the intro text. The panel puts the button and its message there. | Scenario 1 |
+| `src/frontend/index.jsx:28` | New state for the brief call: building, the brief, the message. The view-only branch at line 29 gets the button. `Use as stand note` shows `NoteForm` with the brief's texts as `note`, so the form has Cancel, and Cancel goes back to the brief. | Scenarios 1 to 5 |
+| `test/brief.test.js` (new) | `ticketText`: the caps, the newest 30 comments oldest first, only status and assignee moves. `hasEnough`. `parseBrief`: a code fence, a list of parts, a missing key, a wrong type, a long text, four nulls. `sourceLine`. `countKey`. | Scenarios 1, 2, 4 |
+| `test/resolvers.test.js:15` | The fake Jira answers the three GETs. New fakes for `@forge/llm` and `@forge/kvs`. Tests for `getBrief`: scenario 1, too little with no model call, the limit at 50 with no model call, a failed call with no count, a bad answer with no count, reads as the user. | Scenarios 1, 2, 4, 5 |
+| `e2e/pick-up-brief.spec.js` (new) | Four tests, in the test plan below. | Test plan |
+| `docs/ARCHITECTURE.md:18` | The brief in the components diagram and the table. | The docs stay true |
+
+Reusing: `issueKeyOf`, `readNote` and `canEdit` (`src/resolvers/index.js:10`), `ageLabel`
+(`src/lib/age.js:17`), `Field` and `CodeValue` (`src/frontend/NoteView.jsx:5`), `NoteForm`
+and its save, the fake Jira of `test/resolvers.test.js`, `findOrCreateIssue` and
+`deleteNote` (`e2e/jira.js`), `openPanel` (`e2e/panel.js`), and the `page.route` block of
+`e2e/stand-note.spec.js:110`.
+
+The three reads, each as the person:
+
+- `GET /rest/api/2/issue/<key>?fields=summary,status,assignee,description,issuelinks&expand=changelog`
+- `GET /rest/api/2/issue/<key>/comment?orderBy=-created&maxResults=30`
+- `GET /rest/api/3/issue/<key>/remotelink`
+
+`getBrief` returns one of these to the panel. A failure is a thrown error, as in `saveNote`.
+
+```json
+{ "status": "brief", "brief": { "done": "Receipt template is merged.", "next": "The mail queue worker.", "watchOut": null, "code": "feat/pay-163-receipt" }, "sourceLine": "Built by AI from 1 comment and 1 change. Newest comment 2 days ago." }
+{ "status": "tooLittle" }
+{ "status": "limit" }
+```
+
+`parseBrief` takes the text from the first `{` to the last `}`, because the spike's answer
+came inside a code fence. The answer's `content` is a list of parts, so `parseBrief` joins
+the text parts first.
+
+### Data
+
+The app stores one new thing: a number in Forge's key-value store for each UTC day, under
+the key `briefs:2026-11-26`. The store is separate for each site. No Jira data changes.
+
+**Migration:** none. A day with no key counts as 0.
+**Reverse:** a deploy of the commit before leaves the keys in the store. Nothing reads them.
+
+### Earn-it
+
+| Added | Triggered by |
+| ----- | ------------ |
+| The `llm` module and `@forge/llm` | Scenario 1: the brief is generated text (D21). |
+| `storage:app` and `@forge/kvs` | Scenario 5: the count must outlive one call and be the same for each person on the site (D25). |
+| `getBrief` in the resolver | Scenario 1: the model call and the count are server only, and the ticket key comes from the Forge context (D9). |
+| `src/lib/brief.js` | The caps, the answer check and the source line need unit tests apart from Forge, as `note.js` and `risk.js` have. |
+| `src/frontend/BriefView.jsx` | Scenario 1: the brief shows all four headings with `Not known`, which the read view does not. |
+
+No new configuration. The model and the limit are constants.
+
+### Non-functionals
+
+|                      |     |
+| -------------------- | --- |
+| **Load**             | One brief for each click, and 50 a day for each site at most. One brief is 3 Jira reads, 2 store calls and 1 model call. The largest ticket text is about 34,000 characters. The spike measured 8,349 input tokens and 2.3 to 2.7 seconds. |
+| **Breaks first**     | At 10 times the load, the daily limit stops the model calls, and the panel shows the limit message. Forge LLM allows 100 calls a minute for each site, which the limit keeps far away. A slow model answer meets Forge's 25 second limit first, and the panel shows the build error. |
+| **Security surface** | Callers: a person who can view the ticket. The reads run as that person. The ticket key comes from the Forge context. Input from the browser: none. The ticket's text is not trusted: the rules tell the model to read it as data, the answer is checked for its shape, and the panel shows it as plain text. A brief becomes a note only through the form and `cleanNote`. A `Code` text that starts with `https://` is a link, so a comment can put a link in the brief. The reader can already see that comment. Secrets: none new. Stored: one number a day. The log line has no ticket text. |
+| **Proof it works**   | `forge logs -e development` shows `brief built issue=PAY-163 ms=2405 in=8349 out=89 count=13` after a brief. |
+| **Rollout**          | No flag. The app is on the developer's own site only, in the development environment. The build runs `npm run deploy`, then `bash scripts/forge.sh install --upgrade --non-interactive --confirm-scopes -s dzaffren.atlassian.net -p Jira -e development` for the new major version (O16). Rollback is a deploy of the commit before. |
+
+### Test plan
+
+No test calls the real model (O14). The unit tests fake Jira, the model and the store. The
+e2e tests fake the answer of `getBrief`, except the too-little test, which runs the real
+backend and costs nothing. After the deploy, the build makes one real brief by hand on the
+dev site (O17).
+
+| Scenario | Test | Command |
+| -------- | ---- | ------- |
+| 1 A person gets a brief | `e2e/pick-up-brief.spec.js` "builds a brief and saves it as the stand note", with a replayed answer · `test/brief.test.js` · `test/resolvers.test.js` "getBrief gives the brief and adds 1 to the count" | `npm run e2e` · `npm test` |
+| 2 Too little for a brief | `e2e/pick-up-brief.spec.js` "says when the ticket has too little", real backend, on a ticket of the view-only project `SNV` · `test/resolvers.test.js` "getBrief calls no model for a thin ticket" | `npm run e2e` · `npm test` |
+| 3 The brief becomes the stand note | The same e2e test as scenario 1: Use as stand note, change Next, Save with the real `saveNote`, read view. | `npm run e2e` |
+| 4 The brief does not build | `e2e/pick-up-brief.spec.js` "shows the build error". Playwright refuses the `getBrief` call. · `test/resolvers.test.js` "getBrief passes on a failed model call and keeps the count" · `test/brief.test.js` bad answers | `npm run e2e` · `npm test` |
+| 5 The daily limit | `e2e/pick-up-brief.spec.js` "shows the limit message", with a replayed answer · `test/resolvers.test.js` "getBrief refuses at 50 and calls no model", and a new day starts at 0 | `npm run e2e` · `npm test` |
+
+Other commands: `npm run lint`, `npm run deploy`.
+
+**E2E:** `e2e/pick-up-brief.spec.js` "builds a brief and saves it as the stand note", after
+`npm run deploy`. The harness is there from `stand-note`.
+
+**The hand check (O17):** the build selects the button once on a dev ticket that has a
+comment. Its report has the log line and the brief's text.
+
+### Chunks
+
+Single chunk. `manifest.yml`, `src/resolvers/index.js` and `src/frontend/index.jsx` are
+shared by each part, and the e2e test needs the deployed app.
+
+### Risks
+
+| Risk | Mitigation |
+| ---- | ---------- |
+| Playwright cannot replay a good answer of `getBrief`. The tests so far only refuse a call, and nobody saw the body that Forge's gateway gives for a good one. | The build records one real answer during the hand check and replays it with the test's texts. If UI Kit refuses a replayed body, the unit tests and the hand check prove scenarios 1 and 5, and the e2e test keeps scenarios 2 and 4. |
+| The model writes something that the ticket does not say. In the spike it turned "before month end" into a date. | The rules, the caveat line, and the form that a person checks before a save. The hand check reads one real brief. |
+| Atlassian retires `claude-haiku-4-5-20251001`. Its page says "not sooner than October 15, 2026", and judges use the app until February 2027. Each brief then fails with `FORGE_LLMS_MODEL_NOT_FOUND`. | The model is one constant. `judge-ready-entry` checks the model list before the entry goes in. |
+| The call works on this developer account with no billing step, in development. Nobody tried production. | `judge-ready-entry` makes one brief on a clean site in production. |
+| The count can pass 50 by a few (O15). | Accepted. |
+| A ticket with more than 100 changes: Jira gives only the newest 100 in the issue read. | The newest moves are the ones that the reader needs. |
+| Each UTC day leaves one small key in the store. | One number a day. No cleanup in this slice. |
+
+### Decisions to record
+
+D21 to D25 were approved with pause 1 on 2026-11-21. D26 to D28 are approved with `/build`.
+`/build` appends each of them to `DECISIONS.md`.
 
 ## D21 · 2026-11-21 · The brief's text comes from Forge LLM, in the panel
 
@@ -356,6 +551,34 @@ busy demo site can reach it), 100 a day (about 1 US dollar a day for each site).
 Source: docs/specs/pick-up-brief.md
 Status: active
 
+## D26 · 2026-11-23 · The brief reads the ticket through Jira's REST API v2
+
+Why: v2 gives the description and each comment as plain text (probe, 2026-11-23), which is
+what the model reads. The app needs no code that turns Jira's document format into text.
+Rejected: v3 for the description and the comments (it gives Atlassian Document Format, so
+the app must walk each document to get its text).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D27 · 2026-11-23 · The daily count is a read and then a write in the key-value store
+
+Why: the limit is a cost brake. Two briefs in the same second can count as one, and a few
+briefs over 50 cost a few cents.
+Rejected: one numbered slot for each brief, with a write that fails when the slot is taken
+(exact, but more code and more store calls for each brief).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D28 · 2026-11-23 · No test calls the real model, and the build makes one brief by hand
+
+Why: a real call costs about 1 US cent a run, adds 1 to the site's count, and gives other
+words each time. One hand check after the deploy proves the `llm` module, the store and
+the model together.
+Rejected: one real call in each e2e run (cost, the count, and words that change), no check
+of the deployed chain (a wrong scope or module shows first to a user).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
@@ -372,10 +595,11 @@ Status: active
 | O10 | A ticket has no description, no comments and no links. What does the button do? | question | spec p1 | user | Resolved | The panel says that Jira has too little for a brief. No AI call, and the daily count does not move. 2026-11-21 |
 | O11 | Which language does the AI write the brief in? | question | spec p2 | user | Resolved | The language of the ticket's comments. The four headings stay English. English always was the other choice. 2026-11-21 |
 | O12 | How does the brief show where its text came from? | question | spec p2 | user | Resolved | One line under the brief, which the app counts itself: "Built by AI from 1 comment and 1 change. Newest comment 2 days ago." A source under each heading, and no source line, were the other choices. 2026-11-21 |
-| O13 | One Forge LLM call from the panel's resolver answers inside Forge's 25 second limit on the dev site. The model ID `claude-haiku-4-5-20251001` is still active, and billing allows the call. The docs give no error names and no JSON mode. | unproven | spec p3 | poc | Open | `/poc` chosen on 2026-11-23. |
+| O13 | One Forge LLM call from the panel's resolver answers inside Forge's 25 second limit on the dev site. The model ID `claude-haiku-4-5-20251001` is still active, and billing allows the call. The docs give no error names and no JSON mode. | unproven | spec p3 | poc | Resolved | Yes. A throwaway app with one web trigger made the call on `dzaffren.atlassian.net` three times. A ticket of 31,793 characters was 8,349 input tokens and 88 to 91 output tokens, and the call took 2,339 to 2,727 ms. That is about 0.9 US cent. The model ID is active, and no billing step was needed on this account. The answer's `content` is a list of parts, and the JSON came inside a code fence, so the app takes the text from the first `{` to the last `}`. A wrong model ID gives `ForgeLlmAPIError` with code `FORGE_LLMS_MODEL_NOT_FOUND`. `forge eligibility` named only the web trigger, not the `llm` module. The spike took about 20 of 30 minutes. The app is uninstalled and its code is deleted. Its registration, `llm-spike`, stays in the developer console, because the CLI has no delete. 2026-11-23 |
 | O14 | How does the e2e test treat the AI call? A real call costs about 1 US cent a run, adds 1 to the site's 50 a day, and its words change. | question | spec p3 | user | Resolved | No real call. Each e2e scenario fakes the answer of the backend. Unit tests cover the prompt, the answer check and the count. One real call a run was the other choice. 2026-11-23 |
 | O15 | Forge's key-value store has no atomic add. Two briefs in the same second can count as one, so a site can pass 50 by a few. | flag | spec p3 | user | Accepted risk | The limit is a cost brake, not a hard rule. A few briefs over 50 cost a few cents. Accepted 2026-11-23 |
 | O16 | The `llm` module and the `storage:app` scope make a new major version of the app. The build must run the upgrade on `dzaffren.atlassian.net`. Each admin who installs later is told that the app uses AI. | flag | spec p3 | user | Resolved | Go ahead. The build runs `forge install --upgrade` on the dev site. Ticket text goes only to the model that Atlassian hosts. 2026-11-23 |
+| O17 | With no real AI call in the e2e test (O14), no test runs the deployed chain: the `llm` module, the key-value store and the real model. | flag | spec p3 | user | Resolved | One hand check at build. After the deploy, the build makes one brief on a real ticket on the dev site, and its report has the log line and the brief. No check, and one real call in each e2e run, were the other choices. Drafted as D28. 2026-11-23 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
@@ -396,9 +620,20 @@ _Never delete this section or its rows. See references/ledger.md._
 - **Lozenge** — Atlassian's name for a small coloured tag.
 - **JSON** — a plain text format for data, with named values in braces.
 - **Prompt** — the text that an app sends to an AI model: the rules and the input.
+- **Resolver** — the backend part of a Forge app that the screen calls.
+- **Module** — one place where a Forge app adds something to Jira, or one platform service that it uses.
+- **Scope** — a permission that a Forge app asks for in its manifest.
+- **Key-value store** — Forge's simple storage for an app: a value under a name, separate for each site.
+- **Token** — the unit that an AI model counts text in, about four characters of English.
+- **Major version** — a new version of a Forge app that a site admin must approve, such as one with a new permission.
+- **Web trigger** — a URL that runs one function of a Forge app.
+- **Atlassian Document Format** — the structured format that Jira's newer API uses for rich text.
+- **Probe** — a read-only call to the real site that checks one fact.
+- **Spike** — a short test with throwaway code that answers one risky question.
 - **UTC** — the world's reference time. Malaysia is 8 hours ahead of it.
 - **`/poc`** — a short spike with throwaway code that answers one risky question.
 - **Vitest** — a tool that runs unit tests for JavaScript.
 - **Playwright** — a tool that drives a real browser from a test.
 - **e2e** — end to end. An e2e test uses the app as a user does.
 - **D1, D13** — entries in `DECISIONS.md`.
+- **`forge lint`** — the Forge command that checks the manifest and names a missing scope.
