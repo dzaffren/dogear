@@ -6,7 +6,8 @@ import { MAX_LENGTH } from '../lib/note';
 const EMPTY = { done: '', next: '', watchOut: '', code: '' };
 
 // The fields live in React state (D11), so Save can watch them and Cancel can drop the changes.
-const NoteForm = ({ note, onSaved, onCancel }) => {
+// The panel puts the brief's button in `children`, under the intro text.
+const NoteForm = ({ note, onSaved, onCancel, children }) => {
   const [texts, setTexts] = useState(() => (note ? { ...EMPTY, ...note } : EMPTY));
   const [saving, setSaving] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
@@ -50,6 +51,7 @@ const NoteForm = ({ note, onSaved, onCancel }) => {
           <Text>Say where the work stands, so a teammate can carry on.</Text>
         </Stack>
       )}
+      {children}
       {area('done', 'Done', 'What is finished')}
       {area('next', 'Next', 'The next step')}
       {area('watchOut', 'Watch out', 'Traps, and what you tried that failed')}
