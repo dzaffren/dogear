@@ -1,6 +1,6 @@
 # Pick-up brief
 
-**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Built · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note
@@ -524,6 +524,7 @@ Recorded as D21, D22, D23, D24, D25, D26, D27, D28.
 | O15 | Forge's key-value store has no atomic add. Two briefs in the same second can count as one, so a site can pass 50 by a few. | flag | spec p3 | user | Accepted risk | The limit is a cost brake, not a hard rule. A few briefs over 50 cost a few cents. Accepted 2026-11-23 |
 | O16 | The `llm` module and the `storage:app` scope make a new major version of the app. The build must run the upgrade on `dzaffren.atlassian.net`. Each admin who installs later is told that the app uses AI. | flag | spec p3 | user | Resolved | Go ahead. The build runs `forge install --upgrade` on the dev site. Ticket text goes only to the model that Atlassian hosts. 2026-11-23 |
 | O17 | With no real AI call in the e2e test (O14), no test runs the deployed chain: the `llm` module, the key-value store and the real model. | flag | spec p3 | user | Resolved | One hand check at build. After the deploy, the build makes one brief on a real ticket on the dev site, and its report has the log line and the brief. No check, and one real call in each e2e run, were the other choices. Drafted as D28. 2026-11-23 |
+| O18 | The plan did not name `test/tools.test.js`. The tools load the resolver for `displayName`, the resolver now loads `@forge/llm`, and that package throws "Forge runtime not found" when it loads outside Forge. | flag | build | user | Decided alone | Chose: fakes for `@forge/llm` and `@forge/kvs` in `test/tools.test.js`, as `test/resolvers.test.js` has. Other: load `@forge/llm` inside `getBrief` with a dynamic import, so that the tools never load it. Undo: delete the two `vi.mock` lines from `test/tools.test.js` and change the import in `src/resolvers/index.js` to a dynamic import. 2026-11-23 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
