@@ -14,6 +14,10 @@ modules:
         function: resolver
       render: native
       title: Stand notes
+  llm:
+    - key: brief-llm
+      model:
+        - claude
   rovo:mcp:
     - key: stand-note-mcp
       name: Stand Note
@@ -85,6 +89,7 @@ permissions:
     - read:jira-work
     - write:jira-work
     - read:jira-user
+    - storage:app
 app:
   runtime:
     name: nodejs24.x
