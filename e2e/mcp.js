@@ -31,7 +31,7 @@ export const authProvider = (onRedirect) => ({
   },
   get clientMetadata() {
     return {
-      client_name: 'Stand Note e2e tests',
+      client_name: 'Dogear e2e tests',
       redirect_uris: [REDIRECT_URL],
       grant_types: ['authorization_code', 'refresh_token'],
       response_types: ['code'],
@@ -52,7 +52,7 @@ export const authProvider = (onRedirect) => ({
 
 // Calls one tool and returns the text of its reply.
 export const callTool = async (name, args) => {
-  const client = new Client({ name: 'stand-note-e2e', version: '1.0.0' });
+  const client = new Client({ name: 'dogear-e2e', version: '1.0.0' });
   await client.connect(new StreamableHTTPClientTransport(new URL(MCP_URL), { authProvider: authProvider() }));
   try {
     const result = await client.callTool({ name: name + TOOL_SUFFIX, arguments: args });

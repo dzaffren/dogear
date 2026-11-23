@@ -6,7 +6,7 @@ const KEY = 'test-signing-key';
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
-// One ticket as Jira's search returns it, with the stand note in `properties`.
+// One ticket as Jira's search returns it, with the dogear in `properties`.
 const ticket = (key, summary, assignee, updated, note) => ({
   key,
   fields: { summary, assignee: assignee && { displayName: assignee }, updated },
@@ -77,7 +77,7 @@ describe('riskRows', () => {
     expect(row.assignee).toBeNull();
   });
 
-  it('counts a note that Stand Note did not sign by its saved time, and marks it', () => {
+  it('counts a note that Dogear did not sign by its saved time, and marks it', () => {
     const outside = ticket('PAY-175', 'Add refund report', null, '2026-11-26T07:00:00.000Z', note('2026-11-26T02:00:00.000Z'));
     expect(riskRows([outside], KEY)).toEqual([expect.objectContaining({ key: 'PAY-175', gapMs: 5 * HOUR, outside: true })]);
   });

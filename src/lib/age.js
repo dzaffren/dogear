@@ -17,8 +17,8 @@ export const ageLabel = (savedAt, now) => {
   return `${span(ms)} ago`;
 };
 
-// How far a note is behind the last change of its ticket, such as "Note is 2 days behind".
-export const behindLabel = (gapMs) => `Note is ${span(gapMs)} behind`;
+// How far a note is behind the last change of its ticket, such as "Dogear is 2 days behind".
+export const behindLabel = (gapMs) => `Dogear is ${span(gapMs)} behind`;
 
 // The saved line under a note, such as "Saved by Aisyah Rahman through an agent, 2 days ago".
 // The panel and the agent's read tool give the same words. A null name means that the app
@@ -26,7 +26,7 @@ export const behindLabel = (gapMs) => `Note is ${span(gapMs)} behind`;
 export const savedLine = (note, name, now) => {
   const age = ageLabel(note.savedAt, now);
   const when = `${age.charAt(0).toLowerCase()}${age.slice(1)}`;
-  if (name === null) return `Saved outside Stand Note, ${when}`;
+  if (name === null) return `Saved outside Dogear, ${when}`;
   const via = note.via === 'agent' ? ' through an agent' : '';
   return `Saved by ${name}${via}, ${when}`;
 };

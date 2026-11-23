@@ -43,7 +43,7 @@ test.beforeAll(async () => {
 test('an agent saves and the panel shows it', async ({ page }) => {
   await deleteNote(issueKey);
 
-  expect(await callTool('save-stand-note', { issueKey, ...aisyahTexts })).toBe(`Saved the stand note on ${issueKey}.`);
+  expect(await callTool('save-dogear', { issueKey, ...aisyahTexts })).toBe(`Saved the dogear on ${issueKey}.`);
 
   await openPanel(page, issueKey);
   await expectReadView(page, aisyahTexts);
@@ -54,9 +54,9 @@ test('an agent saves and the panel shows it', async ({ page }) => {
 test('a second agent reads and saves', async ({ page }) => {
   await setNote(issueKey, agentNote(aisyahTexts, 2 * DAY));
 
-  expect(await callTool('get-stand-note', { issueKey })).toBe(
+  expect(await callTool('get-dogear', { issueKey })).toBe(
     [
-      `Stand note on ${issueKey}`,
+      `Dogear on ${issueKey}`,
       `Saved by ${mainName} through an agent, 2 days ago`,
       `Done: ${aisyahTexts.done}`,
       `Next: ${aisyahTexts.next}`,
@@ -65,7 +65,7 @@ test('a second agent reads and saves', async ({ page }) => {
     ].join('\n')
   );
 
-  expect(await callTool('save-stand-note', { issueKey, ...hafizTexts })).toBe(`Saved the stand note on ${issueKey}.`);
+  expect(await callTool('save-dogear', { issueKey, ...hafizTexts })).toBe(`Saved the dogear on ${issueKey}.`);
 
   await openPanel(page, issueKey);
   await expectReadView(page, hafizTexts);
@@ -77,21 +77,21 @@ test('a second agent reads and saves', async ({ page }) => {
 test('a ticket with no note', async () => {
   await deleteNote(noNoteKey);
 
-  expect(await callTool('get-stand-note', { issueKey: noNoteKey })).toBe(`${noNoteKey} has no stand note.`);
+  expect(await callTool('get-dogear', { issueKey: noNoteKey })).toBe(`${noNoteKey} has no dogear.`);
 });
 
-test('names no person for a note written outside Stand Note', async () => {
+test('names no person for a note written outside Dogear', async () => {
   const { sig, ...unsigned } = agentNote(aisyahTexts, 2 * DAY);
   await setNote(issueKey, unsigned);
 
-  expect((await callTool('get-stand-note', { issueKey })).split('\n')[1]).toBe('Saved outside Stand Note, 2 days ago');
+  expect((await callTool('get-dogear', { issueKey })).split('\n')[1]).toBe('Saved outside Dogear, 2 days ago');
 });
 
 test('refuses a long text', async () => {
   const before = agentNote(aisyahTexts, 60 * 60 * 1000);
   await setNote(issueKey, before);
 
-  expect(await callTool('save-stand-note', { issueKey, ...hafizTexts, done: 'a'.repeat(1240) })).toBe(
+  expect(await callTool('save-dogear', { issueKey, ...hafizTexts, done: 'a'.repeat(1240) })).toBe(
     'Done has 1,240 characters. The limit is 1,000.'
   );
   expect(await getNote(issueKey)).toEqual(before);
