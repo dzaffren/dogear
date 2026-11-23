@@ -14,12 +14,16 @@
   ticket then shows two panels: "Dogear" with a DEV mark, and "Dogear".
 - Both installs read the same issue property, so a dogear from development shows in the
   production panel.
-- A person who selected Allow access in development got no prompt in production.
+- The test account's production panel showed a dogear with no Allow access prompt. The
+  main account's first call of the production tool `get-dogear` answered "select Allow
+  access". Treat the consent as apart for each environment.
 - A pick-up brief works in production with no billing step: the model answered in 3
   seconds on app version 2.0.0.
 - `forge logs` does not work in production. Read the logs in the developer console.
-- After the admin turned on the tools of the production install, the MCP server still
-  listed only the two `_development` tools for a login that was made before that install.
-  Nobody knows the production tool names yet.
+- In production, the MCP tool names have no suffix: `get-dogear` and `save-dogear`. They
+  show only after the admin switch is on for that install and after a new MCP sign-in. A
+  sign-in from before the install lists only the tools it knew.
+- A merged pull request keeps its commits on GitHub, with each author's email address. A
+  force-push of `main` does not remove them.
 - `forge uninstall -i <installation id> -e production -s <site> -p Jira` removes one
   install and keeps the other.
