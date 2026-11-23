@@ -1,6 +1,6 @@
 # Judge-ready entry
 
-**Version:** v1 · **Status:** Draft · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note, agent-checkpoint, at-risk-list, pick-up-brief, dogear-brand
@@ -126,7 +126,7 @@ Scenario: The judge connects a coding agent
 
 - A deploy of Dogear to the production environment of Forge, and an installation link
   that works on a site of another person.
-- The icon of the Dogear panel and of the Dogears tab in Jira.
+- The icon of the Dogear panel and of the Dogears tab in Jira, as a file in the app (D40).
 - This repo becomes public on GitHub, with a licence and the skill file for coding agents.
   A check of the files and the git history for secrets comes first. Dzafran makes the repo
   public.
@@ -216,7 +216,171 @@ block for `AGENTS.md`, for other agents. The rule text is what the README has to
 ticket key from the branch, read the dogear first, save after each step and before you
 stop, read before each save, write for a teammate. It names the two tools.
 
-## Decisions to record
+## Technical plan
+
+### Approach
+
+The app gets no new behaviour. The slice adds one icon file to the app, three text files to
+the repo, and one production release. Most of the work is a fixed order of steps, and some
+steps are Dzafran's by hand: the developer console, the public repo, the second account and
+the rehearsal. A spike on 2026-11-23 and 2026-11-24 proved the bundled icon and the
+production deploy (O16, O19). Production is deployed as version 2.0.0, with its own signing
+key, and no site has it installed.
+
+Relies on: D1, D3, D4, D12, D13, D14, D25, D29, D30, D33, D34, D36, D37, D38, D39, D40
+
+```mermaid
+flowchart TB
+    subgraph repo["Public repo dzaffren/dogear"]
+        GD["GUIDE.md"]
+        SK["skills/dogear/SKILL.md"]
+        LI["LICENSE"]
+        MF["manifest.yml with the icon"]
+        IC["static/icons/dogear.svg"]
+    end
+    subgraph atl["Atlassian"]
+        CON["Developer console: name, avatar, sharing link"]
+        PROD["Forge production environment"]
+        SITE["A judge's Jira site"]
+        MCP["MCP server"]
+    end
+    MF -- "npm run deploy:prod" --> PROD
+    IC -- "bundled in the deploy" --> PROD
+    CON -- "installation link" --> GD
+    GD -- "link and steps" --> SITE
+    PROD -- "panel, tab, tools" --> SITE
+    SK -- "rule text" --> AG["Coding agent"]
+    AG -- "get-dogear, save-dogear" --> MCP
+    MCP -- "calls as the person" --> SITE
+```
+
+The repo gives the judge the guide and the skill file. The deploy gives each site the app
+with its icon. The console gives the link that the guide carries.
+
+```mermaid
+sequenceDiagram
+    participant P as Priya, a judge
+    participant G as GUIDE.md on GitHub
+    participant A as Atlassian install screen
+    participant J as Priya's Jira site
+    participant L as Forge LLM
+    P->>G: opens the guide
+    P->>A: opens the installation link, picks the site
+    A-->>J: installs Dogear, production
+    P->>J: opens a ticket, selects Allow access
+    P->>J: selects "Build a brief from Jira"
+    J->>L: rules and ticket text
+    L-->>J: the brief
+    P->>J: "Use as dogear", Save
+    J-->>P: "Saved by Priya Nair, just now"
+```
+
+This is the path of the first two scenarios. The third scenario adds the admin switch, the
+MCP sign-in and the two tools.
+
+### Order of work
+
+| # | Who | Step |
+| - | --- | ---- |
+| 1 | build | Check each file and the whole git history, on each branch, for keys and for secret files. Stop when it finds one. |
+| 2 | build | Set the noreply address as the author in this clone. Give each commit of `main` and of this branch that author. Ask Dzafran, then force-push `main`, and delete the four merged branches on GitHub. |
+| 3 | build | The icon: the file, the manifest, the test. Deploy to development, and run the e2e tests. |
+| 4 | build | `LICENSE`, `skills/dogear/SKILL.md`, `GUIDE.md`, the README, and the script `deploy:prod`. |
+| 5 | build | `npm run deploy:prod`. The icon makes a minor version. |
+| 6 | Dzafran | In the developer console: name the app Dogear and upload the avatar. Rename the repo to `dogear`. Make the repo public. |
+| 7 | build | Ask Dzafran, then push this branch. Check with no sign-in that the guide and the skill file open. |
+| 8 | Dzafran | In the developer console: Distribution, Sharing, fill the app details, and copy the installation link. The build puts the link in the guide. |
+| 9 | Dzafran | Sign up the second Atlassian account and make its free Jira site. Do the rehearsal there by the guide, with a stopwatch. |
+| 10 | build | Write the rehearsal's result to `docs/entry/rehearsal.md`. Fix what the rehearsal found, and deploy again if the app changed. |
+
+Steps 6 and 8 are apart because the sharing form can ask for a privacy policy address. If it
+does, the build adds `PRIVACY.md`, and the public repo gives its address.
+
+### Changes
+
+| File | Change | For |
+| ---- | ------ | --- |
+| `static/icons/dogear.svg` | New. A copy of `docs/design/logo/kit/svg/dogear-symbol-small.svg`. | Scenario 1 |
+| `manifest.yml:8`, `:16`, `:84-88` | `icon: resource:icons;dogear.svg` under the panel and under the tab. A resource `icons` with the path `static/icons`. | Scenario 1 |
+| `package.json:13` | A script `deploy:prod`: the line of `deploy`, with `-e production`. | Scenario 1 |
+| `LICENSE` | New. The MIT text, as `package.json:5` already says. | Scenario 3 |
+| `skills/dogear/SKILL.md` | New. A name, a description, and the rule text from `README.md:66-82`. | Scenario 3 |
+| `GUIDE.md` | New. The parts and the ticket's text from the Interface section, the installation link, and the command `claude mcp add --transport http dogear https://mcp.atlassian.com/forge/62f3c556-f63e-43bf-9033-8c2d41e14c00`. | Scenarios 1, 2, 3 |
+| `README.md:5` | One line under the tagline that links to `GUIDE.md`. | Scenario 1 |
+| `README.md:48-84` | The part "Connect a coding agent" becomes a pointer to the guide and to the skill file, so the rule text has one home. The part on the e2e tests stays. | Scenario 3 |
+| `test/brand.test.js:33-37` | The check of the `claude mcp add` line reads `GUIDE.md`. New checks: the icon lines and the icon file, the licence, the skill file with the two tool names, the guide's three parts and its ticket text, and the same rule lines in the guide and in the skill file. | Scenarios 1, 2, 3 |
+| `docs/entry/rehearsal.md` | New. The date, the site, each step with its result, the stopwatch time, the icon in the dark theme, and each failure with its fix. | Scenarios 1, 2, 3 |
+
+The guide tells the judge this order, which the spike found: install, open the panel and
+select Allow access, turn on the admin switch, and only then add the server and sign in. A
+sign-in from before the install does not list the tools.
+
+### Earn-it
+
+| New thing | What demands it |
+| --------- | --------------- |
+| The resource `icons` and one SVG file | Scenario 1: the panel and the tab show the icon. |
+| `GUIDE.md` | Scenarios 1 to 3, and D37. |
+| `skills/dogear/SKILL.md` | Scenario 3, and D38. |
+| `LICENSE` | D36: a public repo with no licence is not open source. |
+| The script `deploy:prod` | The production deploy runs more than one time: now, and after each fix. |
+| `docs/entry/rehearsal.md` | The rehearsal is the e2e test of this slice, and it runs by hand. The file is its record. |
+
+No new dependency, and no new code in `src/`.
+
+### Non-functionals
+
+- **Load:** some tens of judges' sites from 2027-01-05 to 2027-02-03. Forge allows 100
+  model requests a minute for each install.
+- **What breaks first at 10 times:** the model bill. Each brief costs about 1 US cent, and
+  D25 stops a site at 50 briefs a day.
+- **Security:** the repo becomes public, so step 1 checks the history first. `.env` and
+  `e2e/.auth/` stay out of git. The production signing key is only in Forge. Any site admin
+  with the link can install the app. The scopes do not change. Dzafran's Gmail address
+  stays in the five merged pull requests (O20).
+- **Proof in production:** the logs of the production environment in the developer console
+  show `dogear saved issue=` with the ticket key of the rehearsal. `forge logs` does not
+  work in production. If the console shows no logs of another person's site, the proof is
+  the panel's line "Saved by" on the rehearsal site.
+- **Rollout:** no flag. A later deploy with no new scope is a minor version, and each site
+  gets it by itself. To roll back: check out the last good commit and run
+  `npm run deploy:prod`. To stop new installs: turn Sharing off in the console.
+
+Production stays deployed, and the Forge account stays able to pay, until 2027-02-03.
+
+### Test plan
+
+| Scenario | Proof | Command |
+| -------- | ----- | ------- |
+| 1, install from the link | The rehearsal, steps of the guide's part 1. The icon in the light theme and in the dark theme, on the rehearsal site. | by hand, on the clean site |
+| 1, the icon in the app | `test/brand.test.js`, and the e2e tests on development still pass | `npm test`, then `npm run deploy` and `npm run e2e` |
+| 2, two minutes | The rehearsal with a stopwatch: 2 minutes or less from the new ticket to the empty tab | by hand, on the clean site |
+| 3, the coding agent | The guide and the skill file answer with no sign-in. The rehearsal: the two tools are listed, a read answers, and a save shows in the panel. | `curl -sI` on both addresses, then by hand |
+
+The e2e test that walks the slice is the rehearsal (D34). It runs by hand, because the
+install, the consent and the admin switch are steps of a person on a site of another
+account. `docs/entry/rehearsal.md` is its record. The Playwright tests stay on the
+development site, as the guard for the app itself.
+
+Before the merge, the guide is on this branch, so the rehearsal opens it at the branch's
+address. After the merge, `/ship` checks the same two addresses on `main`.
+
+### Chunks
+
+Single chunk. The steps run in one order, and half of them wait for a step by hand.
+
+### Risks
+
+| Risk | What we do |
+| ---- | ---------- |
+| The sharing form asks for a field that nobody has, such as a privacy policy address. | The build adds `PRIVACY.md` to the public repo. |
+| On a clean free site, the brief or the tools do not work as on Dzafran's site. | The rehearsal finds it with four weeks left. The guide's last part gets the fix, or the thing that a site needs first. |
+| A second key replaces the production signing key, and each dogear on a judge's site loses its author. | Nobody sets `NOTE_SIGNING_KEY` for production again. The guide for the developer says so. |
+| The production app goes on `dzaffren.atlassian.net`, and the e2e tests then see two panels. | Production is never installed on that site. |
+| The icon is hard to see in Jira's dark theme. | A rendered sample at 16 pixels on Jira's dark grey looks clear. The rehearsal checks the site. |
+| The force-push of `main` breaks a clone or an open pull request. | No pull request is open, and this is the only clone. The build asks before the push. |
+
+### Decisions to record
 
 ## D33 · 2026-11-23 · The judge's worked example is a guide, with no sample-ticket button
 
@@ -264,12 +428,13 @@ its text).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
-## D39 · 2026-11-23 · The history gets the noreply author before the repo is public
+## D39 · 2026-11-24 · The history of main gets the noreply author, by a force-push
 
-Why: four commits have the developer's private email address as the author, and a public
-repo shows it to anyone.
-Rejected: keep the address in the four commits (no rewrite, but the address is public for
-good).
+Why: commits have the developer's private email address as the author, and a public repo
+shows it. A force-push takes the address out of `main` and keeps the repo, its name and
+its pull requests.
+Rejected: a new public repo with a clean history (the address is gone for good, but the
+pull requests stay behind in a private repo), no rewrite (the address is on `main`).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
@@ -308,6 +473,7 @@ Status: active
 | O17 | Four commits have Dzafran's Gmail address as the author. A public repo shows it. | flag | spec p3 | user | Resolved | Rewrite the history first. Before the repo is public, the author of those commits becomes GitHub's noreply address, and `main` is force-pushed. Each commit hash changes. Drafted as D39. 2026-11-23 |
 | O18 | Forge LLM has no free quota. Each pick-up brief on a judge's site is billed to the developer: about 0.6 to 1.2 US cents with Claude Haiku, from the price table read on 2026-11-23. D25 caps a site at 50 briefs a day. | flag | spec p3 | user | Resolved | Accept the cost and keep the cap of 50. No code change. 2026-11-23 |
 | O19 | The docs do not say three things about production: the names of the two MCP tools, whether a brief works with no payment method on the developer's Forge account, and whether one site can have the development and the production install at once. | unproven | spec p3 | poc | Resolved | A spike on 2026-11-23 and 2026-11-24 deployed version 2.0.0 to production and installed it on `dzaffren.atlassian.net`. The tool names in production are `get-dogear` and `save-dogear`, with no suffix. They showed only after the admin switch was on and after a new MCP sign-in: a sign-in from before the install listed only the development tools. A call of `get-dogear` by a person who had not opened the production panel answered "select Allow access". A pick-up brief worked with no billing step: the model answered in 3 seconds. One site held both installs, with two panels on a ticket. The production install is removed from that site again. Production stays deployed, with its own `NOTE_SIGNING_KEY`. 2026-11-24 |
+| O20 | The five merged pull requests keep their old commits on GitHub, with Dzafran's Gmail address. A force-push of `main` does not remove them. | flag | spec p3 | user | Accepted risk | Force-push `main` and make this repo public. The address is gone from `main`, and it stays readable in the pull requests. Dzafran chose this over a new repo with a clean history. Drafted in D39. 2026-11-24 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
@@ -327,4 +493,8 @@ _Never delete this section or its rows. See references/ledger.md._
 - **Coding agent** — an AI tool that writes code for a developer, such as Claude Code.
 - **Atlassian Marketplace** — Atlassian's public store for apps.
 - **e2e** — end to end. An e2e test uses the app as a user does.
+- **Force-push** — a push that replaces the history of a branch on GitHub.
+- **Noreply address** — an email address from GitHub that hides the person's own address in a commit.
+- **Minor version** — a new version of a Forge app that each site gets by itself. A major version needs the admin's consent.
+- **Resource** — a file or a folder that the manifest of a Forge app names, and that the deploy bundles.
 - **D1** — the first entry in `DECISIONS.md`.
