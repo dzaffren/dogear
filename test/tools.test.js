@@ -47,6 +47,11 @@ vi.mock('@forge/api', () => {
   };
 });
 
+// The tools load the resolver for displayName, and the resolver loads these two. Each needs
+// the Forge runtime when it loads. No tool calls them.
+vi.mock('@forge/llm', () => ({ chat: vi.fn() }));
+vi.mock('@forge/kvs', () => ({ kvs: { get: vi.fn(), set: vi.fn() } }));
+
 const { getStandNote, saveStandNote } = await import('../src/tools/index.js');
 const { isSigned, sign } = await import('../src/lib/signature.js');
 

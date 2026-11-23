@@ -1,4 +1,4 @@
-const plural = (count, unit) => `${count} ${unit}${count === 1 ? '' : 's'}`;
+export const plural = (count, unit) => `${count} ${unit}${count === 1 ? '' : 's'}`;
 
 // A length of time as a short text, such as "5 min" or "2 days".
 // Days are rounded, so a note from late on Monday is "2 days" old on Wednesday morning.

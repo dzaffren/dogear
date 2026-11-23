@@ -184,3 +184,78 @@ Rejected: Payments (hand work and the other tests change its in-progress tickets
 test must move them on each run).
 Source: docs/specs/at-risk-list.md
 Status: active
+
+## D21 · 2026-11-21 · The brief's text comes from Forge LLM, in the panel
+
+Why: the brief then shows where the person already looks, in the Stand note panel, and
+it works on a site with no Rovo. Atlassian's docs say Forge LLM is open to all apps and
+keeps the Runs on Atlassian badge. One brief costs about 1 US cent with Claude Haiku.
+Rejected: a Rovo agent in chat (the docs give no backend call, so the brief shows in the
+chat sidebar, the site needs Rovo, and `rovo.open` is in Preview), no generated text (a
+list of facts from Jira, with no Done and Next written for the reader).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D22 · 2026-11-21 · A brief builds only on a button
+
+Why: each brief costs money, and a person who opens the panel to write a note needs no
+brief.
+Rejected: a brief by itself when the panel opens (one paid call for each open of a ticket
+with no note).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D23 · 2026-11-21 · The app does not keep the brief
+
+Why: the next person gets a brief of Jira as it is then, and the app stores nothing new on
+the ticket. The ticket stays "No note" in the at-risk list until a person saves a note.
+Rejected: a brief kept on the ticket (it can be behind the ticket, and a view-only person
+cannot write to the ticket, so the app must write as itself, against D13).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D24 · 2026-11-21 · A brief becomes the stand note only through the form
+
+Why: a person reads and corrects the text before the save, so a person stands behind each
+stand note.
+Rejected: a save of the brief in one click (generated text then looks like a person's
+note), a read-only brief (the person types the note from nothing).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D25 · 2026-11-21 · A site builds 50 briefs a day at most
+
+Why: the developer pays for each brief, also on a judge's site. 50 briefs cost about 50 US
+cents a day for each site at most.
+Rejected: no limit (the button is the only brake on the cost), 20 a day (a judge with a
+busy demo site can reach it), 100 a day (about 1 US dollar a day for each site).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D26 · 2026-11-23 · The brief reads the ticket through Jira's REST API v2
+
+Why: v2 gives the description and each comment as plain text (probe, 2026-11-23), which is
+what the model reads. The app needs no code that turns Jira's document format into text.
+Rejected: v3 for the description and the comments (it gives Atlassian Document Format, so
+the app must walk each document to get its text).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D27 · 2026-11-23 · The daily count is a read and then a write in the key-value store
+
+Why: the limit is a cost brake. Two briefs in the same second can count as one, and a few
+briefs over 50 cost a few cents.
+Rejected: one numbered slot for each brief, with a write that fails when the slot is taken
+(exact, but more code and more store calls for each brief).
+Source: docs/specs/pick-up-brief.md
+Status: active
+
+## D28 · 2026-11-23 · No test calls the real model, and the build makes one brief by hand
+
+Why: a real call costs about 1 US cent a run, adds 1 to the site's count, and gives other
+words each time. One hand check after the deploy proves the `llm` module, the store and
+the model together.
+Rejected: one real call in each e2e run (cost, the count, and words that change), no check
+of the deployed chain (a wrong scope or module shows first to a user).
+Source: docs/specs/pick-up-brief.md
+Status: active

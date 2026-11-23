@@ -1,6 +1,20 @@
 import Resolver from '@forge/resolver';
 import api, { route } from '@forge/api';
-import { cleanNote, PROPERTY_KEY } from '../lib/note';
+import { kvs } from '@forge/kvs';
+import { chat } from '@forge/llm';
+import {
+  countKey,
+  hasEnough,
+  MAX_BRIEFS,
+  MAX_COMMENTS,
+  MAX_OUTPUT_TOKENS,
+  MODEL,
+  parseBrief,
+  RULES,
+  sourceLine,
+  ticketText,
+} from '../lib/brief';
+import { cleanNote, FIELDS, PROPERTY_KEY } from '../lib/note';
 import { MAX_CHECKED, riskRows } from '../lib/risk';
 import { sign } from '../lib/signature';
 
@@ -101,9 +115,64 @@ export const getAtRisk = async ({ context }) => {
   return { rows, checked: issues.length, inProgress, now: new Date().toISOString() };
 };
 
+const readJson = async (response, what) => {
+  if (!response.ok) throw new Error(`Jira answered ${response.status} to the ${what} read`);
+  return response.json();
+};
+
+// The parts of a ticket that the brief reads, as the person (D26: v2 gives plain text).
+const readTicket = async (issueKey) => {
+  const user = api.asUser();
+  const [issue, comments, webLinks] = await Promise.all([
+    user
+      .requestJira(route`/rest/api/2/issue/${issueKey}?fields=summary,status,assignee,description,issuelinks&expand=changelog`)
+      .then((response) => readJson(response, 'ticket')),
+    user
+      .requestJira(route`/rest/api/2/issue/${issueKey}/comment?orderBy=-created&maxResults=${MAX_COMMENTS}`)
+      .then((response) => readJson(response, 'comment')),
+    user.requestJira(route`/rest/api/3/issue/${issueKey}/remotelink`).then((response) => readJson(response, 'link')),
+  ]);
+  return { issue, comments: comments.comments, webLinks };
+};
+
+// The pick-up brief of a ticket with no stand note. The app keeps no brief (D23). Only a
+// brief that the model wrote adds 1 to the site's count for the day (D25, D27).
+export const getBrief = async ({ context }) => {
+  const issueKey = issueKeyOf(context);
+  const { issue, comments, webLinks } = await readTicket(issueKey);
+  if (!hasEnough(issue, comments, webLinks)) return { status: 'tooLittle' };
+
+  const now = new Date().toISOString();
+  const key = countKey(now);
+  const count = (await kvs.get(key)) ?? 0;
+  if (count >= MAX_BRIEFS) return { status: 'limit' };
+
+  const { text, counts, newestCommentAt } = ticketText(issue, comments, webLinks);
+  const started = Date.now();
+  const response = await chat({
+    model: MODEL,
+    max_completion_tokens: MAX_OUTPUT_TOKENS,
+    messages: [
+      { role: 'system', content: RULES },
+      { role: 'user', content: text },
+    ],
+  });
+  const brief = parseBrief(response.choices?.[0]?.message?.content);
+  if (!brief) throw new Error('The model did not answer with a brief');
+  if (FIELDS.every((field) => brief[field] === null)) return { status: 'tooLittle' };
+
+  await kvs.set(key, count + 1);
+  const { input_tokens: tokensIn, output_tokens: tokensOut } = response.usage ?? {};
+  console.log(
+    `brief built issue=${issueKey} ms=${Date.now() - started} in=${tokensIn} out=${tokensOut} count=${count + 1}`
+  );
+  return { status: 'brief', brief, sourceLine: sourceLine(counts, newestCommentAt, now) };
+};
+
 const resolver = new Resolver();
 resolver.define('getNote', getNote);
 resolver.define('saveNote', saveNote);
 resolver.define('getAtRisk', getAtRisk);
+resolver.define('getBrief', getBrief);
 
 export const handler = resolver.getDefinitions();
