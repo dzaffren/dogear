@@ -404,6 +404,10 @@ the tests red between the chunks.
 
 Recorded as D29, D30, D31.
 
+## Review
+
+2026-11-23 · 0 raw findings, 0 survived. Clean.
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
