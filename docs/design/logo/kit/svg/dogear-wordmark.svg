@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 709 256" role="img" aria-labelledby="title">
+  <title id="title">Dogear wordmark</title>
+  <g id="wordmark">
+    <path fill="#231A14" fill-rule="evenodd" d="M98 24 H124 V174.5 H98 V169.86 A50 50 0 1 1 98 82.14 Z M50 126 A24 24 0 1 0 98 126 A24 24 0 1 0 50 126 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M142 126 A50 50 0 1 0 242 126 A50 50 0 1 0 142 126 Z M168 126 A24 24 0 1 0 216 126 A24 24 0 1 0 168 126 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M330 77.5 H356 V184 A50 50 0 0 1 262.7 209 L285.22 196 A24 24 0 0 0 330 184 V169.86 A50 50 0 1 1 330 82.14 Z M282 126 A24 24 0 1 0 330 126 A24 24 0 1 0 282 126 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M462.3 158.14 A50 50 0 1 1 472.54 138 H403.22 A24 24 0 0 0 442.39 141.43 Z M403.22 114 A24 24 0 0 1 444.78 114 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M560 77.5 H586 V174.5 H560 V169.86 A50 50 0 1 1 560 82.14 Z M512 126 A24 24 0 1 0 560 126 A24 24 0 1 0 512 126 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M610 77.5 H636 V82.14 A50 50 0 0 1 685 82.7 L672 105.22 A24 24 0 0 0 636 126 V174.5 H610 Z"/>
+  </g>
+</svg>

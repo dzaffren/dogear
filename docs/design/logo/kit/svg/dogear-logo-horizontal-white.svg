@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 915 256" role="img" aria-labelledby="title">
+  <title id="title">Dogear logo, white</title>
+  <g id="symbol" transform="translate(-2.88 -7.52) scale(0.84)">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M139 32 H176 A48 48 0 0 1 224 80 V176 A48 48 0 0 1 176 224 H80 A48 48 0 0 1 32 176 V139 A8 8 0 0 1 40 131 H76 A55 55 0 0 0 131 76 V40 A8 8 0 0 1 139 32 Z M75 156 A15 15 0 1 0 105 156 A15 15 0 1 0 75 156 Z M151 156 A15 15 0 1 0 181 156 A15 15 0 1 0 151 156 Z M115.25 192.31 A10 10 0 0 1 123.01 176 L132.99 176 A10 10 0 0 1 140.75 192.31 L135.76 198.45 A10 10 0 0 1 120.24 198.45 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M109.17 38.83 A4 4 0 0 1 116 41.66 L116 76 A40 40 0 0 1 76 116 L41.66 116 A4 4 0 0 1 38.83 109.17 Z"/>
+  </g>
+  <g id="wordmark">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M303.28 24 H329.28 V174.5 H303.28 V169.86 A50 50 0 1 1 303.28 82.14 Z M255.28 126 A24 24 0 1 0 303.28 126 A24 24 0 1 0 255.28 126 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M347.28 126 A50 50 0 1 0 447.28 126 A50 50 0 1 0 347.28 126 Z M373.28 126 A24 24 0 1 0 421.28 126 A24 24 0 1 0 373.28 126 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M535.28 77.5 H561.28 V184 A50 50 0 0 1 467.98 209 L490.5 196 A24 24 0 0 0 535.28 184 V169.86 A50 50 0 1 1 535.28 82.14 Z M487.28 126 A24 24 0 1 0 535.28 126 A24 24 0 1 0 487.28 126 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M667.58 158.14 A50 50 0 1 1 677.82 138 H608.5 A24 24 0 0 0 647.67 141.43 Z M608.5 114 A24 24 0 0 1 650.06 114 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M765.28 77.5 H791.28 V174.5 H765.28 V169.86 A50 50 0 1 1 765.28 82.14 Z M717.28 126 A24 24 0 1 0 765.28 126 A24 24 0 1 0 717.28 126 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M815.28 77.5 H841.28 V82.14 A50 50 0 0 1 890.28 82.7 L877.28 105.22 A24 24 0 0 0 841.28 126 V174.5 H815.28 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Dogear app icon, for light backgrounds</title>
+  <rect width="256" height="256" fill="#FFF6EA"/>
+  <g id="symbol" transform="translate(35.84 33.84) scale(0.72)">
+    <path fill="#E55F12" fill-rule="evenodd" d="M138 32 H176 A48 48 0 0 1 224 80 V176 A48 48 0 0 1 176 224 H80 A48 48 0 0 1 32 176 V138 A8 8 0 0 1 40 130 H76 A54 54 0 0 0 130 76 V40 A8 8 0 0 1 138 32 Z M76 156 A14 14 0 1 0 104 156 A14 14 0 1 0 76 156 Z M152 156 A14 14 0 1 0 180 156 A14 14 0 1 0 152 156 Z M115.25 192.31 A10 10 0 0 1 123.01 176 L132.99 176 A10 10 0 0 1 140.75 192.31 L135.76 198.45 A10 10 0 0 1 120.24 198.45 Z"/>
+    <path fill="#E55F12" fill-rule="evenodd" d="M109.17 38.83 A4 4 0 0 1 116 41.66 L116 76 A40 40 0 0 1 76 116 L41.66 116 A4 4 0 0 1 38.83 109.17 Z"/>
+  </g>
+</svg>
