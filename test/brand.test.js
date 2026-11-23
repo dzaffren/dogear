@@ -37,6 +37,16 @@ describe('the word Dogear', () => {
   });
 });
 
+describe('the icon in Jira', () => {
+  it('is the small symbol, bundled with the app, on the panel and on the tab (D38)', () => {
+    const manifest = readFileSync('manifest.yml', 'utf8');
+    expect(manifest).toMatch(/title: Dogear\n\s+label: Where the work stands\n\s+icon: resource:icons;dogear\.svg\n/);
+    expect(manifest).toMatch(/title: Dogears\n\s+icon: resource:icons;dogear\.svg\n/);
+    expect(manifest).toMatch(/- key: icons\n\s+path: static\/icons\n/);
+    expect(readFileSync('static/icons/dogear.svg', 'utf8')).toBe(readFileSync(join(KIT, 'svg/dogear-symbol-small.svg'), 'utf8'));
+  });
+});
+
 describe('the brand kit', () => {
   it('has the symbol, the wordmark and the lockups, as SVG and as PNG', () => {
     const names = ['dogear-symbol', 'dogear-symbol-small', 'dogear-wordmark', 'dogear-logo-horizontal', 'dogear-logo-stacked'];
