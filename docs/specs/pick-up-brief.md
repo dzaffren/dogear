@@ -503,6 +503,14 @@ shared by each part, and the e2e test needs the deployed app.
 
 Recorded as D21, D22, D23, D24, D25, D26, D27, D28.
 
+## Review
+
+2026-11-23 · 6 raw findings, 3 survived, 3 fixed.
+
+- correctness · `src/frontend/index.jsx:55` · show a brief only while the ticket has no note, with an e2e test for a brief that answers after the save · `38aa613`
+- A03 Software Supply Chain Failures · `package-lock.json:3956` · `npm audit` found no advisory of its own for `@forge/kvs` 2.1.2, only one through `@forge/api`, as on main; the lockfile pin stays · no code change
+- A03 Software Supply Chain Failures · `package-lock.json:3973` · `npm audit` found no advisory of its own for `@forge/llm` 1.0.10, only one through `@forge/api`, as on main; the lockfile pin stays · no code change
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
