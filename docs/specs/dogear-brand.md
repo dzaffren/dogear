@@ -5,9 +5,9 @@
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note, agent-checkpoint, at-risk-list, pick-up-brief
 
-The app and its note get one name, Dogear, with a logo, an icon, and one brand kit for the
-guide, the Devpost entry and the video. It ships now because the production deploy, the guide and the
-video of `judge-ready-entry` carry the name and the icon.
+The app and its note get one name, Dogear, with a logo and one brand kit for the guide, the
+Devpost entry and the video. It ships now because the production deploy, the guide and the
+video of `judge-ready-entry` carry the name and the logo.
 
 ## Problem
 
@@ -30,7 +30,7 @@ Dogear, and the note on a ticket is a dogear.
 | Check                         | Result |
 | ----------------------------- | ------ |
 | Cuts every layer it needs     | yes — the app's name in Atlassian's developer console, the manifest, each text and tool name that says "stand note", the icon files, and the brand kit |
-| One e2e test walks it         | yes — open the site's list of apps, a ticket and the Dogears tab, and read the name and the icon in each |
+| One e2e test walks it         | yes — an agent saves with `save-dogear`, the panel named Dogear shows the dogear, and the Dogears tab lists the ticket. The list of apps is one hand check |
 | Worth shipping alone          | yes — a person who installs the app sees one word and one mark in each place |
 | Fits (≤5 scenarios, ≤2 areas) | yes — 4 scenarios, two areas: the app in Jira, and the brand kit |
 
@@ -45,16 +45,16 @@ agent's tools and the video, so that I know that they are one product.
 
 ```mermaid
 flowchart LR
-    J((Priya, a site admin)) -- "opens the install screen" --> I["Install screen: Dogear, with its icon"]
-    I -- "installs, then opens a ticket" --> P["Panel: Dogear, with the icon"]
-    P -- "opens the tabs of the project" --> T["Tab: Dogears, with the icon"]
-    J -- "lists the MCP servers in a coding agent" --> C["Server: Dogear, with get-dogear and save-dogear"]
+    J((Priya, a site admin)) -- "opens the install screen" --> I["Install screen: Dogear"]
+    I -- "installs, then opens a ticket" --> P["Panel: Dogear"]
+    P -- "opens the tabs of the project" --> T["Tab: Dogears"]
+    J -- "adds the MCP server as dogear in a coding agent" --> C["Tools: get-dogear and save-dogear"]
     D((Dzafran)) -- "takes the logo, the colours and the typeface" --> K["Brand kit in docs/design/logo/kit"]
     K -- "used by judge-ready-entry" --> G["Guide, Devpost entry, video"]
 ```
 
-Priya sees the word Dogear and its icon at the install, on the ticket, on the project tab
-and in the agent. Dzafran builds the guide, the Devpost entry and the video from one kit.
+Priya sees the word Dogear at the install, on the ticket, on the project tab and in the
+agent's tools. Dzafran builds the guide, the Devpost entry and the video from one kit.
 
 ## Acceptance criteria
 
@@ -68,19 +68,18 @@ Scenario: The site shows the app as Dogear
 Scenario: The ticket and the project say Dogear
   Given ticket PAY-142 got a note on 2026-11-21, before the rename
   When Aisyah Rahman opens PAY-142
-  Then the panel header shows the Dogear icon beside the title "Dogear"
+  Then the panel header shows the title "Dogear"
   And the panel shows the note from 2026-11-21, with its four texts
   When Aisyah opens a ticket with no note
   Then the panel says "No dogear yet"
-  And the tab of project PAY has the title "Dogears", with the same icon
+  And the tab of project PAY has the title "Dogears"
   And no text of the panel or of the tab says "stand note"
-  And the icon reads at 16 pixels in Jira's light theme and in its dark theme
 
 Scenario: A coding agent sees Dogear
-  Given a coding agent is connected to the MCP server of the app
-  When Dzafran lists the MCP servers and their tools in the agent
-  Then the server's name is "Dogear"
-  And its tools are "get-dogear" and "save-dogear"
+  Given the README tells a person to add the MCP server under the name "dogear"
+  And a coding agent is connected to the MCP server of the app
+  When Dzafran lists the tools of the server in the agent
+  Then the tools are "get-dogear" and "save-dogear", each with the ending "_development" in the development environment
   And no tool has "stand-note" in its name
   When the agent reads PAY-142 with "get-dogear"
   Then the answer starts with "Dogear on PAY-142"
@@ -110,12 +109,16 @@ Scenario: The brand kit has what the entry needs
 - The repo on GitHub gets the name `dogear`. Dzafran renames it, or approves the rename at
   the build.
 - A logo for Dogear: a design brief, two rounds of concepts, and the chosen mark, Page pup.
-- The app icon, on the app in Atlassian's lists, on the panel and on the Dogears tab.
+- The app's avatar on Atlassian's screens, from the kit, if the developer console has an
+  avatar field (O7).
 - A brand kit: the logo files, the icon files, the colours, the typeface, the tagline, the
   thumbnail for Devpost, and short guidelines.
 
 **Out:**
 
+- The icon on the panel and on the Dogears tab. It is a PNG at a public web address, and
+  the address works only when the repo is public — `judge-ready-entry` adds it to the
+  manifest and checks it at 16 pixels in both themes (O6).
 - The stored property of a note. It keeps the key `stand-note`, so each note from before
   the rename still shows. Nobody sees the key — not planned.
 - The shipped specs, the decisions and the changelog. They keep their old text, as a
@@ -145,14 +148,15 @@ the build shows the new words on `dzaffren.atlassian.net`.
 flowchart LR
     K["Kit: symbol, icon, lockup"] -- "app avatar" --> A["Developer console: app named Dogear"]
     A -- "name and avatar" --> I["Install, consent and app-list screens"]
-    K -- "icon file in the manifest" --> P["Panel header: icon, Dogear"]
-    K -- "icon file in the manifest" --> T["Project tab: icon, Dogears"]
-    M["Manifest: name of the MCP server"] -- "Dogear" --> C["Agent: server Dogear, get-dogear, save-dogear"]
+    M["Manifest: titles and tool names"] -- "Dogear" --> P["Panel header: Dogear"]
+    M -- "Dogears" --> T["Project tab: Dogears"]
+    M -- "get-dogear, save-dogear" --> C["Agent: the server added as dogear"]
     K -- "lockup, colours, typeface" --> O["Outside Jira: README, Devpost thumbnail, video title card"]
 ```
 
-The kit gives the app its avatar and the icon of the panel and the tab. The manifest gives
-the agent the server's name. The README, the Devpost entry and the video take the lockup,
+The kit gives the app its avatar. The manifest gives the panel and the tab their titles, and
+gives the agent the two tool names. The icon of the panel and of the tab comes in
+`judge-ready-entry`, when the repo is public. The README, the Devpost entry and the video take the lockup,
 the colours and the typeface.
 
 ### The word
@@ -182,7 +186,7 @@ is "dogears". No text says "stand note", and no text says "note" alone for the d
 | Tab, small text | saved outside Stand Note | saved outside Dogear |
 | Tab, rule | A ticket is at risk when it has no stand note, or when it changed more than 1 hour after its note was saved. | A ticket is at risk when it has no dogear, or when it changed more than 1 hour after its dogear was saved. |
 | Tab, all current | Each of the 12 in-progress tickets has a current stand note. | Each of the 12 in-progress tickets has a current dogear. |
-| MCP server name | Stand Note | Dogear |
+| MCP server name, in the manifest | Stand Note | Dogear. An agent does not see it: Atlassian's server reports `integrations-service` (O8) |
 | Tool names | `get-stand-note`, `save-stand-note` | `get-dogear`, `save-dogear` |
 | Tool titles | Get stand note, Save stand note | Get dogear, Save dogear |
 | Read tool, first line | Stand note on PAY-142 | Dogear on PAY-142 |
@@ -229,7 +233,7 @@ The kit is in `docs/design/logo/kit`, from commit `38d4f32`. Its guidelines are 
 
 | Use | File in `docs/design/logo/kit` |
 | --- | ------------------------------ |
-| Panel and tab icon, 16 to 24 pixels | `svg/dogear-symbol-small.svg` |
+| Panel and tab icon, in `judge-ready-entry` | a PNG of `svg/dogear-symbol-small.svg`, at a public web address |
 | App avatar in Atlassian's screens | `png/dogear-app-icon-light-512.png` |
 | README header | `png/dogear-logo-horizontal-1200.png` |
 | Devpost thumbnail | `png/devpost-thumbnail.png` |
@@ -245,7 +249,158 @@ Ginger has a contrast of 3.5 to 1 on white and 4.6 to 1 on Jira's dark grey `#1D
 is enough for the symbol, and not for small text. The name in the logo is drawn shapes.
 Other text uses Montserrat.
 
-## Decisions to record
+## Technical plan
+
+### Approach
+
+The slice is a rename in place. Each text and each tool name that a person or an agent sees
+changes from "stand note" to "dogear". The stored property keeps the key `stand-note`, and
+the code keeps the word "note" in its file names and its helpers, because a dogear is a
+note. The app's name and avatar change by hand in Atlassian's developer console. The kit is
+already in the repo, so the build draws nothing.
+
+Relies on: D3, D4, D12, D14, D15, D19, D29, D30, D31
+
+```mermaid
+flowchart TB
+    subgraph repo
+        MF["manifest.yml: titles, server name, tool keys"]
+        SRC["src: panel, form, brief, tab, tool answers"]
+        DOC["README, OVERVIEW, ARCHITECTURE"]
+        KIT["docs/design/logo/kit"]
+    end
+    subgraph Atlassian
+        CON["Developer console: app name, avatar"]
+        JIRA["Jira: panel Dogear, tab Dogears"]
+        MCP["MCP server: get-dogear, save-dogear"]
+    end
+    MF -- "forge deploy" --> JIRA
+    MF -- "forge deploy" --> MCP
+    SRC -- "forge deploy" --> JIRA
+    SRC -- "forge deploy" --> MCP
+    KIT -- "avatar PNG, by hand" --> CON
+    KIT -- "logo PNG" --> DOC
+    CON -- "name Dogear" --> JIRA
+```
+
+The manifest and the source go to Jira and to the MCP server in one deploy. The name and the
+avatar go to the developer console by hand.
+
+```mermaid
+sequenceDiagram
+    participant G as Coding agent
+    participant M as Atlassian MCP server
+    participant T as getDogear in src/tools
+    participant J as Jira REST API
+    G->>M: tools/call get-dogear_development, issueKey PAY-142
+    M->>T: payload, the caller's account
+    T->>J: GET issue PAY-142 with the property stand-note
+    J-->>T: the stored note
+    T-->>M: "Dogear on PAY-142", the saved line, the four fields
+    M-->>G: one plain text
+```
+
+The agent calls the tool by its new name. The tool reads the same property as before, and
+answers with the new word.
+
+### Changes
+
+| File | What changes | Why |
+| ---- | ------------ | --- |
+| `manifest.yml:8`, `:16` | Panel title "Dogear", tab title "Dogears". The keys `stand-note-panel` and `stand-notes-page` stay, so Jira keeps the same modules. | Scenario 2 |
+| `manifest.yml:22-26` | Server name "Dogear", tools `get-dogear` and `save-dogear`. | Scenario 3 |
+| `manifest.yml:28-51` | The two actions: keys, names "Get dogear" and "Save dogear", and the descriptions from the Interface section. | Scenario 3 |
+| `manifest.yml:78-81` | Function keys `get-dogear-fn` and `save-dogear-fn`, handlers `index.getDogear` and `index.saveDogear`. | They sit beside the tool keys |
+| `src/index.js:2` | Exports `getDogear` and `saveDogear`. | The handlers above |
+| `src/tools/index.js:7`, `:16`, `:19`, `:30-35`, `:41`, `:48`, `:57`, `:65`, `:75-79` | The two function names, each answer text, and the log lines. | Scenario 3 |
+| `src/lib/age.js:21`, `:29` | "Dogear is 2 days behind", "Saved outside Dogear". | Scenarios 2 and 3 |
+| `src/lib/summary.js:5-8` | "has a current dogear". | Scenario 2 |
+| `src/frontend/index.jsx:45`, `:49`, `:74` | The load error, the spinner label, "No dogear yet". | Scenario 2 |
+| `src/frontend/NoteForm.jsx:32-34`, `:50-51`, `:59-61`, `:71` | "No dogear yet", "Mark where you stopped, so a teammate can carry on.", the save error, and the field ids. | Scenario 2 |
+| `src/frontend/BriefView.jsx:12`, `:41`, `:61` | "Not a dogear. Check it before you rely on it.", "Use as dogear". | Scenario 2 |
+| `src/frontend/at-risk.jsx:22`, `:32`, `:39`, `:107` | The column head, the tag "No dogear", "saved outside Dogear", the rule text. | Scenario 2 |
+| `src/resolvers/index.js:21`, `:68`, `:81`, `:138` | The error text, the log line, two comments. | Scenario 2 |
+| `src/lib/note.js:1`, `src/lib/signature.js:4-5` | Comments. `PROPERTY_KEY` stays `'stand-note'`. | Each note from before the rename still shows |
+| `package.json:2`, `package-lock.json` | The package name `dogear`. | The repo becomes public |
+| `test/tools.test.js`, `test/age.test.js`, `test/summary.test.js`, `test/risk.test.js`, `test/resolvers.test.js` | The expected texts and the two function names. | The texts above |
+| `test/note.test.js` | One new check: `PROPERTY_KEY` is `'stand-note'`. | Scenario 2: a note from before the rename still shows |
+| `test/brand.test.js` (new) | Three checks: no file in `src/` and no line of `manifest.yml` says "stand note", other than the property key; the README adds the server as `dogear`; each file that the kit's guidelines name is there. | Scenarios 2, 3 and 4 |
+| `e2e/panel.js:4`, `:10` | "No dogear yet", and a header match that takes "Dogear" and not "Dogears". | Scenario 2 |
+| `e2e/stand-note.spec.js:48`, `e2e/pick-up-brief.spec.js`, `e2e/at-risk-list.spec.js:35`, `:91`, `:115` | The new texts. | Scenario 2 |
+| `e2e/agent-checkpoint.spec.js`, `e2e/mcp.js:34`, `:55` | The tool names, the answer texts, the client names. | Scenario 3 |
+| `README.md` | Each section says Dogear. The logo is at the top. The server goes in as `dogear`, and the rule text for agents has the heading "Dogear". | Scenario 3 |
+| `OVERVIEW.md`, `docs/ARCHITECTURE.md` | Each text and each diagram label says Dogear and dogear. The slice names stay. | The repo becomes public |
+
+Reusing: `savedLine` and `behindLabel` in `src/lib/age.js`, `currentLine` in
+`src/lib/summary.js`, `openPanel` in `e2e/panel.js`, `callTool` in `e2e/mcp.js`. Each keeps
+its name and its job.
+
+These stay as they are: the name of the permission scheme in `e2e/setup-site.mjs:10`, which
+is on the site already; `e2e/.auth/mcp.json`; the shipped specs, `DECISIONS.md`,
+`CHANGELOG.md` and `docs/learnings/`.
+
+**Hand steps, by Dzafran.** The build does not do them, because each one changes something
+outside the repo:
+
+1. In the developer console, open the app, then Settings. Change the name to "Dogear". If
+   there is an avatar field, upload `docs/design/logo/kit/png/dogear-app-icon-light-512.png`.
+2. Rename the GitHub repo to `dogear`: `gh repo rename dogear`. Then run
+   `git remote set-url origin https://github.com/dzaffren/dogear.git`.
+3. After the deploy, open Connected apps in Atlassian Administration. Check that "Expose
+   tools to MCP-compatible apps" is still on for Dogear.
+4. Change the rule text in the `CLAUDE.md` of each repo where an agent uses the old tool
+   names.
+
+### Earn-it
+
+| Added | Triggered by |
+| ----- | ------------ |
+| `test/brand.test.js` | Scenario 2, "no text says stand note". No other test sees a text that the rename missed. |
+
+The slice adds no layer, no option and no dependency.
+
+### Non-functionals
+
+|                      |                                                                               |
+| -------------------- | ----------------------------------------------------------------------------- |
+| **Load**             | As before. The rename adds no call. |
+| **Breaks first**     | Nothing new at 10 times the load. An agent that still calls `get-stand-note` gets "tool not found" from the MCP server. |
+| **Security surface** | As before: the same scopes, the same callers, the same stored note. The signature of a note does not use the name of the app, so each signed note stays signed. |
+| **Proof it works**   | `bash scripts/forge.sh logs -e development` shows `dogear saved issue=PAY-142 via=agent` after a save from an agent. |
+| **Rollout**          | No flag. `npm run deploy` puts it in the development environment. To roll back, run `git revert` on the rename commits and deploy again. The stored notes need no change in either direction. |
+
+### Test plan
+
+| Scenario | Test | Command |
+| -------- | ---- | ------- |
+| 1, the site shows Dogear | Hand check: the list of apps in Atlassian Administration, after hand step 1 | — |
+| 2, the ticket and the project say Dogear | `e2e/stand-note.spec.js`, `e2e/pick-up-brief.spec.js`, `e2e/at-risk-list.spec.js`, `test/brand.test.js` | `npm test`, then `npm run deploy` and `npm run e2e` |
+| 2, a note from before the rename still shows | `test/note.test.js`, the new check of the property key. Hand check: open one ticket that had a note before the deploy | `npm test` |
+| 3, a coding agent sees Dogear | `e2e/agent-checkpoint.spec.js`, `test/tools.test.js`, `test/brand.test.js` | `npm test`, then `npm run e2e` |
+| 4, the brand kit | `test/brand.test.js` | `npm test` |
+
+`npm run lint` checks the manifest after the change of the keys.
+
+**E2E:** `e2e/agent-checkpoint.spec.js`, "an agent saves and the panel shows it". The agent
+saves with `save-dogear`, and the panel named Dogear shows the dogear.
+
+### Chunks
+
+Single chunk. One rename runs through the source, the tests and the docs, and a split leaves
+the tests red between the chunks.
+
+### Risks
+
+| Risk | Mitigation |
+| ---- | ---------- |
+| The new tool keys reset the admin switch "Expose tools to MCP-compatible apps", or the consent. | Hand step 3. The e2e test of the tools fails with a clear message if the switch is off. |
+| `forge deploy` stops and asks for a major version, as it did for the `llm` module. | Deploy with `--approve MAJOR_VERSION_RULE`, then run `forge install --upgrade`, as `docs/learnings/forge-llm.md` says. |
+| The header match `/^Dogear/` in `e2e/panel.js` also takes a button named "Dogears". | The match ends at the word: "Dogear" and then no "s". |
+| A hand step is skipped, and the site still shows "Stand Note". | The build report lists the four hand steps. Scenario 1 stays a hand check until Dzafran confirms it. |
+| The icon of the panel and of the tab is not in this slice. Until `judge-ready-entry`, Jira shows its generic icon there. | Accepted with O6. The rehearsal of `judge-ready-entry` checks the icon. |
+| An agent of the developer still has the old rule text and calls a tool that is gone. | Hand step 4. |
+
+### Decisions to record
 
 ## D29 · 2026-11-23 · One word, Dogear, for the app and for its note
 
@@ -269,6 +424,16 @@ Folded D has no dog, Corner reads as an arrow).
 Source: docs/specs/dogear-brand.md
 Status: active
 
+## D31 · 2026-11-23 · The icon in Jira is a PNG at a public web address
+
+Why: the docs call the panel's icon "the absolute URL of the icon", and they describe a
+folder of bundled files only for Custom UI. A web address needs no spike. The address works
+when the repo is public, so `judge-ready-entry` adds it.
+Rejected: a bundled icon file (not proven for a UI Kit app, and it needs a spike first), no
+icon in Jira (the panel and the tab keep the generic icon for good).
+Source: docs/specs/dogear-brand.md
+Status: active
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
@@ -278,6 +443,9 @@ Status: active
 | O3  | Which tagline goes with the name? | question | spec p1 | user | Resolved | "Mark where you stopped." It says what a dog-ear does. 2026-11-23 |
 | O4  | Trademark trackers show no live US mark DOGEAR for software. Three old applications for software are dead: 77338159, 97416162 and 98265832. One live mark, "D DOGEAR", covers bags, in class 18. The trackers can lag the register, and nobody searched outside the US. | flag | spec p1 | user | Accepted risk | Go on with Dogear. The entry is a hackathon project with no Marketplace listing, and the US trackers show no live mark for software. Accepted 2026-11-23 |
 | O5  | Which logo concept does the kit use: A, Fold-ear; B, Folded D; or C, Corner? | question | spec p2 | user | Resolved | None of the three. Another session drew a second round, and Dzafran chose Page pup there. Its kit is in `docs/design/logo/kit`, from commit `38d4f32`. A check of the kit against scenario 4 found each file, and the SVG audit of the two symbols found no issue. Drafted as D30. 2026-11-23 |
+| O6  | A UI Kit app can show its own icon file on the panel header and on the project tab. The manifest schema of Forge CLI 15.1.0 has an `icon` text of 255 characters at most on both modules. The docs call the panel's icon "the absolute URL of the icon". For the project page they say "a relative path from a declared resource". They describe a folder of static files only for Custom UI. | unproven | spec p3 | poc | Resolved | No spike. The icon is a PNG at a public web address. The address works only when the repo is public, so the manifest lines and the check at 16 pixels move to `judge-ready-entry`. Scenario 2 lost its icon lines. Drafted as D31. 2026-11-23 |
+| O7  | The developer console lets a developer set the avatar of a Forge app. The docs say that the name "can be changed in Settings". They say nothing on an avatar. Scenario 1 rests on it. | unproven | spec p3 | poc | Open | — |
+| O8  | Scenario 3 said "Then the server's name is "Dogear"". A probe on 2026-11-23 showed that Atlassian's MCP server reports the name `integrations-service` for each app. The name in the manifest does not reach the agent. | flag | spec p3 | user | Resolved | Scenario 3 checks the two tool names, and that the README adds the server under the name "dogear". The server name in the manifest still becomes Dogear. 2026-11-23 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
@@ -291,10 +459,13 @@ _Never delete this section or its rows. See references/ledger.md._
 - **Lockup** — the symbol and the wordmark in one fixed layout.
 - **Tagline** — one short line that goes with the name.
 - **Forge** — Atlassian's platform for apps that run inside Jira and its other products.
+- **Avatar** — the small picture of an app on Atlassian's screens.
 - **Developer console** — Atlassian's site where a developer manages a Forge app: its name, its icon and its installs.
 - **Manifest** — the file `manifest.yml`, which says what the app adds to Jira.
 - **MCP** — Model Context Protocol, the standard way an AI agent calls outside tools.
 - **MCP server** — the address where an agent finds the tools of the app.
+- **Spike** — a short test with throwaway code that answers one risky question.
+- **Custom UI** — the other way to build a Forge screen: the app ships its own web page. This app uses UI Kit.
 - **UI Kit** — Forge's set of ready-made screen parts, such as buttons and messages.
 - **Devpost** — the site that runs the hackathon and takes the entry.
 - **Page pup** — the chosen logo: a page with a dog's face, whose folded corner is the ear.
