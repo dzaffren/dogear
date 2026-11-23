@@ -290,4 +290,71 @@ when the repo is public, so `judge-ready-entry` adds it.
 Rejected: a bundled icon file (not proven for a UI Kit app, and it needs a spike first), no
 icon in Jira (the panel and the tab keep the generic icon for good).
 Source: docs/specs/dogear-brand.md
+Status: superseded by D38
+
+## D32 · 2026-11-23 · The judge's worked example is a guide, with no sample-ticket button
+
+Why: the guide gives the text of one ticket, and that ticket shows the Dogears tab, the
+brief and the dogear. The app gets no new code before the deadline.
+Rejected: a button that makes sample tickets (new code that writes tickets to the site of a
+stranger, and one more thing to test in production).
+Source: docs/specs/judge-ready-entry.md
+Status: active
+
+## D33 · 2026-11-23 · The rehearsal runs on a new site of a second account
+
+Why: a judge is not the developer of the app. Only a second account shows what a stranger
+sees at the install, at the consent and at the first brief.
+Rejected: a second site of the developer's account (the developer owns the app, so the
+install can differ), no clean site (nobody tests a first install).
+Source: docs/specs/judge-ready-entry.md
+Status: active
+
+## D34 · 2026-11-23 · The repo becomes public, with the skill file in it
+
+Why: the text of the MCP bonus prize names open-source `skill.md` files for third-party
+agents. One public repo holds the app and the skill file, and a judge can read the code.
+Rejected: a small public repo with only the skill file (two repos, and the skill file can
+drift from the app), the block in the guide only (nothing is open source).
+Source: docs/specs/judge-ready-entry.md
+Status: active
+
+## D35 · 2026-11-23 · The judge's guide is GUIDE.md at the repo root
+
+Why: a judge and a developer need different pages. One file for the judge takes one link
+from the Devpost entry, and the README keeps its generated block.
+Rejected: the judge's parts at the top of the README (one file for two readers), the steps
+only in the Devpost text (the repo has no guide, and a change after the deadline is not
+possible).
+Source: docs/specs/judge-ready-entry.md
+Status: active
+
+## D36 · 2026-11-23 · The skill file is skills/dogear/SKILL.md
+
+Why: Claude Code loads this folder form as a skill, so a judge adds it with one copy. The
+guide gives the same rule text as a block for other agents.
+Rejected: a plain `skill.md` at the repo root (no agent loads it as it is; a person pastes
+its text).
+Source: docs/specs/judge-ready-entry.md
+Status: active
+
+## D37 · 2026-11-24 · The history of main gets the noreply author, by a force-push
+
+Why: commits have the developer's private email address as the author, and a public repo
+shows it. A force-push takes the address out of `main` and keeps the repo, its name and
+its pull requests.
+Rejected: a new public repo with a clean history (the address is gone for good, but the
+pull requests stay behind in a private repo), no rewrite (the address is on `main`).
+Source: docs/specs/judge-ready-entry.md
+Status: active
+
+## D38 · 2026-11-23 · The icon in Jira is a bundled SVG file
+
+Why: a spike showed that a UI Kit app can bundle its icon: a resource with the folder
+`static/icons`, and `icon: resource:icons;dogear.svg` on the panel and on the tab. The icon
+needs no public repo, it is in the first production deploy, and an SVG stays sharp.
+Rejected: a PNG at a public web address (it works only when the repo is renamed and public,
+and nobody tried it), no icon in Jira (the panel and the tab keep the generic icon).
+Supersedes: D31
+Source: docs/specs/judge-ready-entry.md
 Status: active

@@ -158,7 +158,7 @@ About 3 minutes. The voice says "a coding agent", and the terminal shows no prod
 
 ## Decisions to record
 
-## D32 · 2026-11-23 · The pitch cites published surveys
+## D39 · 2026-11-23 · The pitch cites published surveys
 
 Why: judges score a "credible, specific case", and a judge can open the source of a
 published figure.
@@ -167,7 +167,7 @@ judge can check), no number (the case stays a story).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
-## D35 · 2026-11-23 · The demo video comes from the screen-demo pipeline of OpenMontage
+## D40 · 2026-11-23 · The demo video comes from the screen-demo pipeline of OpenMontage
 
 Why: the same pipeline made the videos of KinCart and Fire Watch, so its tools and its
 steps are known. A change of the script needs a new render, not a new take.
@@ -180,8 +180,8 @@ Status: active
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
 | --- | ---- | ---- | --------- | ----- | ------ | ------ |
-| O1  | Which number does the pitch use? (from `judge-ready-entry` O1) | flag | spec p1 | user | Resolved | Published surveys. The figure in the video is from Atlassian's State of Developer Experience 2025, because the rules bar third-party trademarks in the video. The Interface gives the figure and its sources. Drafted as D32. 2026-11-23 |
-| O2  | How is the demo video made? (from `judge-ready-entry` O4) | question | spec p1 | user | Resolved | The screen-demo pipeline of OpenMontage, as for KinCart and Fire Watch. Drafted as D35. 2026-11-23 |
+| O1  | Which number does the pitch use? (from `judge-ready-entry` O1) | flag | spec p1 | user | Resolved | Published surveys. The figure in the video is from Atlassian's State of Developer Experience 2025, because the rules bar third-party trademarks in the video. The Interface gives the figure and its sources. Drafted as D39. 2026-11-23 |
+| O2  | How is the demo video made? (from `judge-ready-entry` O4) | question | spec p1 | user | Resolved | The screen-demo pipeline of OpenMontage, as for KinCart and Fire Watch. Drafted as D40. 2026-11-23 |
 | O3  | The rules bar third-party trademarks in the video, and the video shows Claude Code. (from `judge-ready-entry` O7) | flag | spec p1 | user | Resolved | Hide the brand. The video shows the agent's terminal with no product name and no logo, and the voice says "a coding agent". 2026-11-23 |
 | O4  | Assuming the Devpost form of Codegeist has the usual Devpost fields. Nobody saw the form. (from `judge-ready-entry` O12) | assumption | spec p2 | user | Accepted risk | The build writes each text for the usual fields. When Dzafran starts the draft, Dzafran pastes the form's field list, and the build fits the texts then. A wrong guess costs a change of text. 2026-11-23 |
 | O5  | How long is the video? (from `judge-ready-entry` O13) | question | spec p2 | user | Resolved | About 3 minutes, in six beats. 2026-11-23 |

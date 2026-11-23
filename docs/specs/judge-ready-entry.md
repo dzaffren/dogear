@@ -126,7 +126,7 @@ Scenario: The judge connects a coding agent
 
 - A deploy of Dogear to the production environment of Forge, and an installation link
   that works on a site of another person.
-- The icon of the Dogear panel and of the Dogears tab in Jira, as a file in the app (D40).
+- The icon of the Dogear panel and of the Dogears tab in Jira, as a file in the app (D38).
 - This repo becomes public on GitHub, with a licence and the skill file for coding agents.
   A check of the files and the git history for secrets comes first. Dzafran makes the repo
   public.
@@ -227,7 +227,7 @@ the rehearsal. A spike on 2026-11-23 and 2026-11-24 proved the bundled icon and 
 production deploy (O16, O19). Production is deployed as version 2.0.0, with its own signing
 key, and no site has it installed.
 
-Relies on: D1, D3, D4, D12, D13, D14, D25, D29, D30, D33, D34, D36, D37, D38, D39, D40
+Relies on: D1, D3, D4, D12, D13, D14, D25, D29, D30, D32, D33, D34, D35, D36, D37, D38
 
 ```mermaid
 flowchart TB
@@ -320,9 +320,9 @@ sign-in from before the install does not list the tools.
 | New thing | What demands it |
 | --------- | --------------- |
 | The resource `icons` and one SVG file | Scenario 1: the panel and the tab show the icon. |
-| `GUIDE.md` | Scenarios 1 to 3, and D37. |
-| `skills/dogear/SKILL.md` | Scenario 3, and D38. |
-| `LICENSE` | D36: a public repo with no licence is not open source. |
+| `GUIDE.md` | Scenarios 1 to 3, and D35. |
+| `skills/dogear/SKILL.md` | Scenario 3, and D36. |
+| `LICENSE` | D34: a public repo with no licence is not open source. |
 | The script `deploy:prod` | The production deploy runs more than one time: now, and after each fix. |
 | `docs/entry/rehearsal.md` | The rehearsal is the e2e test of this slice, and it runs by hand. The file is its record. |
 
@@ -357,7 +357,7 @@ Production stays deployed, and the Forge account stays able to pay, until 2027-0
 | 2, two minutes | The rehearsal with a stopwatch: 2 minutes or less from the new ticket to the empty tab | by hand, on the clean site |
 | 3, the coding agent | The guide and the skill file answer with no sign-in. The rehearsal: the two tools are listed, a read answers, and a save shows in the panel. | `curl -sI` on both addresses, then by hand |
 
-The e2e test that walks the slice is the rehearsal (D34). It runs by hand, because the
+The e2e test that walks the slice is the rehearsal (D33). It runs by hand, because the
 install, the consent and the admin switch are steps of a person on a site of another
 account. `docs/entry/rehearsal.md` is its record. The Playwright tests stay on the
 development site, as the guard for the app itself.
@@ -382,98 +382,33 @@ Single chunk. The steps run in one order, and half of them wait for a step by ha
 
 ### Decisions to record
 
-## D33 · 2026-11-23 · The judge's worked example is a guide, with no sample-ticket button
-
-Why: the guide gives the text of one ticket, and that ticket shows the Dogears tab, the
-brief and the dogear. The app gets no new code before the deadline.
-Rejected: a button that makes sample tickets (new code that writes tickets to the site of a
-stranger, and one more thing to test in production).
-Source: docs/specs/judge-ready-entry.md
-Status: active
-
-## D34 · 2026-11-23 · The rehearsal runs on a new site of a second account
-
-Why: a judge is not the developer of the app. Only a second account shows what a stranger
-sees at the install, at the consent and at the first brief.
-Rejected: a second site of the developer's account (the developer owns the app, so the
-install can differ), no clean site (nobody tests a first install).
-Source: docs/specs/judge-ready-entry.md
-Status: active
-
-## D36 · 2026-11-23 · The repo becomes public, with the skill file in it
-
-Why: the text of the MCP bonus prize names open-source `skill.md` files for third-party
-agents. One public repo holds the app and the skill file, and a judge can read the code.
-Rejected: a small public repo with only the skill file (two repos, and the skill file can
-drift from the app), the block in the guide only (nothing is open source).
-Source: docs/specs/judge-ready-entry.md
-Status: active
-
-## D37 · 2026-11-23 · The judge's guide is GUIDE.md at the repo root
-
-Why: a judge and a developer need different pages. One file for the judge takes one link
-from the Devpost entry, and the README keeps its generated block.
-Rejected: the judge's parts at the top of the README (one file for two readers), the steps
-only in the Devpost text (the repo has no guide, and a change after the deadline is not
-possible).
-Source: docs/specs/judge-ready-entry.md
-Status: active
-
-## D38 · 2026-11-23 · The skill file is skills/dogear/SKILL.md
-
-Why: Claude Code loads this folder form as a skill, so a judge adds it with one copy. The
-guide gives the same rule text as a block for other agents.
-Rejected: a plain `skill.md` at the repo root (no agent loads it as it is; a person pastes
-its text).
-Source: docs/specs/judge-ready-entry.md
-Status: active
-
-## D39 · 2026-11-24 · The history of main gets the noreply author, by a force-push
-
-Why: commits have the developer's private email address as the author, and a public repo
-shows it. A force-push takes the address out of `main` and keeps the repo, its name and
-its pull requests.
-Rejected: a new public repo with a clean history (the address is gone for good, but the
-pull requests stay behind in a private repo), no rewrite (the address is on `main`).
-Source: docs/specs/judge-ready-entry.md
-Status: active
-
-## D40 · 2026-11-23 · The icon in Jira is a bundled SVG file
-
-Why: a spike showed that a UI Kit app can bundle its icon: a resource with the folder
-`static/icons`, and `icon: resource:icons;dogear.svg` on the panel and on the tab. The icon
-needs no public repo, it is in the first production deploy, and an SVG stays sharp.
-Rejected: a PNG at a public web address (it works only when the repo is renamed and public,
-and nobody tried it), no icon in Jira (the panel and the tab keep the generic icon).
-Supersedes: D31
-Source: docs/specs/judge-ready-entry.md
-Status: active
+Recorded as D32, D33, D34, D35, D36, D37, D38.
 
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
 | --- | ---- | ---- | --------- | ----- | ------ | ------ |
-| O1  | The pitch has no number for how often a ticket changes hands or what a bad handover costs. Judges score a "credible, specific case". Which number does the pitch use? (from shape O7) | flag | shape | user | Resolved | Published surveys: Atlassian's State of Developer Experience 2025 and the Stack Overflow survey of 2022. They measure lost time and knowledge silos, not handovers alone. The build reads each figure at its primary source, and the video shows one with its source. Drafted as D32. 2026-11-23. The figure in the video is from Atlassian's report, because the rules bar third-party trademarks in the video. 2026-11-23 |
-| O2  | A judge's site has no stand notes. How does the judge get a worked example? | question | spec p1 | user | Resolved | The guide only. It gives the text of one ticket, and the judge makes the ticket. The app gets no new code. Drafted as D33. 2026-11-23 |
-| O3  | The rehearsal needs a clean site: Stand Note never installed, and an admin who is not the developer. Who makes it? | question | spec p1 | user | Resolved | Dzafran signs up a second Atlassian account with another email and makes a free Jira site. Drafted as D34. 2026-11-23 |
-| O4  | How is the demo video made? | question | spec p1 | user | Resolved | The same way as the videos of KinCart and Fire Watch: the screen-demo pipeline of OpenMontage. Playwright records the browser, a paid text-to-speech voice reads the script, and Remotion joins them with titles and captions. The Claude Code part is a terminal, so pause 3 plans its capture. Drafted as D35. 2026-11-23 |
+| O1  | The pitch has no number for how often a ticket changes hands or what a bad handover costs. Judges score a "credible, specific case". Which number does the pitch use? (from shape O7) | flag | shape | user | Resolved | Published surveys: Atlassian's State of Developer Experience 2025 and the Stack Overflow survey of 2022. They measure lost time and knowledge silos, not handovers alone. The build reads each figure at its primary source, and the video shows one with its source. Drafted as D39. 2026-11-23. The figure in the video is from Atlassian's report, because the rules bar third-party trademarks in the video. 2026-11-23 |
+| O2  | A judge's site has no stand notes. How does the judge get a worked example? | question | spec p1 | user | Resolved | The guide only. It gives the text of one ticket, and the judge makes the ticket. The app gets no new code. Drafted as D32. 2026-11-23 |
+| O3  | The rehearsal needs a clean site: Stand Note never installed, and an admin who is not the developer. Who makes it? | question | spec p1 | user | Resolved | Dzafran signs up a second Atlassian account with another email and makes a free Jira site. Drafted as D33. 2026-11-23 |
+| O4  | How is the demo video made? | question | spec p1 | user | Resolved | The same way as the videos of KinCart and Fire Watch: the screen-demo pipeline of OpenMontage. Playwright records the browser, a paid text-to-speech voice reads the script, and Remotion joins them with titles and captions. The Claude Code part is a terminal, so pause 3 plans its capture. Drafted as D40. 2026-11-23 |
 | O5  | Assuming the rules are as three secondary pages give them: an installation link with instructions, a public YouTube video under 5 minutes that covers the bonus prize, a text description, and five criteria at 20% each. Devpost refused the read of the official page. One page also says "no third-party trademarks" in the video, and the video shows Claude Code. | assumption | spec p1 | user | Resolved | Dzafran pasted the official rules on 2026-11-23, after Chrome hit a bot check. The secondary pages were right, with three changes. The video limit is 5 minutes, with no 3-minute clause. The rule on third-party trademarks is real: see O7. The three prizes are for each category. The Problem section lists what the rules ask. 2026-11-23 |
 | O6  | The working name is Stand Note. Is it the name of the entry? | question | spec p1 | user | Resolved | No. The name is Dogear: the folded page corner that marks where a reader stopped. The note in the panel stays a "stand note". Understudy was the first pick, but a US trademark application for UNDERSTUDY is pending for AI developer tools, and an open-source AI agent has the name. A web search found no product named Dogear. Nobody searched the trademark register. 2026-11-23. Changed by O1 of `dogear-brand` on 2026-11-23: the note is a "dogear" too. The texts of this spec follow at its next pause. |
 | O7  | The rules say that the video "must not include third party trademarks" with no permission. The video shows Claude Code, which is Anthropic's name and logo. | flag | spec p1 | user | Resolved | Hide the brand. The video shows the agent's terminal at work, with no product name and no logo, and the voice says "a coding agent". The written guide still names Claude Code, because a judge needs the exact steps. 2026-11-23 |
-| O8  | The text of the MCP bonus prize names open-source `skill.md` files that users add to their agents. The README has that text as a block to copy, and this repo is private. Does the entry ship a public skill file? | question | spec p1 | user | Resolved | Yes. This repo becomes public on GitHub, with the skill file in it and a licence. A check of the files and the git history for secrets comes first. Dzafran makes the repo public. Drafted as D36. 2026-11-23 |
+| O8  | The text of the MCP bonus prize names open-source `skill.md` files that users add to their agents. The README has that text as a block to copy, and this repo is private. Does the entry ship a public skill file? | question | spec p1 | user | Resolved | Yes. This repo becomes public on GitHub, with the skill file in it and a licence. A check of the files and the git history for secrets comes first. Dzafran makes the repo public. Drafted as D34. 2026-11-23 |
 | O9  | Judges score design at 20%: "a complete, coherent product". The app has Forge's default icon. Is an icon for Dogear in this slice? | question | spec p1 | user | Resolved | No. The rename, the logo, the icon and the shared look are their own slice, `dogear-brand`, which ships first. This slice depends on it. A third area would break the size limit of this spec. 2026-11-23 |
 | O10 | From O6 of `dogear-brand`: the icon of the panel and of the Dogears tab is a PNG at a public web address. This slice adds the address to the manifest after the repo is public, and checks the icon at 16 pixels in Jira's light theme and in its dark theme. | flag | spec p1 | user | Resolved | Dzafran chose the web address on 2026-11-23, in `dogear-brand`. Recorded there as D31. The scenarios of this spec take it in at the next pause. 2026-11-23 |
-| O11 | Where does the judge's guide live? | question | spec p2 | user | Resolved | `GUIDE.md` at the repo root. The first line of the README links to it, and so does the Devpost entry. The README stays the developer's page. Drafted as D37. 2026-11-23 |
+| O11 | Where does the judge's guide live? | question | spec p2 | user | Resolved | `GUIDE.md` at the repo root. The first line of the README links to it, and so does the Devpost entry. The README stays the developer's page. Drafted as D35. 2026-11-23 |
 | O12 | Assuming the Devpost form of Codegeist has the usual Devpost fields: name, tagline, a story in Markdown, built with, links, a video link, a thumbnail and a gallery. Devpost refuses automated reads, so nobody saw the form. | assumption | spec p2 | user | Accepted risk | The build writes each text to a Markdown file for the usual fields. When Dzafran starts the draft on Devpost, Dzafran pastes the form's field list, and the build fits the texts then. A wrong guess costs a change of text, not of the app. 2026-11-23 |
 | O13 | How long is the video? The rules allow less than 5 minutes, and judges need not watch more. | question | spec p2 | user | Resolved | About 3 minutes, in six beats. 2026-11-23 |
-| O14 | Which form and place does the skill file have? The bonus prize text says "open-source `skill.md` files". | question | spec p2 | user | Resolved | `skills/dogear/SKILL.md`, in the folder form that Claude Code loads as a skill. The guide gives the same rule text as a block for `AGENTS.md`, for other agents. Drafted as D38. 2026-11-23 |
+| O14 | Which form and place does the skill file have? The bonus prize text says "open-source `skill.md` files". | question | spec p2 | user | Resolved | `skills/dogear/SKILL.md`, in the folder form that Claude Code loads as a skill. The guide gives the same rule text as a block for `AGENTS.md`, for other agents. Drafted as D36. 2026-11-23 |
 
-| O15 | This slice grew after pause 1: the icon, the public repo, the licence, the skill file and a secrets check. Does the video and the Devpost entry split off? | question | spec p3 | user | Resolved | Yes. `submit-entry` takes the fourth and fifth scenarios, "The demo video is public" and "The entry is submitted", with the Devpost and video parts of the Interface and the drafts D32 and D35. The rows O1, O4, O5, O7, O12 and O13 stay here as the record, and `submit-entry` carries their answers. 2026-11-23 |
-| O16 | The Forge docs say that a UI Kit app can bundle its icon: `icon: resource:<key>;<path>`. D31 chose a public web address because a bundled file was not proven. Does a bundled icon show in the panel and in the tab, in the light theme and in the dark theme? | unproven | spec p3 | poc | Resolved | Yes, in the light theme. A spike on 2026-11-23 added a resource `icons` with the folder `static/icons`, and `icon: resource:icons;dogear.svg` on both modules, with the kit's `dogear-symbol-small.svg`. `forge lint` and the deploy took it, with a minor version. Jira served the file from `icon.cdn.prod.atlassian-dev.net`, and screenshots showed the icon beside "Dogear" in the panel and beside "Dogears" in the tab. Jira did not switch the test account to its dark theme, so dark was checked only on a rendered sample: the icon at 16 and 24 pixels on `#1D2125`. The rehearsal checks the dark theme on the site. Drafted as D40, which supersedes D31. 2026-11-23 |
-| O17 | Four commits have Dzafran's Gmail address as the author. A public repo shows it. | flag | spec p3 | user | Resolved | Rewrite the history first. Before the repo is public, the author of those commits becomes GitHub's noreply address, and `main` is force-pushed. Each commit hash changes. Drafted as D39. 2026-11-23 |
+| O15 | This slice grew after pause 1: the icon, the public repo, the licence, the skill file and a secrets check. Does the video and the Devpost entry split off? | question | spec p3 | user | Resolved | Yes. `submit-entry` takes the fourth and fifth scenarios, "The demo video is public" and "The entry is submitted", with the Devpost and video parts of the Interface and the drafts D39 and D40. The rows O1, O4, O5, O7, O12 and O13 stay here as the record, and `submit-entry` carries their answers. 2026-11-23 |
+| O16 | The Forge docs say that a UI Kit app can bundle its icon: `icon: resource:<key>;<path>`. D31 chose a public web address because a bundled file was not proven. Does a bundled icon show in the panel and in the tab, in the light theme and in the dark theme? | unproven | spec p3 | poc | Resolved | Yes, in the light theme. A spike on 2026-11-23 added a resource `icons` with the folder `static/icons`, and `icon: resource:icons;dogear.svg` on both modules, with the kit's `dogear-symbol-small.svg`. `forge lint` and the deploy took it, with a minor version. Jira served the file from `icon.cdn.prod.atlassian-dev.net`, and screenshots showed the icon beside "Dogear" in the panel and beside "Dogears" in the tab. Jira did not switch the test account to its dark theme, so dark was checked only on a rendered sample: the icon at 16 and 24 pixels on `#1D2125`. The rehearsal checks the dark theme on the site. Drafted as D38, which supersedes D31. 2026-11-23 |
+| O17 | Four commits have Dzafran's Gmail address as the author. A public repo shows it. | flag | spec p3 | user | Resolved | Rewrite the history first. Before the repo is public, the author of those commits becomes GitHub's noreply address, and `main` is force-pushed. Each commit hash changes. Drafted as D37. 2026-11-23 |
 | O18 | Forge LLM has no free quota. Each pick-up brief on a judge's site is billed to the developer: about 0.6 to 1.2 US cents with Claude Haiku, from the price table read on 2026-11-23. D25 caps a site at 50 briefs a day. | flag | spec p3 | user | Resolved | Accept the cost and keep the cap of 50. No code change. 2026-11-23 |
 | O19 | The docs do not say three things about production: the names of the two MCP tools, whether a brief works with no payment method on the developer's Forge account, and whether one site can have the development and the production install at once. | unproven | spec p3 | poc | Resolved | A spike on 2026-11-23 and 2026-11-24 deployed version 2.0.0 to production and installed it on `dzaffren.atlassian.net`. The tool names in production are `get-dogear` and `save-dogear`, with no suffix. They showed only after the admin switch was on and after a new MCP sign-in: a sign-in from before the install listed only the development tools. A call of `get-dogear` by a person who had not opened the production panel answered "select Allow access". A pick-up brief worked with no billing step: the model answered in 3 seconds. One site held both installs, with two panels on a ticket. The production install is removed from that site again. Production stays deployed, with its own `NOTE_SIGNING_KEY`. 2026-11-24 |
-| O20 | The five merged pull requests keep their old commits on GitHub, with Dzafran's Gmail address. A force-push of `main` does not remove them. | flag | spec p3 | user | Accepted risk | Force-push `main` and make this repo public. The address is gone from `main`, and it stays readable in the pull requests. Dzafran chose this over a new repo with a clean history. Drafted in D39. 2026-11-24 |
+| O20 | The five merged pull requests keep their old commits on GitHub, with Dzafran's Gmail address. A force-push of `main` does not remove them. | flag | spec p3 | user | Accepted risk | Force-push `main` and make this repo public. The address is gone from `main`, and it stays readable in the pull requests. Dzafran chose this over a new repo with a clean history. Drafted in D37. 2026-11-24 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
