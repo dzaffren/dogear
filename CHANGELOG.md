@@ -16,6 +16,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The at-risk list puts the tickets with no note first, then says how far each other note is behind, such as "Note is 2 days behind".
 - On a ticket with no stand note, a person selects "Build a brief from Jira" and gets a brief that AI builds from the description, comments, history and links, with "Not known" where Jira does not say.
 - A person who can edit the ticket turns the brief into the stand note through the note form, and checks each field before the save.
+- The app has a name, Dogear, and a logo. The note on each ticket is now a dogear, and the project tab is Dogears.
+
+### Changed
+
+- BREAKING: The MCP tools are now `get-dogear` and `save-dogear`; change `get-stand-note` and `save-stand-note` in the rule text of your agent.
 
 ### Security
 

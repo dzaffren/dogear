@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 944 256">
+  <title>Dogear concept: Folded d, lockup</title>
+  <path fill="#000" fill-rule="evenodd" d="M142 32 H176 A48 48 0 0 1 224 80 V176 A48 48 0 0 1 176 224 H80 A48 48 0 0 1 32 176 V142 H80 A62 62 0 0 0 142 80 Z M74 178 A24 24 0 1 0 122 178 A24 24 0 1 0 74 178 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M128 32 V80 A48 48 0 0 1 80 128 H32 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M304 126 A50 50 0 1 0 404 126 A50 50 0 1 0 304 126 Z M330 126 A24 24 0 1 0 378 126 A24 24 0 1 0 330 126 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M378 24 H404 V176 H378 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M416 126 A50 50 0 1 0 516 126 A50 50 0 1 0 416 126 Z M442 126 A24 24 0 1 0 490 126 A24 24 0 1 0 442 126 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M528 126 A50 50 0 1 0 628 126 A50 50 0 1 0 528 126 Z M554 126 A24 24 0 1 0 602 126 A24 24 0 1 0 554 126 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M602 126 H628 V178 H602 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M628 178 A50 50 0 0 1 534.7 203 L557.22 190 A24 24 0 0 0 602 178 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M728.3 158.14 A50 50 0 1 1 738.54 138 H669.22 A24 24 0 0 0 708.39 141.43 Z M669.22 114 A24 24 0 0 1 710.78 114 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M752 126 A50 50 0 1 0 852 126 A50 50 0 1 0 752 126 Z M778 126 A24 24 0 1 0 826 126 A24 24 0 1 0 778 126 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M826 76 H852 V176 H826 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M866 76 H892 V176 H866 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M866 126 A50 50 0 0 1 941 82.7 L928 105.22 A24 24 0 0 0 892 126 Z"/>
+</svg>

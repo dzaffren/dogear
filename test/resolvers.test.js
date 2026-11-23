@@ -110,7 +110,7 @@ beforeEach(() => {
 });
 
 describe('getNote', () => {
-  it('returns no note on a ticket with no stand note', async () => {
+  it('returns no note on a ticket with no dogear', async () => {
     expect(await getNote({ context: context('acc-aisyah') })).toEqual({
       note: null,
       savedByName: null,

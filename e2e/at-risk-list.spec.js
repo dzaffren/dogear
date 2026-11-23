@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 import { deleteNote, findOrCreateIssue, jira, mainAccountId, moveTo, setNote, touch } from './jira.js';
 
 // The tests run on project SNR (D20), where only this file changes the tickets. The main
-// account sets the notes through the Jira API, so Stand Note did not sign them, and a row
-// says "saved outside Stand Note". Jira does not let a test set the Updated time, so a note
+// account sets the notes through the Jira API, so Dogear did not sign them, and a row
+// says "saved outside Dogear". Jira does not let a test set the Updated time, so a note
 // that is behind gets a savedAt two days back, and then `touch` changes the ticket.
 //
 // SNR uses the classic Kanban workflow, which has no In Review status. The current ticket
@@ -32,7 +32,7 @@ const assign = (issueKey, accountId) => jira('PUT', `/rest/api/3/issue/${issueKe
 
 const openList = async (page) => {
   await page.goto(PAGE);
-  await expect(page.getByRole('heading', { name: 'Stand notes', exact: true })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole('heading', { name: 'Dogears', exact: true })).toBeVisible({ timeout: 60_000 });
 };
 
 const rowOf = (page, issueKey) => page.getByRole('row').filter({ has: page.getByRole('link', { name: issueKey, exact: true }) });
@@ -81,14 +81,14 @@ test('lists the tickets at risk', async ({ page }) => {
   await expect(first.getByRole('link', { name: keys.partial, exact: true })).toBeVisible();
   await expect(first).toContainText('Add partial refunds');
   await expect(first).toContainText(mainName);
-  await expect(first).toContainText('No note');
+  await expect(first).toContainText('No dogear');
 
   const second = rows.nth(2);
   await expect(second.getByRole('link', { name: keys.endpoint, exact: true })).toBeVisible();
   await expect(second).toContainText('Add refund endpoint');
   await expect(second).toContainText('Unassigned');
-  await expect(second).toContainText('Note is 2 days behind');
-  await expect(second).toContainText('saved outside Stand Note');
+  await expect(second).toContainText('Dogear is 2 days behind');
+  await expect(second).toContainText('saved outside Dogear');
 
   for (const key of [keys.settlement, keys.webhooks, keys.sandbox]) await expect(rowOf(page, key)).toHaveCount(0);
 });
@@ -112,7 +112,7 @@ test('no ticket is at risk', async ({ page }) => {
   await openList(page);
 
   await expect(page.getByText('No ticket is at risk', { exact: true })).toBeVisible();
-  await expect(page.getByText('Each of the 3 in-progress tickets has a current stand note.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Each of the 3 in-progress tickets has a current dogear.', { exact: true })).toBeVisible();
   await expect(page.getByRole('table')).toHaveCount(0);
 });
 

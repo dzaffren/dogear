@@ -29,9 +29,9 @@ const NoteForm = ({ note, onSaved, onCancel, children }) => {
 
   const area = (field, label, placeholder) => (
     <Stack space="space.050">
-      <Label labelFor={`stand-note-${field}`}>{label}</Label>
+      <Label labelFor={`dogear-${field}`}>{label}</Label>
       <TextArea
-        id={`stand-note-${field}`}
+        id={`dogear-${field}`}
         value={texts[field]}
         onChange={set(field)}
         placeholder={placeholder}
@@ -47,8 +47,8 @@ const NoteForm = ({ note, onSaved, onCancel, children }) => {
     <Stack space="space.150">
       {!note && (
         <Stack space="space.050">
-          <Text weight="medium">No stand note yet</Text>
-          <Text>Say where the work stands, so a teammate can carry on.</Text>
+          <Text weight="medium">No dogear yet</Text>
+          <Text>Mark where you stopped, so a teammate can carry on.</Text>
         </Stack>
       )}
       {children}
@@ -56,9 +56,9 @@ const NoteForm = ({ note, onSaved, onCancel, children }) => {
       {area('next', 'Next', 'The next step')}
       {area('watchOut', 'Watch out', 'Traps, and what you tried that failed')}
       <Stack space="space.050">
-        <Label labelFor="stand-note-code">Code</Label>
+        <Label labelFor="dogear-code">Code</Label>
         <Textfield
-          id="stand-note-code"
+          id="dogear-code"
           value={texts.code}
           onChange={set('code')}
           placeholder="Branch name or link"
@@ -68,7 +68,7 @@ const NoteForm = ({ note, onSaved, onCancel, children }) => {
       </Stack>
       {saveFailed && (
         <SectionMessage appearance="error">
-          <Text>The note was not saved. Try again.</Text>
+          <Text>The dogear was not saved. Try again.</Text>
         </SectionMessage>
       )}
       <Inline space="space.100">

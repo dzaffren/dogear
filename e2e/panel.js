@@ -1,13 +1,13 @@
 import { expect } from '@playwright/test';
 
 export const panelContent = (page) =>
-  page.getByText('No stand note yet').or(page.getByText(/^Saved by /)).or(page.getByLabel('Done')).first();
+  page.getByText('No dogear yet').or(page.getByText(/^Saved by /)).or(page.getByLabel('Done')).first();
 
 // Opens the ticket and expands the panel. Jira re-renders the ticket a few seconds after
 // it loads and collapses the panel again, so expand until the panel content shows.
 export const openPanel = async (page, key) => {
   await page.goto(`/browse/${key}`);
-  const header = page.getByRole('button', { name: /^Stand note/ });
+  const header = page.getByRole('button', { name: /^Dogear(?!s)/ });
   await expect(header).toContainText('Where the work stands');
   await expect(async () => {
     if ((await header.getAttribute('aria-expanded')) === 'true') await header.click();

@@ -9,7 +9,7 @@ const MESSAGES = {
   limit: { appearance: 'warning', text: 'This site built its 50 briefs for today. Try again tomorrow.' },
 };
 
-// The button on a ticket with no stand note, with the message of the last try above it.
+// The button on a ticket with no dogear, with the message of the last try above it.
 // After "too little" the button goes, because a second try gives the same answer.
 export const BriefButton = ({ building, message, onBuild }) => (
   <Stack space="space.100">
@@ -38,7 +38,7 @@ const BriefView = ({ brief, sourceLine, canEdit, onUse }) => (
         <Lozenge appearance="new">AI</Lozenge>
       </Inline>
       <Text size="small" color="color.text.subtle">
-        Not a stand note. Check it before you rely on it.
+        Not a dogear. Check it before you rely on it.
       </Text>
     </Stack>
     {FIELDS.map((field) => (
@@ -58,7 +58,7 @@ const BriefView = ({ brief, sourceLine, canEdit, onUse }) => (
     {canEdit && (
       <Stack alignInline="start">
         <Button appearance="primary" onClick={onUse}>
-          Use as stand note
+          Use as dogear
         </Button>
       </Stack>
     )}

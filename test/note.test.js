@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { cleanNote, MAX_LENGTH, tooLong } from '../src/lib/note';
+import { cleanNote, MAX_LENGTH, PROPERTY_KEY, tooLong } from '../src/lib/note';
+
+describe('PROPERTY_KEY', () => {
+  it('stays the key from before the rename, so each old note still shows', () => {
+    expect(PROPERTY_KEY).toBe('stand-note');
+  });
+});
 
 describe('cleanNote', () => {
   it('keeps the four texts, trimmed', () => {

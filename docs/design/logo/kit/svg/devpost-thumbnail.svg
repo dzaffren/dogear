@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1000">
+  <title>Dogear thumbnail for Devpost</title>
+  <rect width="1500" height="1000" fill="#FFF6EA"/>
+  <g id="logo" transform="translate(351.25 105) scale(1.1)">
+  <g transform="translate(196.1 -9.6) scale(1.3)">
+    <path fill="#E55F12" fill-rule="evenodd" d="M138 32 H176 A48 48 0 0 1 224 80 V176 A48 48 0 0 1 176 224 H80 A48 48 0 0 1 32 176 V138 A8 8 0 0 1 40 130 H76 A54 54 0 0 0 130 76 V40 A8 8 0 0 1 138 32 Z M76 156 A14 14 0 1 0 104 156 A14 14 0 1 0 76 156 Z M152 156 A14 14 0 1 0 180 156 A14 14 0 1 0 152 156 Z M115.25 192.31 A10 10 0 0 1 123.01 176 L132.99 176 A10 10 0 0 1 140.75 192.31 L135.76 198.45 A10 10 0 0 1 120.24 198.45 Z"/>
+    <path fill="#E55F12" fill-rule="evenodd" d="M109.17 38.83 A4 4 0 0 1 116 41.66 L116 76 A40 40 0 0 1 76 116 L41.66 116 A4 4 0 0 1 38.83 109.17 Z"/>
+  </g>
+  <g transform="translate(0 286)">
+    <path fill="#231A14" fill-rule="evenodd" d="M106 24 H132 V174.5 H106 V169.86 A50 50 0 1 1 106 82.14 Z M58 126 A24 24 0 1 0 106 126 A24 24 0 1 0 58 126 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M150 126 A50 50 0 1 0 250 126 A50 50 0 1 0 150 126 Z M176 126 A24 24 0 1 0 224 126 A24 24 0 1 0 176 126 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M338 77.5 H364 V184 A50 50 0 0 1 270.7 209 L293.22 196 A24 24 0 0 0 338 184 V169.86 A50 50 0 1 1 338 82.14 Z M290 126 A24 24 0 1 0 338 126 A24 24 0 1 0 290 126 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M470.3 158.14 A50 50 0 1 1 480.54 138 H411.22 A24 24 0 0 0 450.39 141.43 Z M411.22 114 A24 24 0 0 1 452.78 114 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M568 77.5 H594 V174.5 H568 V169.86 A50 50 0 1 1 568 82.14 Z M520 126 A24 24 0 1 0 568 126 A24 24 0 1 0 520 126 Z"/>
+    <path fill="#231A14" fill-rule="evenodd" d="M618 77.5 H644 V82.14 A50 50 0 0 1 693 82.7 L680 105.22 A24 24 0 0 0 644 126 V174.5 H618 Z"/>
+  </g>
+  </g>
+  <text x="750" y="868" text-anchor="middle" font-family="Montserrat" font-weight="600" font-size="54" fill="#231A14">Mark where you stopped.</text>
+</svg>

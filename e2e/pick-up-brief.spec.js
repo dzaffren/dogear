@@ -39,13 +39,13 @@ test.beforeAll(async () => {
   mainName = (await jira('GET', `/rest/api/3/user?accountId=${await mainAccountId()}`)).displayName;
 });
 
-test('builds a brief and saves it as the stand note', async ({ page }) => {
+test('builds a brief and saves it as the dogear', async ({ page }) => {
   await deleteNote(receiptKey);
   await replay(page, { status: 'brief', brief, sourceLine });
   await openPanel(page, receiptKey);
 
   await buildButton(page).click();
-  await expect(page.getByText('Not a stand note. Check it before you rely on it.')).toBeVisible();
+  await expect(page.getByText('Not a dogear. Check it before you rely on it.')).toBeVisible();
   for (const label of ['Done', 'Next', 'Watch out', 'Code']) await expect(page.getByText(label, { exact: true })).toBeVisible();
   await expect(page.getByText(brief.done, { exact: true })).toBeVisible();
   await expect(page.getByText(brief.next, { exact: true })).toBeVisible();
@@ -54,7 +54,7 @@ test('builds a brief and saves it as the stand note', async ({ page }) => {
   await expect(page.getByText(sourceLine)).toBeVisible();
   expect(await getNote(receiptKey)).toBeNull();
 
-  await page.getByRole('button', { name: 'Use as stand note' }).click();
+  await page.getByRole('button', { name: 'Use as dogear' }).click();
   await expect(page.getByLabel('Done')).toHaveValue(brief.done);
   await expect(page.getByLabel('Next')).toHaveValue(brief.next);
   await expect(page.getByLabel('Watch out')).toHaveValue('');
@@ -66,7 +66,7 @@ test('builds a brief and saves it as the stand note', async ({ page }) => {
 
   await expect(page.getByText(next, { exact: true })).toBeVisible();
   await expect(page.getByText(`Saved by ${mainName}, just now`)).toBeVisible();
-  await expect(page.getByText('Not a stand note. Check it before you rely on it.')).toHaveCount(0);
+  await expect(page.getByText('Not a dogear. Check it before you rely on it.')).toHaveCount(0);
   await expect(buildButton(page)).toHaveCount(0);
   expect(await getNote(receiptKey)).toMatchObject({ done: brief.done, next, watchOut: '', code: brief.code });
 });
@@ -98,7 +98,7 @@ test('a brief that answers after the save does not replace the note form', async
   await briefAnswered;
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   await expect(page.getByLabel('Done')).toHaveValue(done);
-  await expect(page.getByText('Not a stand note. Check it before you rely on it.')).toHaveCount(0);
+  await expect(page.getByText('Not a dogear. Check it before you rely on it.')).toHaveCount(0);
 });
 
 test('says when the ticket has too little', async ({ page }) => {
@@ -127,6 +127,6 @@ test('shows the limit message', async ({ page }) => {
 
   await buildButton(page).click();
   await expect(page.getByText('This site built its 50 briefs for today. Try again tomorrow.')).toBeVisible();
-  await expect(page.getByText('Not a stand note. Check it before you rely on it.')).toHaveCount(0);
+  await expect(page.getByText('Not a dogear. Check it before you rely on it.')).toHaveCount(0);
   await expect(buildButton(page)).toBeVisible();
 });

@@ -19,7 +19,7 @@ const HEAD = {
   cells: [
     { key: 'ticket', content: 'Ticket' },
     { key: 'assignee', content: 'Assignee' },
-    { key: 'note', content: 'Stand note' },
+    { key: 'note', content: 'Dogear' },
     { key: 'change', content: 'Last change' },
   ],
 };
@@ -29,14 +29,14 @@ const NoteCell = ({ row }) => (
   <Stack space="space.050">
     <Inline>
       {row.gapMs === null ? (
-        <Lozenge appearance="removed">No note</Lozenge>
+        <Lozenge appearance="removed">No dogear</Lozenge>
       ) : (
         <Lozenge appearance="moved">{behindLabel(row.gapMs)}</Lozenge>
       )}
     </Inline>
     {row.outside && (
       <Text size="small" color="color.text.subtle">
-        saved outside Stand Note
+        saved outside Dogear
       </Text>
     )}
   </Stack>
@@ -104,7 +104,7 @@ const App = () => {
           {rows.length} of {tickets(checked)} {rows.length === 1 && checked === 1 ? 'is' : 'are'} at risk
         </Heading>
         <Text size="small" color="color.text.subtle">
-          A ticket is at risk when it has no stand note, or when it changed more than 1 hour after its note was
+          A ticket is at risk when it has no dogear, or when it changed more than 1 hour after its dogear was
           saved.
         </Text>
         {inProgress > checked && (
