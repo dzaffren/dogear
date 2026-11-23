@@ -27,6 +27,7 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 - A coding agent such as Claude Code saves the dogear on a Jira ticket as it works, and a second agent reads it and carries on.
 - A lead opens one page in a Jira project and sees each in-progress ticket that has no dogear, or a dogear that is behind the last work.
 - A person opens a ticket with no dogear, selects one button, and gets a brief that AI builds from what Jira has.
+- The app and its note get one name, Dogear, with a logo and one brand kit for the guide, the Devpost entry and the video.
 
 ## Docs
 
