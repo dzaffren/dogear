@@ -202,4 +202,5 @@ _Never delete this section or its rows. See references/ledger.md._
 - **MCP** — Model Context Protocol, the standard way an AI agent calls outside tools.
 - **Coding agent** — an AI tool that writes code for a developer, such as Claude Code.
 - **Pick-up brief** — a short text that AI builds from a ticket's Jira data.
+- **e2e** — end to end. An e2e test uses the product as a user does.
 - **D1** — the first entry in `DECISIONS.md`.
