@@ -51,7 +51,8 @@ const App = () => {
   const { note, canEdit } = data;
   if (note && !editing) return <NoteView {...data} onEdit={() => setEditing(true)} />;
 
-  if (brief && usingBrief) {
+  // A brief can answer after a save from the plain form. Once a note exists, the brief is out of scope.
+  if (!note && brief && usingBrief) {
     return (
       <NoteForm
         note={formTexts(brief.brief)}
@@ -64,7 +65,7 @@ const App = () => {
       />
     );
   }
-  if (brief) return <BriefView {...brief} canEdit={canEdit} onUse={() => setUsingBrief(true)} />;
+  if (!note && brief) return <BriefView {...brief} canEdit={canEdit} onUse={() => setUsingBrief(true)} />;
 
   const briefButton = !note && <BriefButton building={building} message={briefMessage} onBuild={buildBrief} />;
   if (!note && !canEdit) {

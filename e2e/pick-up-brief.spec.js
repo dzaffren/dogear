@@ -71,6 +71,36 @@ test('builds a brief and saves it as the stand note', async ({ page }) => {
   expect(await getNote(receiptKey)).toMatchObject({ done: brief.done, next, watchOut: '', code: brief.code });
 });
 
+test('a brief that answers after the save does not replace the note form', async ({ page }) => {
+  await deleteNote(receiptKey);
+  let answer;
+  const answered = new Promise((resolve) => (answer = resolve));
+  await answerGetBrief(page, async (route) => {
+    await answered;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: { invokeExtension: { success: true, response: { body: { status: 'brief', brief, sourceLine } }, errors: null } },
+      }),
+    });
+  });
+  await openPanel(page, receiptKey);
+
+  const done = 'Refund webhook is wired up';
+  await page.getByLabel('Done').fill(done);
+  await buildButton(page).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByText(`Saved by ${mainName}, just now`)).toBeVisible();
+
+  const briefAnswered = page.waitForResponse((response) => response.request().postData()?.includes('getBrief'));
+  answer();
+  await briefAnswered;
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await expect(page.getByLabel('Done')).toHaveValue(done);
+  await expect(page.getByText('Not a stand note. Check it before you rely on it.')).toHaveCount(0);
+});
+
 test('says when the ticket has too little', async ({ page }) => {
   await deleteNote(thinKey);
   await openPanel(page, thinKey);
