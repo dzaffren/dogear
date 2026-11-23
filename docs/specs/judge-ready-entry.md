@@ -169,7 +169,7 @@ Scenario: The entry is submitted
 
 ## Decisions to record
 
-## D30 · 2026-11-23 · The pitch cites published surveys
+## D31 · 2026-11-23 · The pitch cites published surveys
 
 Why: judges score a "credible, specific case", and a judge can open the source of a
 published figure.
@@ -178,7 +178,7 @@ judge can check), no number (the case stays a story).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
-## D31 · 2026-11-23 · The judge's worked example is a guide, with no sample-ticket button
+## D32 · 2026-11-23 · The judge's worked example is a guide, with no sample-ticket button
 
 Why: the guide gives the text of one ticket, and that ticket shows the Stand notes tab, the
 brief and the note. The app gets no new code before the deadline.
@@ -187,7 +187,7 @@ stranger, and one more thing to test in production).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
-## D32 · 2026-11-23 · The rehearsal runs on a new site of a second account
+## D33 · 2026-11-23 · The rehearsal runs on a new site of a second account
 
 Why: a judge is not the developer of the app. Only a second account shows what a stranger
 sees at the install, at the consent and at the first brief.
@@ -196,7 +196,7 @@ install can differ), no clean site (nobody tests a first install).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
-## D33 · 2026-11-23 · The demo video comes from the screen-demo pipeline of OpenMontage
+## D34 · 2026-11-23 · The demo video comes from the screen-demo pipeline of OpenMontage
 
 Why: the same pipeline made the videos of KinCart and Fire Watch, so its tools and its
 steps are known. A change of the script needs a new render, not a new take.
@@ -205,7 +205,7 @@ captions with no voice (judges score presentation at 20%).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
-## D34 · 2026-11-23 · The repo becomes public, with the skill file in it
+## D35 · 2026-11-23 · The repo becomes public, with the skill file in it
 
 Why: the text of the MCP bonus prize names open-source `skill.md` files for third-party
 agents. One public repo holds the app and the skill file, and a judge can read the code.
@@ -218,14 +218,14 @@ Status: active
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
 | --- | ---- | ---- | --------- | ----- | ------ | ------ |
-| O1  | The pitch has no number for how often a ticket changes hands or what a bad handover costs. Judges score a "credible, specific case". Which number does the pitch use? (from shape O7) | flag | shape | user | Resolved | Published surveys: Atlassian's State of Developer Experience 2025 and the Stack Overflow survey of 2022. They measure lost time and knowledge silos, not handovers alone. The build reads each figure at its primary source, and the video shows one with its source. Drafted as D30. 2026-11-23. The figure in the video is from Atlassian's report, because the rules bar third-party trademarks in the video. 2026-11-23 |
-| O2  | A judge's site has no stand notes. How does the judge get a worked example? | question | spec p1 | user | Resolved | The guide only. It gives the text of one ticket, and the judge makes the ticket. The app gets no new code. Drafted as D31. 2026-11-23 |
-| O3  | The rehearsal needs a clean site: Stand Note never installed, and an admin who is not the developer. Who makes it? | question | spec p1 | user | Resolved | Dzafran signs up a second Atlassian account with another email and makes a free Jira site. Drafted as D32. 2026-11-23 |
-| O4  | How is the demo video made? | question | spec p1 | user | Resolved | The same way as the videos of KinCart and Fire Watch: the screen-demo pipeline of OpenMontage. Playwright records the browser, a paid text-to-speech voice reads the script, and Remotion joins them with titles and captions. The Claude Code part is a terminal, so pause 3 plans its capture. Drafted as D33. 2026-11-23 |
+| O1  | The pitch has no number for how often a ticket changes hands or what a bad handover costs. Judges score a "credible, specific case". Which number does the pitch use? (from shape O7) | flag | shape | user | Resolved | Published surveys: Atlassian's State of Developer Experience 2025 and the Stack Overflow survey of 2022. They measure lost time and knowledge silos, not handovers alone. The build reads each figure at its primary source, and the video shows one with its source. Drafted as D31. 2026-11-23. The figure in the video is from Atlassian's report, because the rules bar third-party trademarks in the video. 2026-11-23 |
+| O2  | A judge's site has no stand notes. How does the judge get a worked example? | question | spec p1 | user | Resolved | The guide only. It gives the text of one ticket, and the judge makes the ticket. The app gets no new code. Drafted as D32. 2026-11-23 |
+| O3  | The rehearsal needs a clean site: Stand Note never installed, and an admin who is not the developer. Who makes it? | question | spec p1 | user | Resolved | Dzafran signs up a second Atlassian account with another email and makes a free Jira site. Drafted as D33. 2026-11-23 |
+| O4  | How is the demo video made? | question | spec p1 | user | Resolved | The same way as the videos of KinCart and Fire Watch: the screen-demo pipeline of OpenMontage. Playwright records the browser, a paid text-to-speech voice reads the script, and Remotion joins them with titles and captions. The Claude Code part is a terminal, so pause 3 plans its capture. Drafted as D34. 2026-11-23 |
 | O5  | Assuming the rules are as three secondary pages give them: an installation link with instructions, a public YouTube video under 5 minutes that covers the bonus prize, a text description, and five criteria at 20% each. Devpost refused the read of the official page. One page also says "no third-party trademarks" in the video, and the video shows Claude Code. | assumption | spec p1 | user | Resolved | Dzafran pasted the official rules on 2026-11-23, after Chrome hit a bot check. The secondary pages were right, with three changes. The video limit is 5 minutes, with no 3-minute clause. The rule on third-party trademarks is real: see O7. The three prizes are for each category. The Problem section lists what the rules ask. 2026-11-23 |
 | O6  | The working name is Stand Note. Is it the name of the entry? | question | spec p1 | user | Resolved | No. The name is Dogear: the folded page corner that marks where a reader stopped. The note in the panel stays a "stand note". Understudy was the first pick, but a US trademark application for UNDERSTUDY is pending for AI developer tools, and an open-source AI agent has the name. A web search found no product named Dogear. Nobody searched the trademark register. 2026-11-23. Changed by O1 of `dogear-brand` on 2026-11-23: the note is a "dogear" too. The texts of this spec follow at its next pause. |
 | O7  | The rules say that the video "must not include third party trademarks" with no permission. The video shows Claude Code, which is Anthropic's name and logo. | flag | spec p1 | user | Resolved | Hide the brand. The video shows the agent's terminal at work, with no product name and no logo, and the voice says "a coding agent". The written guide still names Claude Code, because a judge needs the exact steps. 2026-11-23 |
-| O8  | The text of the MCP bonus prize names open-source `skill.md` files that users add to their agents. The README has that text as a block to copy, and this repo is private. Does the entry ship a public skill file? | question | spec p1 | user | Resolved | Yes. This repo becomes public on GitHub, with the skill file in it and a licence. A check of the files and the git history for secrets comes first. Dzafran makes the repo public. Drafted as D34. 2026-11-23 |
+| O8  | The text of the MCP bonus prize names open-source `skill.md` files that users add to their agents. The README has that text as a block to copy, and this repo is private. Does the entry ship a public skill file? | question | spec p1 | user | Resolved | Yes. This repo becomes public on GitHub, with the skill file in it and a licence. A check of the files and the git history for secrets comes first. Dzafran makes the repo public. Drafted as D35. 2026-11-23 |
 | O9  | Judges score design at 20%: "a complete, coherent product". The app has Forge's default icon. Is an icon for Dogear in this slice? | question | spec p1 | user | Resolved | No. The rename, the logo, the icon and the shared look are their own slice, `dogear-brand`, which ships first. This slice depends on it. A third area would break the size limit of this spec. 2026-11-23 |
 
 _Never delete this section or its rows. See references/ledger.md._

@@ -109,7 +109,7 @@ Scenario: The brand kit has what the entry needs
 - The README, the overview and the architecture doc say Dogear.
 - The repo on GitHub gets the name `dogear`. Dzafran renames it, or approves the rename at
   the build.
-- A logo for Dogear: a design brief, a few concepts to choose from, and the chosen mark.
+- A logo for Dogear: a design brief, two rounds of concepts, and the chosen mark, Page pup.
 - The app icon, on the app in Atlassian's lists, on the panel and on the Dogears tab.
 - A brand kit: the logo files, the icon files, the colours, the typeface, the tagline, the
   thumbnail for Devpost, and short guidelines.
@@ -126,6 +126,125 @@ Scenario: The brand kit has what the entry needs
 - Images for a Marketplace listing — not planned. D1 aims for one bonus prize.
 - The registration of Dogear as a trademark — not planned.
 
+## Interface
+
+**Design system:** Forge UI Kit, as in `stand-note` (D3). The panel and the tab get new
+words and one icon, and no new component. The brand kit is new material for use outside
+Jira. This slice adds it on purpose.
+
+**Motion tier:** 0. UI Kit gives the app no control of motion, and a logo file does not move.
+
+**Reference:** Linear, for restraint with colour: one mark, one accent. From Hound's mark: a
+dog can be one flat shape. Here the dog's ear is also the fold of the page.
+
+**Preview:** `docs/design/logo/kit/board/logo.png` shows the logo, and
+`docs/design/logo/kit/board/in-use.png` shows it in use. UI Kit renders only inside Jira, so
+the build shows the new words on `dzaffren.atlassian.net`.
+
+```mermaid
+flowchart LR
+    K["Kit: symbol, icon, lockup"] -- "app avatar" --> A["Developer console: app named Dogear"]
+    A -- "name and avatar" --> I["Install, consent and app-list screens"]
+    K -- "icon file in the manifest" --> P["Panel header: icon, Dogear"]
+    K -- "icon file in the manifest" --> T["Project tab: icon, Dogears"]
+    M["Manifest: name of the MCP server"] -- "Dogear" --> C["Agent: server Dogear, get-dogear, save-dogear"]
+    K -- "lockup, colours, typeface" --> O["Outside Jira: README, Devpost thumbnail, video title card"]
+```
+
+The kit gives the app its avatar and the icon of the panel and the tab. The manifest gives
+the agent the server's name. The README, the Devpost entry and the video take the lockup,
+the colours and the typeface.
+
+### The word
+
+The app is "Dogear". The note is a "dogear", with a small d inside a sentence. The plural
+is "dogears". No text says "stand note", and no text says "note" alone for the dogear.
+
+### Each text, old and new
+
+| Where | Old | New |
+| ----- | --- | --- |
+| App name, in Atlassian's screens | Stand Note | Dogear |
+| Panel title | Stand note | Dogear |
+| Panel label | Where the work stands | Where the work stands |
+| Panel, while it loads | Loading the stand note | Loading the dogear |
+| Panel, empty | No stand note yet | No dogear yet |
+| Panel, empty, second line | Say where the work stands, so a teammate can carry on. | Mark where you stopped, so a teammate can carry on. |
+| Panel, load error | The note did not load. Reload the page. | The dogear did not load. Reload the page. |
+| Form, save error | The note was not saved. Try again. | The dogear was not saved. Try again. |
+| Saved line, unsigned note | Saved outside Stand Note, 2 days ago | Saved outside Dogear, 2 days ago |
+| Brief, warning | Not a stand note. Check it before you rely on it. | Not a dogear. Check it before you rely on it. |
+| Brief, button | Use as stand note | Use as dogear |
+| Tab title | Stand notes | Dogears |
+| Tab, column head | Stand note | Dogear |
+| Tab, tag | No note | No dogear |
+| Tab, tag | Note is 2 days behind | Dogear is 2 days behind |
+| Tab, small text | saved outside Stand Note | saved outside Dogear |
+| Tab, rule | A ticket is at risk when it has no stand note, or when it changed more than 1 hour after its note was saved. | A ticket is at risk when it has no dogear, or when it changed more than 1 hour after its dogear was saved. |
+| Tab, all current | Each of the 12 in-progress tickets has a current stand note. | Each of the 12 in-progress tickets has a current dogear. |
+| MCP server name | Stand Note | Dogear |
+| Tool names | `get-stand-note`, `save-stand-note` | `get-dogear`, `save-dogear` |
+| Tool titles | Get stand note, Save stand note | Get dogear, Save dogear |
+| Read tool, first line | Stand note on PAY-142 | Dogear on PAY-142 |
+| Read tool, no note | PAY-142 has no stand note. | PAY-142 has no dogear. |
+| Save tool, done | Saved the stand note on PAY-142. | Saved the dogear on PAY-142. |
+| Save tool, empty | A stand note needs text in Done, Next, Watch out or Code. | A dogear needs text in Done, Next, Watch out or Code. |
+| Save tool, no permission | You cannot edit PAY-142, so the note was not saved. | You cannot edit PAY-142, so the dogear was not saved. |
+| Save tool, Jira fails | Jira did not answer the save. The note was not saved. Try again. | Jira did not answer the save. The dogear was not saved. Try again. |
+| Tools, no consent | Open the Stand note panel on a Jira ticket once and select Allow access. | Open the Dogear panel on a Jira ticket once and select Allow access. |
+
+These texts stay: "Build a brief from Jira", "Brief from Jira", "Saved by Aisyah Rahman, 2
+days ago", the four field names, and each text of the at-risk count.
+
+### What an agent reads
+
+An agent does not know the word. The description of each tool says what a dogear is.
+
+- `get-dogear`: "Reads the dogear of a Jira ticket. A dogear is a short note that says what
+  is done, what is next, what to watch out for, and where the code is. Call it when work on
+  a ticket starts, and before each save."
+- `save-dogear`: "Saves the dogear of a Jira ticket, so that a teammate or their agent can
+  carry on. A dogear is a short note: Done, Next, Watch out, Code. The save replaces the
+  whole dogear: send each field that is still true. Call it after each finished step, and
+  before the session stops."
+
+The rule text for agents in the README gets the heading "Dogear", the server name `dogear`,
+and the same first line: "Each Jira ticket has a dogear: a short note with Done, Next, Watch
+out, Code."
+
+### The logo
+
+The brief is in `docs/design/logo/brief.md`. It records two rounds of concepts.
+
+| Round | Concepts | Result |
+| ----- | -------- | ------ |
+| 1 | Fold-ear, Folded D, Corner. `docs/design/logo/concepts.png` | None chosen. Dzafran asked for a warmer round. |
+| 2 | Page pup, Origami pup, Folded d. `docs/design/logo/round-2/concepts.png` | Page pup chosen. |
+
+**Page pup:** a page with a face. Its folded corner is the ear. The dog-ear of the page is
+the dog's ear.
+
+The kit is in `docs/design/logo/kit`, from commit `38d4f32`. Its guidelines are in
+`docs/design/logo/kit/guidelines.md`. The build makes no logo. It uses these files:
+
+| Use | File in `docs/design/logo/kit` |
+| --- | ------------------------------ |
+| Panel and tab icon, 16 to 24 pixels | `svg/dogear-symbol-small.svg` |
+| App avatar in Atlassian's screens | `png/dogear-app-icon-light-512.png` |
+| README header | `png/dogear-logo-horizontal-1200.png` |
+| Devpost thumbnail | `png/devpost-thumbnail.png` |
+| Video title card | `svg/dogear-logo-horizontal.svg`, `svg/dogear-logo-horizontal-on-dark.svg` |
+
+| Colour | HEX | Use |
+| ------ | --- | --- |
+| Ginger | `#E55F12` | The symbol. One accent. |
+| Ink | `#231A14` | The name, text, dark backgrounds |
+| Paper | `#FFF6EA` | Light backgrounds |
+
+Ginger has a contrast of 3.5 to 1 on white and 4.6 to 1 on Jira's dark grey `#1D2125`. That
+is enough for the symbol, and not for small text. The name in the logo is drawn shapes.
+Other text uses Montserrat.
+
 ## Decisions to record
 
 ## D29 · 2026-11-23 · One word, Dogear, for the app and for its note
@@ -139,6 +258,17 @@ only (the panel's title says Dogear, and the text under it says "stand note").
 Source: docs/specs/dogear-brand.md
 Status: active
 
+## D30 · 2026-11-23 · The logo is Page pup, in Ginger
+
+Why: Page pup shows both halves of the name in one shape: the folded corner of the page is
+the dog's ear. A face from the front reads at a glance, and its small cut holds at 16
+pixels. Ginger `#E55F12` is far from Atlassian's blue.
+Rejected: Folded d (a page and a letter, with no dog, so it is the cooler mark), Origami pup
+(its ears blur at 16 pixels), the three concepts of round 1 (Fold-ear can read as a camera,
+Folded D has no dog, Corner reads as an arrow).
+Source: docs/specs/dogear-brand.md
+Status: active
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
@@ -147,6 +277,7 @@ Status: active
 | O2  | The repo becomes public in `judge-ready-entry`. Its name on GitHub is `CodegeistHackathon`. Does the repo get the name `dogear`? | question | spec p1 | user | Resolved | Yes. The public link reads `github.com/dzaffren/dogear`, and GitHub forwards the old link. 2026-11-23 |
 | O3  | Which tagline goes with the name? | question | spec p1 | user | Resolved | "Mark where you stopped." It says what a dog-ear does. 2026-11-23 |
 | O4  | Trademark trackers show no live US mark DOGEAR for software. Three old applications for software are dead: 77338159, 97416162 and 98265832. One live mark, "D DOGEAR", covers bags, in class 18. The trackers can lag the register, and nobody searched outside the US. | flag | spec p1 | user | Accepted risk | Go on with Dogear. The entry is a hackathon project with no Marketplace listing, and the US trackers show no live mark for software. Accepted 2026-11-23 |
+| O5  | Which logo concept does the kit use: A, Fold-ear; B, Folded D; or C, Corner? | question | spec p2 | user | Resolved | None of the three. Another session drew a second round, and Dzafran chose Page pup there. Its kit is in `docs/design/logo/kit`, from commit `38d4f32`. A check of the kit against scenario 4 found each file, and the SVG audit of the two symbols found no issue. Drafted as D30. 2026-11-23 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
@@ -166,6 +297,7 @@ _Never delete this section or its rows. See references/ledger.md._
 - **MCP server** — the address where an agent finds the tools of the app.
 - **UI Kit** — Forge's set of ready-made screen parts, such as buttons and messages.
 - **Devpost** — the site that runs the hackathon and takes the entry.
+- **Page pup** — the chosen logo: a page with a dog's face, whose folded corner is the ear.
 - **SVG, PNG** — two image formats. SVG holds shapes and scales to any size. PNG holds pixels.
 - **e2e** — end to end. An e2e test uses the app as a user does.
 - **D1, D3** — entries in `DECISIONS.md`.
