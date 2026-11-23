@@ -18,7 +18,7 @@ import { cleanNote, FIELDS, PROPERTY_KEY } from '../lib/note';
 import { MAX_CHECKED, riskRows } from '../lib/risk';
 import { sign } from '../lib/signature';
 
-// Reads the stand note of a ticket. A ticket with no property has no note.
+// Reads the dogear of a ticket. A ticket with no property has no note.
 // Anyone who can edit the ticket can write the property through Jira's API, so the
 // texts go through cleanNote here too, and the panel always gets four strings.
 const readNote = async (issueKey) => {
@@ -65,7 +65,7 @@ export const getNote = async ({ context }) => {
 export const saveNote = async ({ payload, context }) => {
   const issueKey = issueKeyOf(context);
   const texts = cleanNote(payload);
-  if (!texts) throw new Error('A stand note needs text in one or more fields');
+  if (!texts) throw new Error('A dogear needs text in one or more fields');
   if (!(await canEdit(issueKey))) throw new Error('No permission to edit this ticket');
   // Read the name before the write, so an error after this point never hides a saved note.
   const savedByName = await displayName(context.accountId);
@@ -78,7 +78,7 @@ export const saveNote = async ({ payload, context }) => {
     body: JSON.stringify(note),
   });
   if (!response.ok) throw new Error(`Jira answered ${response.status} to the note save`);
-  console.log(`stand-note saved issue=${issueKey}`);
+  console.log(`dogear saved issue=${issueKey}`);
 
   return { note, savedByName, canEdit: true, now: note.savedAt };
 };
@@ -135,7 +135,7 @@ const readTicket = async (issueKey) => {
   return { issue, comments: comments.comments, webLinks };
 };
 
-// The pick-up brief of a ticket with no stand note. The app keeps no brief (D23). Only a
+// The pick-up brief of a ticket with no dogear. The app keeps no brief (D23). Only a
 // brief that the model wrote adds 1 to the site's count for the day (D25, D27).
 export const getBrief = async ({ context }) => {
   const issueKey = issueKeyOf(context);

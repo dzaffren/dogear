@@ -45,7 +45,7 @@ test('saves the first note', async ({ page }) => {
   await deleteNote(issueKey);
   await openPanel(page, issueKey);
 
-  await expect(page.getByText('No stand note yet')).toBeVisible();
+  await expect(page.getByText('No dogear yet')).toBeVisible();
   const save = page.getByRole('button', { name: 'Save', exact: true });
   await expect(save).toBeDisabled();
 
@@ -116,7 +116,7 @@ test('keeps the text when the save fails', async ({ page }) => {
   await page.getByLabel('Next').fill(aisyahTexts.next);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
 
-  await expect(page.getByText('The note was not saved. Try again.')).toBeVisible();
+  await expect(page.getByText('The dogear was not saved. Try again.')).toBeVisible();
   await expect(page.getByLabel('Next')).toHaveValue(aisyahTexts.next);
   await expect(page.getByLabel('Done')).toHaveValue(hafizTexts.done);
   expect(await getNote(issueKey)).toEqual(before);

@@ -2,8 +2,8 @@
 // the list checked, it says that it checked only the most recently updated.
 export const currentLine = (checked, inProgress) => {
   if (inProgress > checked) {
-    return `Each of the ${checked} most recently updated of about ${inProgress} in-progress tickets has a current stand note.`;
+    return `Each of the ${checked} most recently updated of about ${inProgress} in-progress tickets has a current dogear.`;
   }
-  if (checked === 1) return 'The 1 in-progress ticket has a current stand note.';
-  return `Each of the ${checked} in-progress tickets has a current stand note.`;
+  if (checked === 1) return 'The 1 in-progress ticket has a current dogear.';
+  return `Each of the ${checked} in-progress tickets has a current dogear.`;
 };

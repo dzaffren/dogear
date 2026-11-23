@@ -45,9 +45,10 @@ flowchart LR
     S0[0 stand-note] -- "note exists on the ticket" --> S1[1 agent-checkpoint]
     S1 -- "notes stay current" --> S2[2 at-risk-list]
     S1 -- "notes stay current" --> S3[3 pick-up-brief]
-    S2 -- "if done by 2026-12-15" --> S4[4 judge-ready-entry]
+    S2 -- "if done by 2026-12-15" --> S4[4 dogear-brand]
     S3 -- "if done by 2026-12-15" --> S4
     S1 -- "enough to submit" --> S4
+    S4 -- "name, logo and icon" --> S5[5 judge-ready-entry]
 ```
 
 | # | Slice | What ships | Why this order |
@@ -56,7 +57,8 @@ flowchart LR
 | 1 | agent-checkpoint | A coding agent such as Claude Code saves the note through MCP as it works. A second agent reads the note and carries on. | It removes the reason notes go missing: nobody has to stop and write one. It qualifies for the MCP bonus prize. After this slice, the entry is enough to submit. |
 | 2 | at-risk-list | A lead opens one page and sees each in-progress ticket with no note, or with a note older than the last work on the ticket. | Optional. A rule that tells an agent to comment cannot do this part, so it carries the innovation score. |
 | 3 | pick-up-brief | A person opens a ticket with no note and gets a brief built from what Jira has: history, comments, links. The brief marks what is not known. | Optional. It serves people with no coding agent. It rests on the least proven technology, so it comes last of the build slices. |
-| 4 | judge-ready-entry | A judge installs from the link, follows the guide, and sees a worked example in two minutes. The video and the Devpost form are submitted. | Required. Start it no later than 2026-12-15, in whatever state slices 2 and 3 are. |
+| 4 | dogear-brand | The app has the name Dogear, a logo and an icon. The guide, the Devpost entry and the video share one look. | Split from judge-ready-entry on 2026-11-23. The production deploy, the guide and the video carry the name and the icon, so it ships first. |
+| 5 | judge-ready-entry | A judge installs from the link, follows the guide, and sees a worked example in two minutes. The video and the Devpost form are submitted. | Required. Start it no later than 2026-12-15, in whatever state slices 2 and 3 are. |
 
 ## Not doing
 

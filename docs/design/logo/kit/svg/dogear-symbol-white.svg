@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Dogear symbol, white</title>
+  <g id="symbol">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M139 32 H176 A48 48 0 0 1 224 80 V176 A48 48 0 0 1 176 224 H80 A48 48 0 0 1 32 176 V139 A8 8 0 0 1 40 131 H76 A55 55 0 0 0 131 76 V40 A8 8 0 0 1 139 32 Z M75 156 A15 15 0 1 0 105 156 A15 15 0 1 0 75 156 Z M151 156 A15 15 0 1 0 181 156 A15 15 0 1 0 151 156 Z M115.25 192.31 A10 10 0 0 1 123.01 176 L132.99 176 A10 10 0 0 1 140.75 192.31 L135.76 198.45 A10 10 0 0 1 120.24 198.45 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M109.17 38.83 A4 4 0 0 1 116 41.66 L116 76 A40 40 0 0 1 76 116 L41.66 116 A4 4 0 0 1 38.83 109.17 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Dogear concept A: fold-ear</title>
+  <g transform="translate(12 0)">
+    <path fill="#000" fill-rule="evenodd" d="M68 40 H124 V132 H216 V188 A28 28 0 0 1 188 216 H40 A24 24 0 0 1 16 192 V164 A24 24 0 0 1 40 140 V68 A28 28 0 0 1 68 40 Z M92 92 A13 13 0 1 0 92 118 A13 13 0 1 0 92 92 Z M38 158 A9 9 0 1 0 38 176 A9 9 0 1 0 38 158 Z"/>
+    <path fill="#000" d="M138 46 L210 118 H158 A20 20 0 0 1 138 98 Z"/>
+  </g>
+</svg>

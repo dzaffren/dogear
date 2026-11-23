@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Dogear concept: Folded d</title>
+  <path fill="#000" fill-rule="evenodd" d="M142 32 H176 A48 48 0 0 1 224 80 V176 A48 48 0 0 1 176 224 H80 A48 48 0 0 1 32 176 V142 H80 A62 62 0 0 0 142 80 Z M74 178 A24 24 0 1 0 122 178 A24 24 0 1 0 74 178 Z"/>
+  <path fill="#000" fill-rule="evenodd" d="M128 32 V80 A48 48 0 0 1 80 128 H32 Z"/>
+</svg>

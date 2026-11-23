@@ -52,7 +52,7 @@ vi.mock('@forge/api', () => {
 vi.mock('@forge/llm', () => ({ chat: vi.fn() }));
 vi.mock('@forge/kvs', () => ({ kvs: { get: vi.fn(), set: vi.fn() } }));
 
-const { getStandNote, saveStandNote } = await import('../src/tools/index.js');
+const { getDogear, saveDogear } = await import('../src/tools/index.js');
 const { isSigned, sign } = await import('../src/lib/signature.js');
 
 const KEY = 'test-signing-key';
@@ -81,17 +81,17 @@ beforeEach(() => {
   vi.stubEnv('NOTE_SIGNING_KEY', KEY);
 });
 
-describe('saveStandNote', () => {
+describe('saveDogear', () => {
   it('saves the note with the author, the server time and via agent', async () => {
-    const reply = await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-aisyah'));
-    expect(reply).toBe('Saved the stand note on PAY-142.');
+    const reply = await saveDogear({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-aisyah'));
+    expect(reply).toBe('Saved the dogear on PAY-142.');
     const { sig, ...note } = aisyahNote;
     expect(jira.property).toEqual(signed({ ...note, savedAt: '2026-11-26T01:15:00.000Z' }));
     expect(isSigned('PAY-142', jira.property, KEY)).toBe(true);
   });
 
   it('takes the author from Forge, not from the agent', async () => {
-    await saveStandNote(
+    await saveDogear(
       { issueKey: 'PAY-142', ...aisyahTexts, savedBy: 'acc-hafiz', savedAt: '2020-01-01', via: 'person' },
       context('acc-aisyah')
     );
@@ -100,13 +100,13 @@ describe('saveStandNote', () => {
 
   it('refuses a text that is too long and names the field', async () => {
     jira.property = aisyahNote;
-    const reply = await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts, done: 'a'.repeat(1240) }, context('acc-hafiz'));
+    const reply = await saveDogear({ issueKey: 'PAY-142', ...aisyahTexts, done: 'a'.repeat(1240) }, context('acc-hafiz'));
     expect(reply).toBe('Done has 1,240 characters. The limit is 1,000.');
     expect(jira.calls).toEqual([]);
   });
 
   it('names each field that is too long', async () => {
-    const reply = await saveStandNote(
+    const reply = await saveDogear(
       { issueKey: 'PAY-142', done: 'a'.repeat(1240), watchOut: 'b'.repeat(1001) },
       context('acc-hafiz')
     );
@@ -116,44 +116,44 @@ describe('saveStandNote', () => {
   });
 
   it('refuses a note with four empty fields', async () => {
-    const reply = await saveStandNote({ issueKey: 'PAY-142', done: '  ' }, context('acc-hafiz'));
-    expect(reply).toBe('A stand note needs text in Done, Next, Watch out or Code.');
+    const reply = await saveDogear({ issueKey: 'PAY-142', done: '  ' }, context('acc-hafiz'));
+    expect(reply).toBe('A dogear needs text in Done, Next, Watch out or Code.');
     expect(jira.calls).toEqual([]);
   });
 
   it('refuses a person who cannot edit the ticket', async () => {
     jira.property = aisyahNote;
     jira.canEdit = false;
-    const reply = await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-hafiz'));
-    expect(reply).toBe('You cannot edit PAY-142, so the note was not saved.');
+    const reply = await saveDogear({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-hafiz'));
+    expect(reply).toBe('You cannot edit PAY-142, so the dogear was not saved.');
     expect(jira.property).toBe(aisyahNote);
   });
 
   it('says when Jira has no such ticket for the person', async () => {
-    const reply = await saveStandNote({ issueKey: 'PAY-999', ...aisyahTexts }, context('acc-hafiz'));
+    const reply = await saveDogear({ issueKey: 'PAY-999', ...aisyahTexts }, context('acc-hafiz'));
     expect(reply).toBe('Jira has no ticket PAY-999 that you can see.');
   });
 
   it("says when Jira refuses the write", async () => {
     jira.property = aisyahNote;
     jira.putStatus = 503;
-    const reply = await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-hafiz'));
-    expect(reply).toBe('Jira did not answer the save. The note was not saved. Try again.');
+    const reply = await saveDogear({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-hafiz'));
+    expect(reply).toBe('Jira did not answer the save. The dogear was not saved. Try again.');
     expect(jira.property).toBe(aisyahNote);
   });
 
   it('writes as the person', async () => {
-    await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-aisyah'));
+    await saveDogear({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-aisyah'));
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
   });
 });
 
-describe('getStandNote', () => {
+describe('getDogear', () => {
   it('gives the note with the saved line and the filled fields', async () => {
     jira.property = aisyahNote;
-    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe(
+    expect(await getDogear({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe(
       [
-        'Stand note on PAY-142',
+        'Dogear on PAY-142',
         'Saved by Aisyah Rahman through an agent, 2 days ago',
         'Done: Endpoint and validation are written',
         'Next: Add the idempotency check',
@@ -166,9 +166,9 @@ describe('getStandNote', () => {
   it('leaves out empty fields and the agent words for a note that a person saved', async () => {
     const { sig, ...note } = aisyahNote;
     jira.property = signed({ ...note, watchOut: '', code: '', savedBy: 'acc-hafiz', via: undefined });
-    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
+    expect(await getDogear({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
       [
-        'Stand note on PAY-142',
+        'Dogear on PAY-142',
         'Saved by Hafiz Omar, 2 days ago',
         'Done: Endpoint and validation are written',
         'Next: Add the idempotency check',
@@ -176,12 +176,12 @@ describe('getStandNote', () => {
     );
   });
 
-  it('names no person for a note written outside Stand Note', async () => {
+  it('names no person for a note written outside Dogear', async () => {
     jira.property = { ...aisyahNote, savedBy: 'acc-hafiz' };
-    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
+    expect(await getDogear({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
       [
-        'Stand note on PAY-142',
-        'Saved outside Stand Note, 2 days ago',
+        'Dogear on PAY-142',
+        'Saved outside Dogear, 2 days ago',
         'Done: Endpoint and validation are written',
         'Next: Add the idempotency check',
         'Watch out: The sandbox rejects amounts over RM 5,000',
@@ -191,26 +191,26 @@ describe('getStandNote', () => {
     expect(jira.calls.some((call) => call.path.startsWith('/rest/api/3/user'))).toBe(false);
   });
 
-  it('says when the ticket has no stand note', async () => {
-    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe('PAY-142 has no stand note.');
+  it('says when the ticket has no dogear', async () => {
+    expect(await getDogear({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe('PAY-142 has no dogear.');
   });
 
   it('says when Jira has no such ticket for the person', async () => {
-    expect(await getStandNote({ issueKey: 'PAY-999' }, context('acc-hafiz'))).toBe(
+    expect(await getDogear({ issueKey: 'PAY-999' }, context('acc-hafiz'))).toBe(
       'Jira has no ticket PAY-999 that you can see.'
     );
   });
 
   it('says when Jira fails', async () => {
     jira.readStatus = 503;
-    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe(
+    expect(await getDogear({ issueKey: 'PAY-142' }, context('acc-hafiz'))).toBe(
       'Jira did not answer the read. Try again.'
     );
   });
 
   it('reads as the person', async () => {
     jira.property = aisyahNote;
-    await getStandNote({ issueKey: 'PAY-142' }, context('acc-hafiz'));
+    await getDogear({ issueKey: 'PAY-142' }, context('acc-hafiz'));
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
   });
 });
@@ -218,7 +218,7 @@ describe('getStandNote', () => {
 describe('a second agent carries on', () => {
   it('replaces the whole note, so the fields it does not send are empty', async () => {
     jira.property = aisyahNote;
-    const reply = await saveStandNote(
+    const reply = await saveDogear(
       {
         issueKey: 'PAY-142',
         done: 'Endpoint, validation and idempotency check are written',
@@ -226,10 +226,10 @@ describe('a second agent carries on', () => {
       },
       context('acc-hafiz')
     );
-    expect(reply).toBe('Saved the stand note on PAY-142.');
-    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
+    expect(reply).toBe('Saved the dogear on PAY-142.');
+    expect(await getDogear({ issueKey: 'PAY-142' }, context('acc-aisyah'))).toBe(
       [
-        'Stand note on PAY-142',
+        'Dogear on PAY-142',
         'Saved by Hafiz Omar through an agent, just now',
         'Done: Endpoint, validation and idempotency check are written',
         'Next: Write the tests for partial refunds',
@@ -242,8 +242,8 @@ describe('a person who did not allow access yet', () => {
   it('save returns the consent text and leaves the note as it was', async () => {
     jira.property = aisyahNote;
     jira.consent = false;
-    expect(await saveStandNote({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-meiling'))).toBe(
-      'Open the Stand note panel on a Jira ticket once and select Allow access. Then save again.'
+    expect(await saveDogear({ issueKey: 'PAY-142', ...aisyahTexts }, context('acc-meiling'))).toBe(
+      'Open the Dogear panel on a Jira ticket once and select Allow access. Then save again.'
     );
     expect(jira.property).toBe(aisyahNote);
   });
@@ -251,8 +251,8 @@ describe('a person who did not allow access yet', () => {
   it('read returns the consent text', async () => {
     jira.property = aisyahNote;
     jira.consent = false;
-    expect(await getStandNote({ issueKey: 'PAY-142' }, context('acc-meiling'))).toBe(
-      'Open the Stand note panel on a Jira ticket once and select Allow access. Then read again.'
+    expect(await getDogear({ issueKey: 'PAY-142' }, context('acc-meiling'))).toBe(
+      'Open the Dogear panel on a Jira ticket once and select Allow access. Then read again.'
     );
   });
 });

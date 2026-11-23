@@ -42,11 +42,11 @@ const App = () => {
   if (loadFailed) {
     return (
       <SectionMessage appearance="error">
-        <Text>The note did not load. Reload the page.</Text>
+        <Text>The dogear did not load. Reload the page.</Text>
       </SectionMessage>
     );
   }
-  if (!data) return <Spinner label="Loading the stand note" />;
+  if (!data) return <Spinner label="Loading the dogear" />;
 
   const { note, canEdit } = data;
   if (note && !editing) return <NoteView {...data} onEdit={() => setEditing(true)} />;
@@ -71,7 +71,7 @@ const App = () => {
   if (!note && !canEdit) {
     return (
       <Stack space="space.150">
-        <Text>No stand note yet</Text>
+        <Text>No dogear yet</Text>
         {briefButton}
       </Stack>
     );

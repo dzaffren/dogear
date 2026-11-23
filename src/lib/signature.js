@@ -1,8 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { FIELDS } from './note';
 
-// Anyone who can edit a ticket can write the stand-note property through Jira's API, with
-// any savedBy. The app signs each note it saves, so a read can tell a note that Stand Note
+// Anyone who can edit a ticket can write the property of a dogear through Jira's API, with
+// any savedBy. The app signs each note it saves, so a read can tell a note that Dogear
 // saved from one written another way. The key is the Forge variable NOTE_SIGNING_KEY.
 // Server code only: the panel bundle cannot load node:crypto.
 

@@ -1,2 +1,2 @@
 export { handler } from './resolvers';
-export { getStandNote, saveStandNote } from './tools';
+export { getDogear, saveDogear } from './tools';

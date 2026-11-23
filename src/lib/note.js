@@ -1,4 +1,4 @@
-// The Jira issue property that holds the stand note of a ticket.
+// The Jira issue property that holds the dogear of a ticket.
 export const PROPERTY_KEY = 'stand-note';
 
 export const FIELDS = ['done', 'next', 'watchOut', 'code'];
