@@ -14,6 +14,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - An agent gets a plain refusal that says what to fix: a field over 1,000 characters, a ticket the person cannot edit, or access not yet allowed in the panel.
 - A lead opens Stand notes in a Jira project and sees each in-progress ticket that has no stand note, or a note saved more than 1 hour before the ticket last changed.
 - The at-risk list puts the tickets with no note first, then says how far each other note is behind, such as "Note is 2 days behind".
+- On a ticket with no stand note, a person selects "Build a brief from Jira" and gets a brief that AI builds from the description, comments, history and links, with "Not known" where Jira does not say.
+- A person who can edit the ticket turns the brief into the stand note through the note form, and checks each field before the save.
 
 ### Security
 

@@ -22,6 +22,7 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 - A person saves a short note on a Jira ticket that says where the work stands, and anyone who opens the ticket reads it.
 - A coding agent such as Claude Code saves the stand note on a Jira ticket as it works, and a second agent reads the note and carries on.
 - A lead opens one page in a Jira project and sees each in-progress ticket that has no stand note, or a note that is behind the last work.
+- A person opens a ticket with no stand note, selects one button, and gets a brief that AI builds from what Jira has.
 
 ## Docs
 
