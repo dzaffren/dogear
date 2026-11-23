@@ -1,6 +1,6 @@
 # Dogear brand
 
-**Version:** v1 · **Status:** Draft · **Type:** Enhancement · **Project type:** Web UI
+**Version:** v1 · **Status:** Refined · **Type:** Enhancement · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note, agent-checkpoint, at-risk-list, pick-up-brief
@@ -109,8 +109,8 @@ Scenario: The brand kit has what the entry needs
 - The repo on GitHub gets the name `dogear`. Dzafran renames it, or approves the rename at
   the build.
 - A logo for Dogear: a design brief, two rounds of concepts, and the chosen mark, Page pup.
-- The app's avatar on Atlassian's screens, from the kit, if the developer console has an
-  avatar field (O7).
+- The app's avatar on Atlassian's screens, from the kit. Dzafran uploads it in the Settings
+  of the app in the developer console.
 - A brand kit: the logo files, the icon files, the colours, the typeface, the tagline, the
   thumbnail for Devpost, and short guidelines.
 
@@ -342,8 +342,8 @@ is on the site already; `e2e/.auth/mcp.json`; the shipped specs, `DECISIONS.md`,
 **Hand steps, by Dzafran.** The build does not do them, because each one changes something
 outside the repo:
 
-1. In the developer console, open the app, then Settings. Change the name to "Dogear". If
-   there is an avatar field, upload `docs/design/logo/kit/png/dogear-app-icon-light-512.png`.
+1. In the developer console, open the app, then Settings. Change the name to "Dogear", and
+   upload `docs/design/logo/kit/png/dogear-app-icon-light-512.png` as the avatar.
 2. Rename the GitHub repo to `dogear`: `gh repo rename dogear`. Then run
    `git remote set-url origin https://github.com/dzaffren/dogear.git`.
 3. After the deploy, open Connected apps in Atlassian Administration. Check that "Expose
@@ -444,7 +444,7 @@ Status: active
 | O4  | Trademark trackers show no live US mark DOGEAR for software. Three old applications for software are dead: 77338159, 97416162 and 98265832. One live mark, "D DOGEAR", covers bags, in class 18. The trackers can lag the register, and nobody searched outside the US. | flag | spec p1 | user | Accepted risk | Go on with Dogear. The entry is a hackathon project with no Marketplace listing, and the US trackers show no live mark for software. Accepted 2026-11-23 |
 | O5  | Which logo concept does the kit use: A, Fold-ear; B, Folded D; or C, Corner? | question | spec p2 | user | Resolved | None of the three. Another session drew a second round, and Dzafran chose Page pup there. Its kit is in `docs/design/logo/kit`, from commit `38d4f32`. A check of the kit against scenario 4 found each file, and the SVG audit of the two symbols found no issue. Drafted as D30. 2026-11-23 |
 | O6  | A UI Kit app can show its own icon file on the panel header and on the project tab. The manifest schema of Forge CLI 15.1.0 has an `icon` text of 255 characters at most on both modules. The docs call the panel's icon "the absolute URL of the icon". For the project page they say "a relative path from a declared resource". They describe a folder of static files only for Custom UI. | unproven | spec p3 | poc | Resolved | No spike. The icon is a PNG at a public web address. The address works only when the repo is public, so the manifest lines and the check at 16 pixels move to `judge-ready-entry`. Scenario 2 lost its icon lines. Drafted as D31. 2026-11-23 |
-| O7  | The developer console lets a developer set the avatar of a Forge app. The docs say that the name "can be changed in Settings". They say nothing on an avatar. Scenario 1 rests on it. | unproven | spec p3 | poc | Open | — |
+| O7  | The developer console lets a developer set the avatar of a Forge app. The docs say that the name "can be changed in Settings". They say nothing on an avatar. Scenario 1 rests on it. | unproven | spec p3 | poc | Resolved | Yes. Dzafran opened the Settings of the app in the developer console on 2026-11-23. The app shows as "Stand note" with the default avatar, the letter S, and Settings has a field for the avatar. Hand step 1 uploads the avatar from the kit. 2026-11-23 |
 | O8  | Scenario 3 said "Then the server's name is "Dogear"". A probe on 2026-11-23 showed that Atlassian's MCP server reports the name `integrations-service` for each app. The name in the manifest does not reach the agent. | flag | spec p3 | user | Resolved | Scenario 3 checks the two tool names, and that the README adds the server under the name "dogear". The server name in the manifest still becomes Dogear. 2026-11-23 |
 
 _Never delete this section or its rows. See references/ledger.md._
