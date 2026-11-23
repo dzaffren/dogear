@@ -273,6 +273,17 @@ good).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
+## D40 · 2026-11-23 · The icon in Jira is a bundled SVG file
+
+Why: a spike showed that a UI Kit app can bundle its icon: a resource with the folder
+`static/icons`, and `icon: resource:icons;dogear.svg` on the panel and on the tab. The icon
+needs no public repo, it is in the first production deploy, and an SVG stays sharp.
+Rejected: a PNG at a public web address (it works only when the repo is renamed and public,
+and nobody tried it), no icon in Jira (the panel and the tab keep the generic icon).
+Supersedes: D31
+Source: docs/specs/judge-ready-entry.md
+Status: active
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
@@ -293,7 +304,7 @@ Status: active
 | O14 | Which form and place does the skill file have? The bonus prize text says "open-source `skill.md` files". | question | spec p2 | user | Resolved | `skills/dogear/SKILL.md`, in the folder form that Claude Code loads as a skill. The guide gives the same rule text as a block for `AGENTS.md`, for other agents. Drafted as D38. 2026-11-23 |
 
 | O15 | This slice grew after pause 1: the icon, the public repo, the licence, the skill file and a secrets check. Does the video and the Devpost entry split off? | question | spec p3 | user | Resolved | Yes. `submit-entry` takes the fourth and fifth scenarios, "The demo video is public" and "The entry is submitted", with the Devpost and video parts of the Interface and the drafts D32 and D35. The rows O1, O4, O5, O7, O12 and O13 stay here as the record, and `submit-entry` carries their answers. 2026-11-23 |
-| O16 | The Forge docs say that a UI Kit app can bundle its icon: `icon: resource:<key>;<path>`. D31 chose a public web address because a bundled file was not proven. Does a bundled icon show in the panel and in the tab, in the light theme and in the dark theme? | unproven | spec p3 | poc | Open | — |
+| O16 | The Forge docs say that a UI Kit app can bundle its icon: `icon: resource:<key>;<path>`. D31 chose a public web address because a bundled file was not proven. Does a bundled icon show in the panel and in the tab, in the light theme and in the dark theme? | unproven | spec p3 | poc | Resolved | Yes, in the light theme. A spike on 2026-11-23 added a resource `icons` with the folder `static/icons`, and `icon: resource:icons;dogear.svg` on both modules, with the kit's `dogear-symbol-small.svg`. `forge lint` and the deploy took it, with a minor version. Jira served the file from `icon.cdn.prod.atlassian-dev.net`, and screenshots showed the icon beside "Dogear" in the panel and beside "Dogears" in the tab. Jira did not switch the test account to its dark theme, so dark was checked only on a rendered sample: the icon at 16 and 24 pixels on `#1D2125`. The rehearsal checks the dark theme on the site. Drafted as D40, which supersedes D31. 2026-11-23 |
 | O17 | Four commits have Dzafran's Gmail address as the author. A public repo shows it. | flag | spec p3 | user | Resolved | Rewrite the history first. Before the repo is public, the author of those commits becomes GitHub's noreply address, and `main` is force-pushed. Each commit hash changes. Drafted as D39. 2026-11-23 |
 | O18 | Forge LLM has no free quota. Each pick-up brief on a judge's site is billed to the developer: about 0.6 to 1.2 US cents with Claude Haiku, from the price table read on 2026-11-23. D25 caps a site at 50 briefs a day. | flag | spec p3 | user | Resolved | Accept the cost and keep the cap of 50. No code change. 2026-11-23 |
 | O19 | The docs do not say three things about production: the names of the two MCP tools, whether a brief works with no payment method on the developer's Forge account, and whether one site can have the development and the production install at once. | unproven | spec p3 | poc | Open | — |
