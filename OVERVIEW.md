@@ -1,6 +1,6 @@
 # CodegeistHackathon
 
-**Status:** Active · **Updated:** 2026-11-21 by /ship at-risk-list
+**Status:** Active · **Updated:** 2026-11-23 by /ship pick-up-brief
 
 A Forge app for Jira that keeps a short, current note of where the work on a ticket
 stands. A teammate who picks up the ticket carries on from that note. An entry for
@@ -29,6 +29,7 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 | stand-note | Shipped | A person saves a short note on a Jira ticket that says where the work stands, and anyone who opens the ticket reads it. | none |
 | agent-checkpoint | Shipped | A coding agent such as Claude Code saves the stand note on a Jira ticket as it works, and a second agent reads the note and carries on. | none |
 | at-risk-list | Shipped | A lead opens one page in a Jira project and sees each in-progress ticket that has no stand note, or a note that is behind the last work. | none |
+| pick-up-brief | Shipped | A person opens a ticket with no stand note, selects one button, and gets a brief that AI builds from what Jira has. | none |
 
 ## More
 

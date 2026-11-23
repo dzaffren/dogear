@@ -9,7 +9,30 @@ const jira = vi.hoisted(() => ({
   search: { issues: [], isLast: true },
   searchStatus: 200,
   count: 0,
+  issue: null,
+  comments: [],
+  webLinks: [],
+  ticketStatus: 200,
   calls: [],
+}));
+
+// A fake Forge LLM and a fake key-value store for the pick-up brief.
+const llm = vi.hoisted(() => ({ answer: null, error: null, calls: [] }));
+const store = vi.hoisted(() => new Map());
+
+vi.mock('@forge/llm', () => ({
+  chat: async (request) => {
+    llm.calls.push(request);
+    if (llm.error) throw llm.error;
+    return {
+      choices: [{ finish_reason: 'end_turn', message: { role: 'assistant', content: [{ type: 'text', text: llm.answer }] } }],
+      usage: { input_tokens: 8349, output_tokens: 89, total_tokens: 8438 },
+    };
+  },
+}));
+
+vi.mock('@forge/kvs', () => ({
+  kvs: { get: async (key) => store.get(key), set: async (key, value) => void store.set(key, value) },
 }));
 
 vi.mock('@forge/api', () => {
@@ -33,6 +56,13 @@ vi.mock('@forge/api', () => {
     }
     if (path === '/rest/api/3/search/jql' && method === 'POST') return json(jira.searchStatus, jira.search);
     if (path === '/rest/api/3/search/approximate-count' && method === 'POST') return json(200, { count: jira.count });
+    if (path === '/rest/api/2/issue/PAY-142?fields=summary,status,assignee,description,issuelinks&expand=changelog') {
+      return json(jira.ticketStatus, jira.issue);
+    }
+    if (path === '/rest/api/2/issue/PAY-142/comment?orderBy=-created&maxResults=30') {
+      return json(jira.ticketStatus, { comments: jira.comments });
+    }
+    if (path === '/rest/api/3/issue/PAY-142/remotelink') return json(jira.ticketStatus, jira.webLinks);
     if (path === '/rest/api/3/user?accountId=acc-aisyah') return json(200, { displayName: 'Aisyah Rahman' });
     if (path === '/rest/api/3/user?accountId=acc-hafiz') return json(200, { displayName: 'Hafiz Omar' });
     return json(500, {});
@@ -45,7 +75,7 @@ vi.mock('@forge/api', () => {
   };
 });
 
-const { getAtRisk, getNote, saveNote } = await import('../src/resolvers/index.js');
+const { getAtRisk, getBrief, getNote, saveNote } = await import('../src/resolvers/index.js');
 const { isSigned, sign } = await import('../src/lib/signature.js');
 
 const context = (accountId) => ({ accountId, extension: { issue: { key: 'PAY-142' } } });
@@ -67,8 +97,14 @@ beforeEach(() => {
     search: { issues: [], isLast: true },
     searchStatus: 200,
     count: 0,
+    issue: null,
+    comments: [],
+    webLinks: [],
+    ticketStatus: 200,
     calls: [],
   });
+  Object.assign(llm, { answer: null, error: null, calls: [] });
+  store.clear();
   vi.useFakeTimers({ now: new Date('2026-11-26T01:15:00.000Z'), toFake: ['Date'] });
   vi.stubEnv('NOTE_SIGNING_KEY', 'test-signing-key');
 });
@@ -286,6 +322,121 @@ describe('getAtRisk', () => {
   it('searches as the user', async () => {
     jira.search = { issues: scenario1, isLast: false };
     await getAtRisk({ context: projectContext('PAY') });
+    expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
+  });
+});
+
+describe('getBrief', () => {
+  // The ticket of scenario 1, on the key of the context: one comment and one status move.
+  const receiptTicket = () => ({
+    key: 'PAY-142',
+    fields: {
+      summary: 'Send a receipt email after a refund',
+      status: { name: 'In Progress' },
+      assignee: { displayName: 'Hafiz Omar' },
+      description: null,
+      issuelinks: [],
+    },
+    changelog: {
+      histories: [
+        {
+          created: '2026-11-23T09:00:00.000+0800',
+          author: { displayName: 'Hafiz Omar' },
+          items: [{ field: 'status', fromString: 'To Do', toString: 'In Progress' }],
+        },
+      ],
+    },
+  });
+  const hafizComment = {
+    author: { displayName: 'Hafiz Omar' },
+    created: '2026-11-24T10:00:00.000+0800',
+    body: 'Receipt template is merged. The mail queue worker is next. Branch feat/pay-163-receipt.',
+  };
+  const answer =
+    '```json\n{"done": "Receipt template is merged.", "next": "The mail queue worker.", "watchOut": null, "code": "feat/pay-163-receipt"}\n```';
+  const today = 'briefs:2026-11-26';
+
+  beforeEach(() => {
+    jira.issue = receiptTicket();
+    jira.comments = [hafizComment];
+    llm.answer = answer;
+  });
+
+  it('getBrief gives the brief and adds 1 to the count', async () => {
+    store.set(today, 12);
+    expect(await getBrief({ context: context('acc-aisyah') })).toEqual({
+      status: 'brief',
+      brief: { done: 'Receipt template is merged.', next: 'The mail queue worker.', watchOut: null, code: 'feat/pay-163-receipt' },
+      sourceLine: 'Built by AI from 1 comment and 1 change. Newest comment 2 days ago.',
+    });
+    expect(store.get(today)).toBe(13);
+  });
+
+  it('starts the count of a new day at 1', async () => {
+    store.set('briefs:2026-11-25', 50);
+    expect((await getBrief({ context: context('acc-aisyah') })).status).toBe('brief');
+    expect(store.get(today)).toBe(1);
+  });
+
+  it('sends the rules and the ticket text to Claude Haiku', async () => {
+    await getBrief({ context: context('acc-aisyah') });
+    expect(llm.calls).toHaveLength(1);
+    const [request] = llm.calls;
+    expect(request.model).toBe('claude-haiku-4-5-20251001');
+    expect(request.max_completion_tokens).toBe(600);
+    expect(request.messages[0]).toEqual({ role: 'system', content: expect.stringContaining('Make up nothing.') });
+    expect(request.messages[1].content).toContain(hafizComment.body);
+  });
+
+  it('getBrief calls no model for a thin ticket', async () => {
+    jira.comments = [];
+    store.set(today, 12);
+    expect(await getBrief({ context: context('acc-aisyah') })).toEqual({ status: 'tooLittle' });
+    expect(llm.calls).toHaveLength(0);
+    expect(store.get(today)).toBe(12);
+  });
+
+  it('says too little and keeps the count when the model knows none of the four', async () => {
+    llm.answer = '{"done": null, "next": null, "watchOut": null, "code": null}';
+    store.set(today, 12);
+    expect(await getBrief({ context: context('acc-aisyah') })).toEqual({ status: 'tooLittle' });
+    expect(store.get(today)).toBe(12);
+  });
+
+  it('getBrief refuses at 50 and calls no model', async () => {
+    store.set(today, 50);
+    expect(await getBrief({ context: context('acc-aisyah') })).toEqual({ status: 'limit' });
+    expect(llm.calls).toHaveLength(0);
+    expect(store.get(today)).toBe(50);
+  });
+
+  it('getBrief passes on a failed model call and keeps the count', async () => {
+    llm.error = new Error('FORGE_LLMS_MODEL_NOT_FOUND');
+    store.set(today, 12);
+    await expect(getBrief({ context: context('acc-aisyah') })).rejects.toThrow();
+    expect(store.get(today)).toBe(12);
+  });
+
+  it('fails on an answer in another shape and keeps the count', async () => {
+    llm.answer = 'I cannot help with that.';
+    store.set(today, 12);
+    await expect(getBrief({ context: context('acc-aisyah') })).rejects.toThrow();
+    expect(store.get(today)).toBe(12);
+  });
+
+  it("passes on Jira's refusal of the ticket read", async () => {
+    jira.ticketStatus = 403;
+    await expect(getBrief({ context: context('acc-aisyah') })).rejects.toThrow();
+    expect(llm.calls).toHaveLength(0);
+  });
+
+  it('reads the ticket of the context, as the user', async () => {
+    await getBrief({ context: context('acc-aisyah'), payload: { issueKey: 'OPS-1' } });
+    expect(jira.calls.map((call) => call.path)).toEqual([
+      '/rest/api/2/issue/PAY-142?fields=summary,status,assignee,description,issuelinks&expand=changelog',
+      '/rest/api/2/issue/PAY-142/comment?orderBy=-created&maxResults=30',
+      '/rest/api/3/issue/PAY-142/remotelink',
+    ]);
     expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
   });
 });

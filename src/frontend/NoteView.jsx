@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Code, Link, Stack, Text } from '@forge/react';
 import { savedLine } from '../lib/age';
 
-const Field = ({ label, children }) => (
+export const Field = ({ label, children }) => (
   <Stack space="space.050">
     <Text size="small" weight="medium" color="color.text.subtle">
       {label}
@@ -12,7 +12,7 @@ const Field = ({ label, children }) => (
 );
 
 // Code that starts with https:// is a link. Other text, such as a branch name, shows as code.
-const CodeValue = ({ code }) =>
+export const CodeValue = ({ code }) =>
   code.startsWith('https://') ? (
     <Text>
       <Link href={code} openNewTab>
