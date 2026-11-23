@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { PROPERTY_KEY } from '../src/lib/note';
 
 const KIT = 'docs/design/logo/kit';
 const APP_ID = readFileSync('manifest.yml', 'utf8').match(/ari:cloud:ecosystem::app\/([0-9a-f-]+)/)[1];
@@ -115,6 +116,12 @@ describe("the judge's material", () => {
     expect(readme.split('<!-- zuko:start')[0]).toContain('(GUIDE.md)');
     expect(readme).toContain('(skills/dogear/SKILL.md)');
     expect(readme).not.toContain('Take the ticket key from the branch name');
+  });
+
+  it('has a privacy policy that names what the app stores, and where to ask', () => {
+    const privacy = readFileSync('PRIVACY.md', 'utf8');
+    expect(privacy).toContain(`\`${PROPERTY_KEY}\``);
+    for (const text of ['account ID', 'Forge LLM', 'key-value store', 'https://github.com/dzaffren/dogear/issues']) expect(privacy).toContain(text);
   });
 
   it('has a script for the production deploy', () => {
