@@ -209,8 +209,8 @@ An agent does not know the word. The description of each tool says what a dogear
   a ticket starts, and before each save."
 - `save-dogear`: "Saves the dogear of a Jira ticket, so that a teammate or their agent can
   carry on. A dogear is a short note: Done, Next, Watch out, Code. The save replaces the
-  whole dogear: send each field that is still true. Call it after each finished step, and
-  before the session stops."
+  whole dogear: send each field that is still true. Call it after each step, and before
+  you stop."
 
 The rule text for agents in the README gets the heading "Dogear", the server name `dogear`,
 and the same first line: "Each Jira ticket has a dogear: a short note with Done, Next, Watch
@@ -416,6 +416,7 @@ Recorded as D29, D30, D31.
 | O6  | A UI Kit app can show its own icon file on the panel header and on the project tab. The manifest schema of Forge CLI 15.1.0 has an `icon` text of 255 characters at most on both modules. The docs call the panel's icon "the absolute URL of the icon". For the project page they say "a relative path from a declared resource". They describe a folder of static files only for Custom UI. | unproven | spec p3 | poc | Resolved | No spike. The icon is a PNG at a public web address. The address works only when the repo is public, so the manifest lines and the check at 16 pixels move to `judge-ready-entry`. Scenario 2 lost its icon lines. Drafted as D31. 2026-11-23 |
 | O7  | The developer console lets a developer set the avatar of a Forge app. The docs say that the name "can be changed in Settings". They say nothing on an avatar. Scenario 1 rests on it. | unproven | spec p3 | poc | Resolved | Yes. Dzafran opened the Settings of the app in the developer console on 2026-11-23. The app shows as "Stand note" with the default avatar, the letter S, and Settings has a field for the avatar. Hand step 1 uploads the avatar from the kit. 2026-11-23 |
 | O8  | Scenario 3 said "Then the server's name is "Dogear"". A probe on 2026-11-23 showed that Atlassian's MCP server reports the name `integrations-service` for each app. The name in the manifest does not reach the agent. | flag | spec p3 | user | Resolved | Scenario 3 checks the two tool names, and that the README adds the server under the name "dogear". The server name in the manifest still becomes Dogear. 2026-11-23 |
+| O9  | The approved description of `save-dogear` ended "Call it after each finished step, and before the session stops." It had 273 characters, and `forge lint` allows 255 for the description of an action. | flag | build | user | Decided alone | Chose: end it with "Call it after each step, and before you stop.", which makes 255 characters. The sentence that says what a dogear is stays. Other: drop that sentence, as before the rename. Undo: change the description in `manifest.yml`, and keep it at 255 characters or fewer. 2026-11-23 |
 
 _Never delete this section or its rows. See references/ledger.md._
 

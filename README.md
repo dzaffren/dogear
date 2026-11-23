@@ -1,11 +1,15 @@
-# CodegeistHackathon
+# Dogear
+
+![Dogear](docs/design/logo/kit/png/dogear-logo-horizontal-1200.png)
+
+Mark where you stopped.
 
 <!-- zuko:start — generated from OVERVIEW.md; edit that file, not this block -->
 
 ## What it does
 
-A Forge app for Jira that keeps a short, current note of where the work on a ticket
-stands. A teammate who picks up the ticket carries on from that note. An entry for
+Dogear is a Forge app for Jira. It keeps a dogear on each ticket: a short, current note of
+where the work stands. A teammate who picks up the ticket carries on from it. An entry for
 Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 
 ## Install and run
@@ -19,10 +23,10 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 
 ## Features
 
-- A person saves a short note on a Jira ticket that says where the work stands, and anyone who opens the ticket reads it.
-- A coding agent such as Claude Code saves the stand note on a Jira ticket as it works, and a second agent reads the note and carries on.
-- A lead opens one page in a Jira project and sees each in-progress ticket that has no stand note, or a note that is behind the last work.
-- A person opens a ticket with no stand note, selects one button, and gets a brief that AI builds from what Jira has.
+- A person saves a dogear on a Jira ticket, a short note that says where the work stands, and anyone who opens the ticket reads it.
+- A coding agent such as Claude Code saves the dogear on a Jira ticket as it works, and a second agent reads it and carries on.
+- A lead opens one page in a Jira project and sees each in-progress ticket that has no dogear, or a dogear that is behind the last work.
+- A person opens a ticket with no dogear, selects one button, and gets a brief that AI builds from what Jira has.
 
 ## Docs
 
@@ -35,43 +39,43 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 
 ## The at-risk list
 
-Each Jira project gets a tab named Stand notes. Jira may put it under More in the row of
-tabs. It lists the in-progress tickets of the project that have no stand note, or a note
+Each Jira project gets a tab named Dogears. Jira may put it under More in the row of
+tabs. It lists the in-progress tickets of the project that have no dogear, or a dogear
 saved more than 1 hour before the last change of the ticket. Run `npm run e2e:setup` once
 to make the project `SNR`, which the e2e test of this list uses.
 
 ## Connect a coding agent
 
-A coding agent, such as Claude Code, reads and saves the stand note through two MCP
-tools: `get-stand-note` and `save-stand-note`.
+A coding agent, such as Claude Code, reads and saves the dogear through two MCP
+tools: `get-dogear` and `save-dogear`.
 
 1. In Atlassian Administration, go to Apps, Sites, your site, Connected apps. Open
-   Stand Note and turn on "Expose tools to MCP-compatible apps".
-2. Open the Stand note panel on a Jira ticket once, and select Allow access. The tools
+   Dogear and turn on "Expose tools to MCP-compatible apps".
+2. Open the Dogear panel on a Jira ticket once, and select Allow access. The tools
    act as you, and they refuse to work until you do this.
 3. Add the server to Claude Code. The app ID is the last part of `app.id` in
    `manifest.yml`:
 
    ```bash
-   claude mcp add --transport http stand-note https://mcp.atlassian.com/forge/<app-id>
+   claude mcp add --transport http dogear https://mcp.atlassian.com/forge/<app-id>
    ```
 
-4. Run `/mcp` in Claude Code, select `stand-note`, and sign in.
+4. Run `/mcp` in Claude Code, select `dogear`, and sign in.
 5. Put this block in the `CLAUDE.md` or `AGENTS.md` of your code repo:
 
    ```markdown
-   ## Stand note
+   ## Dogear
 
-   Each Jira ticket has a stand note: Done, Next, Watch out, Code. Keep it current with
-   the `stand-note` MCP tools.
+   Each Jira ticket has a dogear: a short note with Done, Next, Watch out, Code. Keep it
+   current with the `dogear` MCP tools.
 
    - Take the ticket key from the branch name: `feat/pay-142-refund` is PAY-142. If the
      branch has no key, ask me.
-   - When you start work on a ticket, read its stand note first. Carry on from Next, and
+   - When you start work on a ticket, read its dogear first. Carry on from Next, and
      obey Watch out.
-   - Save the stand note after each finished step, and before you stop.
-   - Read the note before each save. A save replaces the whole note, so send each field
-     that is still true.
+   - Save the dogear after each finished step, and before you stop.
+   - Read the dogear before each save. A save replaces the whole dogear, so send each
+     field that is still true.
    - Write for a teammate who did not see this session. Keep each field under 1,000
      characters.
    ```
