@@ -6,14 +6,13 @@
 **Depends on:** stand-note, agent-checkpoint, at-risk-list, pick-up-brief, dogear-brand
 
 A Codegeist judge installs Dogear from a link, follows a guide, and sees it work in two
-minutes. The video and the Devpost entry go in before 2026-12-22 at 12:00 Pacific Time,
-which is 2026-12-23 at 04:00 in Malaysia.
+minutes. It ships now because the video and the Devpost entry of `submit-entry` need a
+production app that a stranger can install, before 2026-12-22 at 12:00 Pacific Time.
 
 ## Problem
 
 The app runs only in the development environment of `dzaffren.atlassian.net`. A judge has
-no link to install it, and the README is a guide for the developer, not for a judge. The
-entry has no video and no Devpost text.
+no link to install it, and the README is a guide for the developer, not for a judge.
 
 The judges score from 2027-01-05 to 2027-02-03, on their own Jira sites, with no help from
 the developer. An entry that a judge cannot install fails the first stage.
@@ -55,15 +54,14 @@ From the official rules on Devpost, which Dzafran pasted on 2026-11-23 (O5):
 
 | Check                         | Result |
 | ----------------------------- | ------ |
-| Cuts every layer it needs     | yes — the production deploy, the installation link, the guide, the video and the Devpost entry |
-| One e2e test walks it         | yes — one rehearsal as a judge: start at the Devpost entry, play the video, install on a clean site, follow the guide |
+| Cuts every layer it needs     | yes — the production deploy, the installation link, the icon, the public repo with the skill file, and the guide |
+| One e2e test walks it         | yes — one rehearsal as a judge: start at the guide, install on a clean site, do each step |
 | Worth shipping alone          | yes — a judge can score the entry, and any Jira site can install the app |
-| Fits (≤5 scenarios, ≤2 areas) | yes, at the limit — 5 scenarios, two areas: the app in production with its guide, and the entry on Devpost |
+| Fits (≤5 scenarios, ≤2 areas) | yes — 3 scenarios, two areas: the app in production, and the public repo with its guide |
 
-**Path:** full — a production deploy, a new guide, a video and a submission.
+**Path:** full — a production deploy, a public repo and a new guide.
 
-If the slice grows, the video and the Devpost entry split off as their own slice,
-`submit-entry`.
+The video and the Devpost entry split off as `submit-entry` on 2026-11-23 (O15).
 
 ## User story
 
@@ -74,24 +72,23 @@ I can score it with no help from the developer.
 
 ```mermaid
 flowchart LR
-    J((Priya, a judge)) -- "opens the entry" --> D[Devpost entry of Dogear]
-    D -- "plays the YouTube link" --> V[Demo video, under 5 minutes]
-    D -- "opens the installation link" --> I[Atlassian install screen]
+    J((Priya, a judge)) -- "opens the guide" --> G[Judge's guide on GitHub]
+    G -- "opens the installation link" --> I[Atlassian install screen]
     I -- "picks a site and installs" --> S[Priya's Jira site with Dogear]
-    D -- "opens the guide" --> G[Judge's guide]
     G -- "Try it in two minutes, on one ticket" --> S
     G -- "Connect a coding agent" --> C[Claude Code with the dogear tools]
     C -- "reads and saves the dogear" --> S
 ```
 
-Priya starts at the Devpost entry. Priya plays the video, installs the app from the link,
-and follows the guide on one ticket. A judge with Claude Code also connects the agent's tools.
+Priya starts at the guide. Priya installs the app from the link, and follows the guide on
+one ticket. A judge with Claude Code also connects the agent's tools. The Devpost entry of
+`submit-entry` links to the guide.
 
 ## Acceptance criteria
 
 ```gherkin
 Scenario: A judge installs the app from the link
-  Given the Devpost entry of Dogear shows the installation link
+  Given the judge's guide of Dogear shows the installation link
   And Priya Nair is the admin of a Jira site where Dogear was never installed
   And Priya is not the developer of Dogear
   When Priya opens the link, picks that site and installs the app
@@ -121,22 +118,6 @@ Scenario: The judge connects a coding agent
   And "Read the dogear" in Claude Code answers with the text of the dogear
   When Claude Code saves a dogear with Next "Add a test for a capture of 40 of 100 MYR"
   Then the Dogear panel of the ticket shows that Next
-
-Scenario: The demo video is public
-  Given the demo video is on YouTube
-  When a person with no YouTube sign-in opens the link from the Devpost entry
-  Then the video plays, and it is shorter than 5 minutes
-  And it shows the production app: a dogear in the panel, a coding agent with the two tools, the Dogears tab and a pick-up brief
-  And it says what the problem is, who has it, and why it matters
-  And it gives one figure from Atlassian's State of Developer Experience report, with the source on screen
-  And it is in English, with no third-party trademark and no music under copyright
-
-Scenario: The entry is submitted
-  Given the Devpost form of Dogear has the category "Apps for Software Teams"
-  And it names the bonus prize "Best app with Atlassian MCP"
-  And it has the text description, the use of Forge and Jira, the write-up for the bonus prize, the installation link, the guide and the YouTube link
-  When Dzafran selects Submit before 2026-12-22 at 12:00 Pacific Time
-  Then Devpost shows Dogear as submitted to Codegeist 2026
 ```
 
 ## Scope
@@ -145,24 +126,19 @@ Scenario: The entry is submitted
 
 - A deploy of Dogear to the production environment of Forge, and an installation link
   that works on a site of another person.
+- The icon of the Dogear panel and of the Dogears tab in Jira.
+- This repo becomes public on GitHub, with a licence and the skill file for coding agents.
+  A check of the files and the git history for secrets comes first. Dzafran makes the repo
+  public.
 - A judge's guide with three parts: install, "Try it in two minutes", and "Connect a coding
   agent". It names each thing that a site needs first, as the rehearsal finds it.
 - One rehearsal on a clean site, with a stopwatch. It includes one pick-up brief in
   production.
-- The text of the Devpost entry: the description, the use of Forge and Jira, the category,
-  and the part for the bonus prize.
-- The script of the demo video, and the video itself, from the screen-demo pipeline of
-  OpenMontage. Dzafran puts the video on YouTube.
-- This repo becomes public on GitHub, with a licence and the skill file for coding agents.
-  A check of the files and the git history for secrets comes first. Dzafran makes the repo
-  public.
-- One published figure for the pitch, with its source.
-- The icon of the Dogear panel and of the Dogears tab in Jira: a PNG at a public web
-  address (D31), set in the manifest after the repo is public.
-- Dzafran submits the entry on Devpost. Nothing goes to Devpost or YouTube without Dzafran.
 
 **Out:**
 
+- The demo video, the text of the Devpost entry, the figure for the pitch and the
+  submission — `submit-entry`, the next slice.
 - A listing on the Atlassian Marketplace — not planned. D1 aims for one bonus prize.
 - A button that makes sample tickets on the judge's site — not planned. See O2.
 - The rename of the app to Dogear, the logo, the app's avatar and the brand kit that the
@@ -172,25 +148,20 @@ Scenario: The entry is submitted
 
 ## Interface
 
-This slice adds no screen to the app. Its interface is what a judge meets: the Devpost
-entry, the video, the guide, the skill file, and one icon in Jira.
+This slice adds no screen to the app. Its interface is what a judge meets: the guide, the
+skill file, and one icon in Jira.
 
 **Design system:** inside Jira, Forge UI Kit (D3), with one new icon and no new component.
 Outside Jira, the brand kit of `dogear-brand`: `docs/design/logo/kit/guidelines.md` gives
 the logo, the three colours and the typeface.
 
-**Motion tier:** 0 in the app. The motion of the video is planned in the `art-direction.md`
-of the OpenMontage project, from the kit's colours and typeface.
+**Motion tier:** 0. UI Kit gives the app no control of motion.
 
-**Preview:** none. Each text is a Markdown file that the build writes. The script of the
-video gets its own approval at the script stage of the OpenMontage pipeline.
+**Preview:** none. Each text is a Markdown file that the build writes.
 
 ```mermaid
 flowchart LR
-    K["Brand kit"] -- "thumbnail, title card, colours" --> D["Devpost entry"]
-    D -- "YouTube link" --> V["Video, about 3 minutes"]
-    D -- "installation link" --> I["Install screen: Dogear, with its avatar"]
-    D -- "guide link" --> G["Judge's guide on GitHub"]
+    G["Judge's guide: GUIDE.md on GitHub"] -- "installation link" --> I["Install screen: Dogear, with its avatar"]
     I -- "installs" --> J["Jira: Dogear panel and Dogears tab, with the icon"]
     G -- "the text of one ticket" --> J
     G -- "skill file link" --> S["Skill file on GitHub"]
@@ -198,8 +169,8 @@ flowchart LR
     C -- "get-dogear, save-dogear" --> J
 ```
 
-The Devpost entry is the door. It links to the video, to the install screen and to the
-guide. The guide gives the text of one ticket, and it links to the skill file.
+The guide is the door. It gives the installation link and the text of one ticket, and it
+links to the skill file.
 
 ### The judge's guide
 
@@ -245,68 +216,7 @@ block for `AGENTS.md`, for other agents. The rule text is what the README has to
 ticket key from the branch, read the dogear first, save after each step and before you
 stop, read before each save, write for a teammate. It names the two tools.
 
-### The Devpost entry
-
-The build writes these texts to `docs/entry/devpost.md`, for the usual fields of Devpost.
-Nobody saw the form of Codegeist (O12), so the texts get fitted when Dzafran starts the
-draft.
-
-| Field | Text |
-| ----- | ---- |
-| Name | Dogear |
-| Tagline | Mark where you stopped. |
-| Short pitch | Dogear keeps a short, current note on each Jira ticket. People and their coding agents keep it, so a teammate picks the ticket up and carries on. |
-| Thumbnail | `docs/design/logo/kit/png/devpost-thumbnail.png` |
-| Gallery | Four screenshots from production: the panel with a dogear, the agent's terminal with the panel beside it, the Dogears tab, a pick-up brief. |
-| Category | Apps for Software Teams |
-| Bonus prize | Best app with Atlassian MCP |
-| Links | The installation link, the guide, the repo, the YouTube video |
-| Built with | Forge, UI Kit, Jira issue properties, the `rovo:mcp` module, Forge LLM, Jira REST API |
-
-The story has these parts. Each one answers a criterion of the judges.
-
-| Part | What it says | Criterion |
-| ---- | ------------ | --------- |
-| The problem | A ticket changes hands, and the next person starts from zero. The figure, with its source. Who has the problem: a team where people and coding agents share tickets. | Potential impact |
-| What it does | The dogear in the panel. The two tools for a coding agent. The Dogears tab for a lead. The pick-up brief for a ticket with no dogear. | Design |
-| How it uses Forge | Each Forge module and what it does. The dogear is an issue property, so the data stays in Jira. Each call to Jira runs as the person. | Technological implementation |
-| What is new | An agent keeps the handover note as it works, and a second agent reads it. A status field and a comment thread do not do this. | Innovation |
-| The MCP bonus | The `rovo:mcp` module with two tools. The tools act as the person. The panel says when an agent saved. The open-source skill file. | The bonus prize |
-| How to test it | The steps of the guide, in short, with the link to the guide. | Stage one |
-
-**The figure:** "50% of developers lose 10 or more hours a week to non-coding work, and
-finding information is the top time-waster." Source: Atlassian, State of Developer
-Experience 2025, a survey of 3,500 developers and managers. The 2026 report puts finding
-information first again, with no figure for hours. Both posts were read on 2026-11-23:
-https://www.atlassian.com/blog/bitbucket/developer-experience-report-2025 and
-https://www.atlassian.com/blog/development/developer-experience-report-2026. The figure is
-about lost time and finding information. It is not a count of handovers, and the pitch
-does not say that it is.
-
-### The video
-
-About 3 minutes. The voice says "a coding agent", and the terminal shows no product name
-(O7). The people in it are Aisyah Rahman and Hafiz Omar, the two test personas.
-
-| Time | Beat | On screen |
-| ---- | ---- | --------- |
-| 0:00 to 0:25 | The problem. Aisyah is off sick, and Hafiz picks up her ticket with no idea where it stands. The figure. | Title card with the logo, then the figure with its source |
-| 0:25 to 0:55 | The dogear. Aisyah saves Done, Next, Watch out and Code. Hafiz opens the ticket and reads it. | The Dogear panel |
-| 0:55 to 1:45 | The coding agent. It reads the dogear, does one step, and saves. The panel says that an agent saved. A second agent carries on from Next. | A terminal, with the panel beside it |
-| 1:45 to 2:10 | The lead. One tab lists each in-progress ticket with no dogear, or a dogear that is behind. | The Dogears tab |
-| 2:10 to 2:40 | The pick-up brief. A ticket with no dogear gets a brief from what Jira has, and Hafiz saves it as the dogear. | The panel with a brief |
-| 2:40 to 3:00 | How it is built, and where to get it. | The Forge modules as a short list, then the logo, the tagline and the link |
-
 ## Decisions to record
-
-## D32 · 2026-11-23 · The pitch cites published surveys
-
-Why: judges score a "credible, specific case", and a judge can open the source of a
-published figure.
-Rejected: a count from the developer's own team (one team's number, with no source that a
-judge can check), no number (the case stays a story).
-Source: docs/specs/judge-ready-entry.md
-Status: active
 
 ## D33 · 2026-11-23 · The judge's worked example is a guide, with no sample-ticket button
 
@@ -323,15 +233,6 @@ Why: a judge is not the developer of the app. Only a second account shows what a
 sees at the install, at the consent and at the first brief.
 Rejected: a second site of the developer's account (the developer owns the app, so the
 install can differ), no clean site (nobody tests a first install).
-Source: docs/specs/judge-ready-entry.md
-Status: active
-
-## D35 · 2026-11-23 · The demo video comes from the screen-demo pipeline of OpenMontage
-
-Why: the same pipeline made the videos of KinCart and Fire Watch, so its tools and its
-steps are known. A change of the script needs a new render, not a new take.
-Rejected: a screen recording with the developer's voice (each change needs a new take),
-captions with no voice (judges score presentation at 20%).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
@@ -363,6 +264,15 @@ its text).
 Source: docs/specs/judge-ready-entry.md
 Status: active
 
+## D39 · 2026-11-23 · The history gets the noreply author before the repo is public
+
+Why: four commits have the developer's private email address as the author, and a public
+repo shows it to anyone.
+Rejected: keep the address in the four commits (no rewrite, but the address is public for
+good).
+Source: docs/specs/judge-ready-entry.md
+Status: active
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
@@ -382,6 +292,12 @@ Status: active
 | O13 | How long is the video? The rules allow less than 5 minutes, and judges need not watch more. | question | spec p2 | user | Resolved | About 3 minutes, in six beats. 2026-11-23 |
 | O14 | Which form and place does the skill file have? The bonus prize text says "open-source `skill.md` files". | question | spec p2 | user | Resolved | `skills/dogear/SKILL.md`, in the folder form that Claude Code loads as a skill. The guide gives the same rule text as a block for `AGENTS.md`, for other agents. Drafted as D38. 2026-11-23 |
 
+| O15 | This slice grew after pause 1: the icon, the public repo, the licence, the skill file and a secrets check. Does the video and the Devpost entry split off? | question | spec p3 | user | Resolved | Yes. `submit-entry` takes the fourth and fifth scenarios, "The demo video is public" and "The entry is submitted", with the Devpost and video parts of the Interface and the drafts D32 and D35. The rows O1, O4, O5, O7, O12 and O13 stay here as the record, and `submit-entry` carries their answers. 2026-11-23 |
+| O16 | The Forge docs say that a UI Kit app can bundle its icon: `icon: resource:<key>;<path>`. D31 chose a public web address because a bundled file was not proven. Does a bundled icon show in the panel and in the tab, in the light theme and in the dark theme? | unproven | spec p3 | poc | Open | — |
+| O17 | Four commits have Dzafran's Gmail address as the author. A public repo shows it. | flag | spec p3 | user | Resolved | Rewrite the history first. Before the repo is public, the author of those commits becomes GitHub's noreply address, and `main` is force-pushed. Each commit hash changes. Drafted as D39. 2026-11-23 |
+| O18 | Forge LLM has no free quota. Each pick-up brief on a judge's site is billed to the developer: about 0.6 to 1.2 US cents with Claude Haiku, from the price table read on 2026-11-23. D25 caps a site at 50 briefs a day. | flag | spec p3 | user | Resolved | Accept the cost and keep the cap of 50. No code change. 2026-11-23 |
+| O19 | The docs do not say three things about production: the names of the two MCP tools, whether a brief works with no payment method on the developer's Forge account, and whether one site can have the development and the production install at once. | unproven | spec p3 | poc | Open | — |
+
 _Never delete this section or its rows. See references/ledger.md._
 
 ## Glossary
@@ -395,10 +311,6 @@ _Never delete this section or its rows. See references/ledger.md._
 - **Installation link** — a link from Atlassian's developer console that lets an admin install the app on a site.
 - **Clean site** — a Jira site where Dogear was never installed, with an admin who is not the developer.
 - **Rehearsal** — one timed run through the entry as a judge, on the clean site.
-- **OpenMontage** — the developer's tool that makes a video from a script, a screen capture and a voice.
-- **Remotion** — a tool that builds a video from code.
-- **Text-to-speech** — software that reads a text aloud.
-- **Playwright** — a tool that drives a real browser from a script.
 - **Skill file** — a text file of instructions that a person gives to their own coding agent.
 - **MCP** — Model Context Protocol, the standard way an AI agent calls outside tools.
 - **Coding agent** — an AI tool that writes code for a developer, such as Claude Code.
