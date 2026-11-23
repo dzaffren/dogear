@@ -106,6 +106,11 @@ describe("the judge's material", () => {
     expect(guide).toContain('skills/dogear/SKILL.md');
   });
 
+  it("gives the installation link in the guide's first step", () => {
+    const install = readFileSync('GUIDE.md', 'utf8').split('## 1. Install')[1].split('\n2. ')[0];
+    expect(install).toMatch(new RegExp(`https://developer\\.atlassian\\.com/console/install/${APP_ID}\\?signature=[^)\\s]+&product=jira`));
+  });
+
   it('gives the same rule lines in the guide as in the skill file', () => {
     const guide = oneLine(readFileSync('GUIDE.md', 'utf8'));
     for (const rule of rules(readFileSync('skills/dogear/SKILL.md', 'utf8'))) expect(guide).toContain(rule);
