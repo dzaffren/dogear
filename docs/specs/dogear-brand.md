@@ -402,37 +402,7 @@ the tests red between the chunks.
 
 ### Decisions to record
 
-## D29 · 2026-11-23 · One word, Dogear, for the app and for its note
-
-Why: a judge installs "Dogear" and then looks for that word on the ticket and in the
-agent's tools. With one word, the install screen, the panel, the tab and the tools name the
-same thing.
-Rejected: a new name for the app alone, with "stand note" for the note (two words for one
-product, and a judge who installs Dogear looks for a panel named "Stand note"), new titles
-only (the panel's title says Dogear, and the text under it says "stand note").
-Source: docs/specs/dogear-brand.md
-Status: active
-
-## D30 · 2026-11-23 · The logo is Page pup, in Ginger
-
-Why: Page pup shows both halves of the name in one shape: the folded corner of the page is
-the dog's ear. A face from the front reads at a glance, and its small cut holds at 16
-pixels. Ginger `#E55F12` is far from Atlassian's blue.
-Rejected: Folded d (a page and a letter, with no dog, so it is the cooler mark), Origami pup
-(its ears blur at 16 pixels), the three concepts of round 1 (Fold-ear can read as a camera,
-Folded D has no dog, Corner reads as an arrow).
-Source: docs/specs/dogear-brand.md
-Status: active
-
-## D31 · 2026-11-23 · The icon in Jira is a PNG at a public web address
-
-Why: the docs call the panel's icon "the absolute URL of the icon", and they describe a
-folder of bundled files only for Custom UI. A web address needs no spike. The address works
-when the repo is public, so `judge-ready-entry` adds it.
-Rejected: a bundled icon file (not proven for a UI Kit app, and it needs a spike first), no
-icon in Jira (the panel and the tab keep the generic icon for good).
-Source: docs/specs/dogear-brand.md
-Status: active
+Recorded as D29, D30, D31.
 
 ## Open items
 
