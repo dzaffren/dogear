@@ -106,6 +106,65 @@ Scenario: Many tickets need a dogear
 - A list across all projects. The agent names one project.
 - The video beat that shows this tool — `submit-entry`.
 
+## Interface
+
+The slice has no screen. Its interface is the tool that the agent calls, the texts that
+the tool answers, and the rule in the skill file. The words are the Dogears tab's words.
+
+```mermaid
+flowchart LR
+    S[Skill rule] -- "when to list, and ask before a pickup" --> A[Coding agent]
+    A -- "projectKey: PAY" --> T[list-at-risk-dogears]
+    T -- "one plain text: up to 10 lines and a checked line" --> A
+    A -- "issueKey of the chosen ticket" --> G[get-dogear]
+```
+
+### The tool
+
+| Part | Value |
+| ---- | ----- |
+| Key and name | `list-at-risk-dogears` · List at-risk dogears |
+| Verb | `GET` |
+| Description | Lists the in-progress tickets of a Jira project that have no dogear, or a dogear saved more than 1 hour before the ticket last changed. Call it when the person asks which ticket to pick up. Then read the dogear of the ticket that they choose. |
+| Input | `projectKey`, a string, required: "The Jira project key, such as PAY." |
+
+### The answers
+
+A list, with one line for each ticket. The order and the label are the Dogears tab's:
+tickets with no dogear first, then the largest gap.
+
+```text
+Tickets in PAY that need a dogear:
+- PAY-150 · Add partial refunds · Hafiz Omar · No dogear
+- PAY-142 · Add refund endpoint · Aisyah Rahman · Dogear is 2 days behind
+- PAY-175 · Add refund report · Unassigned · Dogear is 5 hours behind, saved outside Dogear
+Checked 3 in-progress tickets in PAY.
+```
+
+| Case | Text |
+| ---- | ---- |
+| More than 10 at risk | After the 10th line: "4 more need a dogear. Open the Dogears tab of PAY to see them all." |
+| More than 100 in progress | The last line: "Checked the 100 most recently updated of about 240 in-progress tickets in PAY." |
+| None at risk | "No in-progress ticket in PAY needs a dogear. Checked 3 in-progress tickets in PAY." |
+| None in progress | "No ticket in PAY is in progress. The list checks the tickets whose status is in progress." |
+| No such project, or the person cannot see it | "Jira has no project HR that you can see." |
+| Access not allowed in the panel | "Open the Dogear panel on a Jira ticket once and select Allow access. Then list again." |
+| Jira fails | "Jira did not answer the search. Try again." |
+
+One ticket reads "1 in-progress ticket", as on the tab.
+
+### The skill rule
+
+A sixth rule in `skills/dogear/SKILL.md` and in the guide's AGENTS.md block:
+
+> When I ask which ticket to pick up, list the tickets of the project that need a dogear.
+> Show me the list, and ask which one to start before you read its dogear.
+
+### The guide
+
+Part 3 of `GUIDE.md` gets a third prompt: "Which tickets in KAN need a dogear?" Claude Code
+lists them and asks which one to start.
+
 ## Open items
 
 | ID | What | Type | Raised at | Owner | Status | Answer |
@@ -114,6 +173,7 @@ Scenario: Many tickets need a dogear
 | O2 | How many tickets does one answer list? Each line costs the agent's context. The Dogears tab checks up to 100 tickets. | question | spec p1 | user | Resolved | 10 tickets, in the order of the Dogears tab, then a count of the rest that sends the person to the tab. 2026-11-24 |
 | O3 | When the agent picks a ticket from the list, does it start on its own, or ask first? A listed ticket often has another person as its assignee. | question | spec p1 | user | Resolved | Ask first. The skill tells the agent to show the list and ask before it starts on a ticket. Drafted as an entry at pause 3. 2026-11-24 |
 | O4 | Does the list carry each ticket's Next, or only the key, summary, assignee and how far behind? The Dogears tab keeps the note texts on the server (at-risk-list). | question | spec p1 | user | Resolved | No texts. Each line has the key, summary, assignee and how far behind, as on the Dogears tab. The agent calls `get-dogear` on the ticket it picks. Drafted as an entry at pause 3. 2026-11-24 |
+| O5 | After part 2 of the guide, the judge's only ticket, KAN-1, has a current dogear, so the third prompt would answer "No in-progress ticket in KAN needs a dogear". How does the guide give the list a ticket to show? | question | spec p2 | user | Open | — |
 
 ## Glossary
 
