@@ -120,13 +120,27 @@ describe('getNote', () => {
   });
 
   it('returns the note, the name of its author and the server time', async () => {
-    jira.property = aisyahNote;
+    const signedNote = { ...aisyahNote, sig: sign('PAY-142', aisyahNote, 'test-signing-key') };
+    jira.property = signedNote;
     expect(await getNote({ context: context('acc-hafiz') })).toEqual({
-      note: aisyahNote,
+      note: signedNote,
       savedByName: 'Aisyah Rahman',
       canEdit: true,
       now: '2026-11-26T01:15:00.000Z',
     });
+  });
+
+  it('names no person for a note that Dogear did not sign', async () => {
+    jira.property = aisyahNote;
+    const { note, savedByName } = await getNote({ context: context('acc-hafiz') });
+    expect(note.done).toBe(aisyahNote.done);
+    expect(savedByName).toBeNull();
+    expect(jira.calls.some((call) => call.path.startsWith('/rest/api/3/user'))).toBe(false);
+  });
+
+  it('names no person for a signed note whose author was changed', async () => {
+    jira.property = { ...aisyahNote, sig: sign('PAY-142', aisyahNote, 'test-signing-key'), savedBy: 'acc-hafiz' };
+    expect((await getNote({ context: context('acc-hafiz') })).savedByName).toBeNull();
   });
 
   it('gives text for each field when the stored note has other types', async () => {
