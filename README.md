@@ -57,8 +57,10 @@ In the development environment, each tool name ends in `_development`.
 
 ### e2e tests for the agent tools
 
-`npm run e2e` also calls the tools through the MCP server, as the main account. Do part 1 and
-step 1 of part 3 of the guide as the main account first, on the development install. The tests sign notes with `NOTE_SIGNING_KEY` from
+`npm run e2e` also calls the tools through the MCP server, as the main account. Do two
+things as the main account first, on the development install that `npm run deploy` makes.
+Open the Dogear panel on a Jira ticket once, and select Allow access. Then turn on its tools,
+as in step 1 of part 3 of the guide. The tests sign notes with `NOTE_SIGNING_KEY` from
 `.env`, which must be the same value as the Forge variable of that name:
 `bash scripts/forge.sh variables set --encrypt -e development NOTE_SIGNING_KEY <value>`. Then run `npm run e2e:mcp-login` once, open the link
 that it prints, and sign in as the main account. It saves the login in

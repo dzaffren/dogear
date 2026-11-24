@@ -123,6 +123,12 @@ describe("the judge's material", () => {
     expect(readme).not.toContain('Take the ticket key from the branch name');
   });
 
+  it('never sends the developer to the installation link of the guide', () => {
+    const e2e = oneLine(readFileSync('README.md', 'utf8').split('### e2e tests for the agent tools')[1].split('## Production')[0]);
+    expect(e2e).not.toMatch(/part 1/i);
+    expect(e2e).toContain('Allow access');
+  });
+
   it('has a privacy policy that names what the app stores, and where to ask', () => {
     const privacy = readFileSync('PRIVACY.md', 'utf8');
     expect(privacy).toContain(`\`${PROPERTY_KEY}\``);
