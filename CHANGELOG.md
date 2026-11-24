@@ -17,6 +17,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - On a ticket with no stand note, a person selects "Build a brief from Jira" and gets a brief that AI builds from the description, comments, history and links, with "Not known" where Jira does not say.
 - A person who can edit the ticket turns the brief into the stand note through the note form, and checks each field before the save.
 - The app has a name, Dogear, and a logo. The note on each ticket is now a dogear, and the project tab is Dogears.
+- Install Dogear on any Jira site from its installation link, and try it in two minutes with the guide, `GUIDE.md`.
+- The Dogear panel and the Dogears tab show the Dogear icon.
+- Give a coding agent the rules for the dogear with one skill file, `skills/dogear/SKILL.md`.
 
 ### Changed
 
