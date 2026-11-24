@@ -6,8 +6,9 @@ description: Keeps the dogear of a Jira ticket current while you work on it. A d
 # Dogear
 
 Each Jira ticket has a dogear: a short note with Done, Next, Watch out, Code. Keep it
-current with the two tools of the `dogear` MCP server: `get-dogear` reads it, and
-`save-dogear` saves it.
+current with the three tools of the `dogear` MCP server: `get-dogear` reads it,
+`save-dogear` saves it, and `list-at-risk-dogears` lists the tickets of a project that need
+one.
 
 - Take the ticket key from the branch name: `feat/pay-142-refund` is PAY-142. If the
   branch has no key, ask me.
@@ -19,3 +20,5 @@ current with the two tools of the `dogear` MCP server: `get-dogear` reads it, an
   field that is still true.
 - Write for a teammate who did not see this session. Keep each field under 1,000
   characters.
+- When I ask which ticket to pick up, list the tickets of the project that need a dogear.
+  Show me the list, and ask which one to start before you read its dogear.

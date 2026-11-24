@@ -50,8 +50,9 @@ to make the project `SNR`, which the e2e test of this list uses.
 
 ## Connect a coding agent
 
-A coding agent, such as Claude Code, reads and saves the dogear through two MCP
-tools: `get-dogear` and `save-dogear`. Part 3 of the [guide](GUIDE.md) connects one. The
+A coding agent, such as Claude Code, reads and saves the dogear through three MCP
+tools: `get-dogear`, `save-dogear` and `list-at-risk-dogears`, which lists the tickets of a
+project that need a dogear. Part 3 of the [guide](GUIDE.md) connects one. The
 rules for the agent are in the skill file, [skills/dogear/SKILL.md](skills/dogear/SKILL.md).
 
 In the development environment, each tool name ends in `_development`.
