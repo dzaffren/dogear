@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { deleteNote, findOrCreateIssue, getNote, jira, mainAccountId, setNote } from './jira.js';
+import { sign } from '../src/lib/signature.js';
 import { expectReadView, openPanel } from './panel.js';
 
 // The test account in the browser acts as Aisyah, Hafiz or Mei Ling. The main account acts
@@ -25,12 +26,12 @@ let viewOnlyIssueKey;
 let mainId;
 let mainName;
 
-const noteByMainAccount = (texts, ageMs) => ({
-  v: 1,
-  ...texts,
-  savedBy: mainId,
-  savedAt: new Date(Date.now() - ageMs).toISOString(),
-});
+// A note as the panel saves it, signed with the key in .env, which is the same as the Forge
+// variable. An unsigned note reads "Saved outside Dogear".
+const noteByMainAccount = (key, texts, ageMs) => {
+  const note = { v: 1, ...texts, savedBy: mainId, savedAt: new Date(Date.now() - ageMs).toISOString() };
+  return { ...note, sig: sign(key, note, process.env.NOTE_SIGNING_KEY) };
+};
 
 const testAccountId = async (page) => (await (await page.request.get('/rest/api/3/myself')).json()).accountId;
 
@@ -62,7 +63,7 @@ test('saves the first note', async ({ page }) => {
 });
 
 test('shows a note from two days ago', async ({ page }) => {
-  await setNote(issueKey, noteByMainAccount(aisyahTexts, 2 * DAY));
+  await setNote(issueKey, noteByMainAccount(issueKey, aisyahTexts, 2 * DAY));
   await openPanel(page, issueKey);
 
   await expectReadView(page, aisyahTexts);
@@ -70,7 +71,7 @@ test('shows a note from two days ago', async ({ page }) => {
 });
 
 test('replaces the note', async ({ page }) => {
-  await setNote(issueKey, noteByMainAccount(aisyahTexts, 2 * DAY));
+  await setNote(issueKey, noteByMainAccount(issueKey, aisyahTexts, 2 * DAY));
   await openPanel(page, issueKey);
 
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
@@ -93,7 +94,7 @@ test('a viewer reads and cannot edit', async ({ page }) => {
   expect(permissions.permissions.BROWSE_PROJECTS.havePermission).toBe(true);
   expect(permissions.permissions.EDIT_ISSUES.havePermission).toBe(false);
 
-  await setNote(viewOnlyIssueKey, noteByMainAccount(hafizTexts, 3 * 60 * 60 * 1000));
+  await setNote(viewOnlyIssueKey, noteByMainAccount(viewOnlyIssueKey, hafizTexts, 3 * 60 * 60 * 1000));
   await openPanel(page, viewOnlyIssueKey);
 
   await expectReadView(page, hafizTexts);
@@ -103,7 +104,7 @@ test('a viewer reads and cannot edit', async ({ page }) => {
 });
 
 test('keeps the text when the save fails', async ({ page }) => {
-  const before = noteByMainAccount(hafizTexts, 60 * 60 * 1000);
+  const before = noteByMainAccount(issueKey, hafizTexts, 60 * 60 * 1000);
   await setNote(issueKey, before);
 
   // The panel calls saveNote through Forge's GraphQL gateway. Refuse that one call.

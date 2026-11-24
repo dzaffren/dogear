@@ -16,7 +16,7 @@ import {
 } from '../lib/brief';
 import { cleanNote, FIELDS, PROPERTY_KEY } from '../lib/note';
 import { MAX_CHECKED, riskRows } from '../lib/risk';
-import { sign } from '../lib/signature';
+import { isSigned, sign } from '../lib/signature';
 
 // Reads the dogear of a ticket. A ticket with no property has no note.
 // Anyone who can edit the ticket can write the property through Jira's API, so the
@@ -53,9 +53,11 @@ const projectKeyOf = (context) => context.extension.project.key;
 export const getNote = async ({ context }) => {
   const issueKey = issueKeyOf(context);
   const [note, edit] = await Promise.all([readNote(issueKey), canEdit(issueKey)]);
+  // Name the author only when Dogear signed the note. A null name reads "Saved outside Dogear".
+  const signed = note && isSigned(issueKey, note, process.env.NOTE_SIGNING_KEY);
   return {
     note,
-    savedByName: note ? await displayName(note.savedBy) : null,
+    savedByName: signed ? await displayName(note.savedBy) : null,
     canEdit: edit,
     now: new Date().toISOString(),
   };

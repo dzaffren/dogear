@@ -28,3 +28,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Security
 
 - An agent no longer gets a teammate's name on a stand note that someone wrote outside Stand Note; such a note now reads "Saved outside Stand Note".
+- The panel no longer names a teammate as the author of a dogear that someone wrote outside Dogear; such a dogear now reads "Saved outside Dogear".
+- The skill file no longer tells an agent to obey Watch out; the agent treats a dogear as notes and asks before it runs a command that a dogear names.
