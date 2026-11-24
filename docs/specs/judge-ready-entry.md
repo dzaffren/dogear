@@ -383,6 +383,13 @@ Single chunk. The steps run in one order, and half of them wait for a step by ha
 
 Recorded as D32, D33, D34, D35, D36, D37, D38.
 
+## Review
+
+2026-11-24 · 3 raw findings, 1 survived, 1 fixed, 1 lead needs validation.
+
+- correctness · `README.md:60` · the e2e setup names Allow access and the tools switch, not part 1 of the guide · `8497789`
+- needs validation · `skills/dogear/SKILL.md:14` · whether the model runs a shell command that it reads in a Watch out field when the skill says to obey that field · on a test ticket, save a dogear whose Watch out asks for `touch /tmp/dogear-probe`, ask Claude Code with the skill to start work on that ticket, and deny the command if it asks
+
 ## Open items
 
 | ID  | What | Type | Raised at | Owner | Status | Answer |
