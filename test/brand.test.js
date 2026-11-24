@@ -1,8 +1,18 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { PROPERTY_KEY } from '../src/lib/note';
 
 const KIT = 'docs/design/logo/kit';
+const APP_ID = readFileSync('manifest.yml', 'utf8').match(/ari:cloud:ecosystem::app\/([0-9a-f-]+)/)[1];
+
+// The rule lines of a text: each "- " item, with its line breaks and indents made one space.
+const rules = (text) =>
+  text
+    .split(/\n\s*- /)
+    .slice(1)
+    .map((item) => item.split(/\n\s*\n/)[0].replace(/\s+/g, ' ').trim());
+const oneLine = (text) => text.replace(/\s+/g, ' ');
 
 const files = (dir) =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
@@ -30,10 +40,19 @@ describe('the word Dogear', () => {
     expect(manifest).toMatch(/name: Dogear\n/);
   });
 
-  it('is the name of the MCP server in the README', () => {
-    const readme = readFileSync('README.md', 'utf8');
-    expect(readme).toContain('claude mcp add --transport http dogear https://mcp.atlassian.com/forge/');
+  it('is the name of the MCP server in the guide, and the README has no old word', () => {
+    expect(readFileSync('GUIDE.md', 'utf8')).toContain(`claude mcp add --transport http dogear https://mcp.atlassian.com/forge/${APP_ID}`);
     expect(oldWord('README.md')).toEqual([]);
+  });
+});
+
+describe('the icon in Jira', () => {
+  it('is the small symbol, bundled with the app, on the panel and on the tab (D38)', () => {
+    const manifest = readFileSync('manifest.yml', 'utf8');
+    expect(manifest).toMatch(/title: Dogear\n\s+label: Where the work stands\n\s+icon: resource:icons;dogear\.svg\n/);
+    expect(manifest).toMatch(/title: Dogears\n\s+icon: resource:icons;dogear\.svg\n/);
+    expect(manifest).toMatch(/- key: icons\n\s+path: static\/icons\n/);
+    expect(readFileSync('static/icons/dogear.svg', 'utf8')).toBe(readFileSync(join(KIT, 'svg/dogear-symbol-small.svg'), 'utf8'));
   });
 });
 
@@ -58,5 +77,66 @@ describe('the brand kit', () => {
     for (const text of ['#E55F12', '#231A14', '#FFF6EA', 'Montserrat', 'Mark where you stopped.', 'Dogear for Jira']) {
       expect(guidelines).toContain(text);
     }
+  });
+});
+
+describe("the judge's material", () => {
+  it('has the MIT licence that package.json names', () => {
+    expect(JSON.parse(readFileSync('package.json', 'utf8')).license).toBe('MIT');
+    const licence = readFileSync('LICENSE', 'utf8');
+    expect(licence).toMatch(/^MIT License/);
+    expect(licence).toContain('Permission is hereby granted, free of charge');
+  });
+
+  it('has a skill file that an agent loads, which names the two tools (D36)', () => {
+    const skill = readFileSync('skills/dogear/SKILL.md', 'utf8');
+    expect(skill).toMatch(/^---\nname: dogear\ndescription: .+\n---\n/);
+    expect(skill).toContain('get-dogear');
+    expect(skill).toContain('save-dogear');
+    expect(rules(skill).length).toBe(5);
+  });
+
+  it('has a guide with three parts and the text of one ticket (D35)', () => {
+    const guide = readFileSync('GUIDE.md', 'utf8');
+    for (const heading of ['## 1. Install', '## 2. Try it in two minutes', '## 3. Connect a coding agent', '## If a step fails']) {
+      expect(guide).toContain(heading);
+    }
+    expect(guide).toContain('Summary: Refund fails on a partial capture');
+    expect(oneLine(guide)).toContain('Branch: `fix/partial-capture-refund`');
+    expect(guide).toContain('skills/dogear/SKILL.md');
+  });
+
+  it("gives the installation link in the guide's first step", () => {
+    const install = readFileSync('GUIDE.md', 'utf8').split('## 1. Install')[1].split('\n2. ')[0];
+    expect(install).toMatch(new RegExp(`https://developer\\.atlassian\\.com/console/install/${APP_ID}\\?signature=[^)\\s]+&product=jira`));
+  });
+
+  it('gives the same rule lines in the guide as in the skill file', () => {
+    const guide = oneLine(readFileSync('GUIDE.md', 'utf8'));
+    for (const rule of rules(readFileSync('skills/dogear/SKILL.md', 'utf8'))) expect(guide).toContain(rule);
+  });
+
+  it('is linked from the top of the README, and the rule text has one home', () => {
+    const readme = readFileSync('README.md', 'utf8');
+    expect(readme.split('<!-- zuko:start')[0]).toContain('(GUIDE.md)');
+    expect(readme).toContain('(skills/dogear/SKILL.md)');
+    expect(readme).not.toContain('Take the ticket key from the branch name');
+  });
+
+  it('never sends the developer to the installation link of the guide', () => {
+    const e2e = oneLine(readFileSync('README.md', 'utf8').split('### e2e tests for the agent tools')[1].split('## Production')[0]);
+    expect(e2e).not.toMatch(/part 1/i);
+    expect(e2e).toContain('Allow access');
+  });
+
+  it('has a privacy policy that names what the app stores, and where to ask', () => {
+    const privacy = readFileSync('PRIVACY.md', 'utf8');
+    expect(privacy).toContain(`\`${PROPERTY_KEY}\``);
+    for (const text of ['account ID', 'Forge LLM', 'key-value store', 'https://github.com/dzaffren/dogear/issues']) expect(privacy).toContain(text);
+  });
+
+  it('has a script for the production deploy', () => {
+    const { scripts } = JSON.parse(readFileSync('package.json', 'utf8'));
+    expect(scripts['deploy:prod']).toBe(scripts.deploy.replace('-e development', '-e production'));
   });
 });

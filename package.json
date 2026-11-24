@@ -11,7 +11,8 @@
     "e2e:setup": "node e2e/setup-site.mjs",
     "e2e:mcp-login": "node e2e/mcp-login.mjs",
     "lint": "bash scripts/forge.sh lint",
-    "deploy": "bash scripts/forge.sh deploy --non-interactive -e development"
+    "deploy": "bash scripts/forge.sh deploy --non-interactive -e development",
+    "deploy:prod": "bash scripts/forge.sh deploy --non-interactive -e production"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",

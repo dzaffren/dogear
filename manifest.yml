@@ -7,6 +7,7 @@ modules:
       render: native
       title: Dogear
       label: Where the work stands
+      icon: resource:icons;dogear.svg
   jira:projectPage:
     - key: stand-notes-page
       resource: at-risk
@@ -14,6 +15,7 @@ modules:
         function: resolver
       render: native
       title: Dogears
+      icon: resource:icons;dogear.svg
   llm:
     - key: brief-llm
       model:
@@ -86,6 +88,8 @@ resources:
     path: src/frontend/index.jsx
   - key: at-risk
     path: src/frontend/at-risk.jsx
+  - key: icons
+    path: static/icons
 permissions:
   scopes:
     - read:jira-work
