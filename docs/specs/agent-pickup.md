@@ -1,6 +1,6 @@
 # Agent pickup
 
-**Version:** v1 · **Status:** Draft · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** agent-checkpoint, at-risk-list, judge-ready-entry
@@ -162,8 +162,139 @@ A sixth rule in `skills/dogear/SKILL.md` and in the guide's AGENTS.md block:
 
 ### The guide
 
-Part 3 of `GUIDE.md` gets a third prompt: "Which tickets in KAN need a dogear?" Claude Code
-lists them and asks which one to start.
+Part 3 of `GUIDE.md` gets one step and a third prompt. The judge makes a second ticket,
+"Refund webhooks retry forever", and moves it to In Progress. Then: "Which tickets in KAN
+need a dogear?" Claude Code lists that ticket with "No dogear" and asks which one to start.
+
+## Technical plan
+
+### Approach
+
+A third tool function sits beside `getDogear` and `saveDogear`. It checks the project key,
+then calls the same search as the Dogears tab. That search moves out of `getAtRisk` into one
+exported function, so the tab and the tool cannot drift apart. A pure helper turns the rows
+into the text. The search runs as the person (D13), so Jira leaves out each ticket that they
+cannot view.
+
+```mermaid
+flowchart LR
+    A[Coding agent] -- "projectKey" --> M[Atlassian MCP server]
+    M -- "inputs, caller" --> L["listAtRiskDogears (src/tools)"]
+    L -- "GET project as the person" --> J[(Jira REST API)]
+    L -- "findAtRisk(projectKey)" --> R["findAtRisk (src/resolvers)"]
+    P["getAtRisk, the Dogears tab"] -- "findAtRisk(projectKey)" --> R
+    R -- "search with properties (D18)" --> J
+    R -- "riskRows (D17)" --> H["Helpers (src/lib)"]
+    L -- "atRiskText" --> H
+```
+
+```mermaid
+sequenceDiagram
+    participant A as Coding agent
+    participant T as listAtRiskDogears
+    participant J as Jira
+    A->>T: projectKey "pay"
+    T->>T: upper case, check the key shape
+    T->>J: GET /rest/api/3/project/PAY (as the person)
+    J-->>T: 200, or 404 when it does not exist or cannot be seen
+    T->>J: POST /rest/api/3/search/jql (findAtRisk)
+    J-->>T: up to 100 in-progress tickets with their dogears
+    T->>T: riskRows, then atRiskText
+    T-->>A: "Tickets in PAY that need a dogear: ..."
+```
+
+The project key comes from the agent, so it is untrusted input. It reaches the JQL only
+after it matches the shape of a Jira key, `^[A-Z][A-Z0-9_]+$`. A key of another shape
+gets the "no project" answer with no Jira call.
+
+Relies on: D1, D12, D13, D14, D17, D18, D41, D42
+
+### Changes
+
+| File | Change | Why |
+| ---- | ------ | --- |
+| `src/resolvers/index.js:99` | Move the body of `getAtRisk` into an exported `findAtRisk(projectKey)` that returns `{ rows, checked, inProgress }`. `getAtRisk` calls it with the project of the context and keeps its log line and its answer. | The tool and the tab share one search and one rule. `src/tools/index.js:5` already imports `displayName` from here. |
+| `src/lib/summary.js` | Add `atRiskText(projectKey, { rows, checked, inProgress })`, which gives each text of "The answers". It reuses `behindLabel` (`src/lib/age.js:21`) and the tab's words. | A pure function, tested without Jira. |
+| `src/tools/index.js` | Add `listAtRiskDogears(payload)`: the key check, the project read, `findAtRisk`, `atRiskText`. It catches `NeedsAuthenticationError` with `allowAccess('list')` (`src/tools/index.js:16`), and each other error with "Jira did not answer the search. Try again." It logs `at-risk list via=agent project=PAY checked=3 atRisk=2`. | Scenarios 1, 3, 4, 5. |
+| `manifest.yml:23` | Add `list-at-risk-dogears` to the tools of `stand-note-mcp`, an action with the description and the input of "The tool", and a function `list-at-risk-dogears-fn` with the handler `index.listAtRiskDogears`. | The MCP server lists the tool. |
+| `src/index.js` | Export `listAtRiskDogears`, as it exports the two other tools. | The handler of the function. |
+| `skills/dogear/SKILL.md`, `GUIDE.md` | The sixth rule, in both. "Two MCP tools" becomes three, with the new name. Part 3 gets the second ticket and the third prompt. | The skill rule and the guide of "Interface". |
+| `README.md` | "two MCP tools" becomes three, with the new name. | It names the tools. |
+| `test/summary.test.js`, `test/tools.test.js`, `test/brand.test.js` | Tests of each text, of the tool against the fake Jira, and of the sixth rule. `rules(skill).length` becomes 6. | Scenarios 1, 3, 4, 5. |
+| `test/resolvers.test.js` | The `getAtRisk` tests stay as they are and pass. | They prove the move kept the tab's answer. |
+| `e2e/at-risk-list.spec.js` | A test that calls the tool through the MCP server on the SNR tickets of `beforeEach`, saves the dogear of the ticket that is behind, and calls the tool again. A test with the key `ZZQ`. | Scenarios 1, 2 and 4 on the real site. SNR is the project of this file (D20). |
+
+### Earn-it
+
+- `findAtRisk` — scenario 1 needs the tab's search and rule in the tool. A copy would let
+  the two drift apart.
+- `atRiskText` — scenarios 1, 3 and 5 have seven texts. A pure helper tests them without a
+  fake Jira.
+- The project read — scenario 4. A search on an unknown project gives a Jira error, not
+  "no project".
+
+No new dependency, scope, config or storage.
+
+### Non-functionals
+
+- **Load:** one call for each time a developer asks for a pickup: some tens a day on a
+  judge's site. Each call makes two or three Jira requests.
+- **What breaks first at 10 times:** nothing. Jira's rate limit is far away, and the search
+  reads at most 100 tickets.
+- **Security:** any person whose agent has the Dogear server can call the tool. It reads as
+  that person (D13), so it lists only tickets that they can view. The project key is the
+  only input, and it reaches the JQL only in the shape of a Jira key. The answer has no
+  note texts (D42). It touches no secret except the signing key, through `riskRows`.
+- **Proof it works**: `bash scripts/forge.sh logs -e production` shows
+  `at-risk list via=agent project=` from a judge's site.
+- **Rollout**: no flag. The tool is new, so nothing that works today changes. To roll back:
+  revert the merge and run `npm run deploy:prod`; the MCP server then lists two tools again.
+
+### Test plan
+
+| Scenario | Proof | Command |
+| -------- | ----- | ------- |
+| 1, the list | `atRiskText` with three rows; `listAtRiskDogears` with a fake search; the e2e test on SNR | `npm test`, then `npm run e2e` |
+| 2, a save takes it off | The e2e test: save through `save-dogear`, list again | `npm run e2e` |
+| 3, none at risk | `atRiskText` with no rows; and with none in progress | `npm test` |
+| 4, no project | The tool with a 404 project read, and with the key `pay-142!`; the e2e test with `ZZQ` | `npm test`, then `npm run e2e` |
+| 5, many | `atRiskText` with 14 rows, and with 100 checked of about 240 | `npm test` |
+
+The e2e test that walks the slice is the new test in `e2e/at-risk-list.spec.js`. Before it
+runs: `npm run deploy`, then `npm run e2e:mcp-login`, because a sign-in from before the
+deploy lists only the tools it knew (`docs/learnings/forge-production.md`).
+
+### Chunks
+
+Single chunk.
+
+### Risks
+
+| Risk | Mitigation |
+| ---- | ---------- |
+| An MCP sign-in from before the deploy does not list the third tool. | The guide's part 3 signs in after the install, so a judge gets all three. The e2e setup signs in again after the deploy. |
+| The agent starts on a ticket with no word to the person. | The skill rule says to ask (D41). Claude Code also asks before each tool call that it has no permission for. |
+| A judge's ticket list is long, and the answer fills the agent's context. | 10 lines at most (O2). |
+
+### Decisions to record
+
+## D41 · 2026-11-24 · The agent asks before it picks up a ticket from the list
+
+Why: a ticket on the list often has another person as its assignee, and the person should
+choose what their agent takes on. The skill shows the list and asks which ticket to start.
+Rejected: start on the top ticket (it takes another person's work with no word), start
+alone only on a ticket with no assignee (two rules where one does).
+Source: docs/specs/agent-pickup.md
+Status: active
+
+## D42 · 2026-11-24 · The agent's at-risk list has no note texts
+
+Why: the agent reads the dogear of the one ticket that the person picks, with `get-dogear`.
+Each line stays short, as on the Dogears tab, which keeps the texts on the server.
+Rejected: each line with its Next (up to 1,000 more characters a line in the agent's
+context).
+Source: docs/specs/agent-pickup.md
+Status: active
 
 ## Open items
 
@@ -173,7 +304,7 @@ lists them and asks which one to start.
 | O2 | How many tickets does one answer list? Each line costs the agent's context. The Dogears tab checks up to 100 tickets. | question | spec p1 | user | Resolved | 10 tickets, in the order of the Dogears tab, then a count of the rest that sends the person to the tab. 2026-11-24 |
 | O3 | When the agent picks a ticket from the list, does it start on its own, or ask first? A listed ticket often has another person as its assignee. | question | spec p1 | user | Resolved | Ask first. The skill tells the agent to show the list and ask before it starts on a ticket. Drafted as an entry at pause 3. 2026-11-24 |
 | O4 | Does the list carry each ticket's Next, or only the key, summary, assignee and how far behind? The Dogears tab keeps the note texts on the server (at-risk-list). | question | spec p1 | user | Resolved | No texts. Each line has the key, summary, assignee and how far behind, as on the Dogears tab. The agent calls `get-dogear` on the ticket it picks. Drafted as an entry at pause 3. 2026-11-24 |
-| O5 | After part 2 of the guide, the judge's only ticket, KAN-1, has a current dogear, so the third prompt would answer "No in-progress ticket in KAN needs a dogear". How does the guide give the list a ticket to show? | question | spec p2 | user | Open | — |
+| O5 | After part 2 of the guide, the judge's only ticket, KAN-1, has a current dogear, so the third prompt would answer "No in-progress ticket in KAN needs a dogear". How does the guide give the list a ticket to show? | question | spec p2 | user | Resolved | A second ticket in part 3. The judge makes "Refund webhooks retry forever" and moves it to In Progress. The list shows it with "No dogear", and the agent asks, reads and saves. 2026-11-24 |
 
 ## Glossary
 
