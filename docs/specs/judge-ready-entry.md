@@ -338,10 +338,10 @@ No new dependency, and no new code in `src/`.
   `e2e/.auth/` stay out of git. The production signing key is only in Forge. Any site admin
   with the link can install the app. The scopes do not change. Dzafran's Gmail address
   stays in the five merged pull requests (O20).
-- **Proof in production:** `bash scripts/forge.sh logs -e production` shows
+- **Proof it works**: `bash scripts/forge.sh logs -e production` shows
   `dogear saved issue=` with the ticket key of the rehearsal, from the other person's site
   too.
-- **Rollout:** no flag. A later deploy with no new scope is a minor version, and each site
+- **Rollout**: no flag. A later deploy with no new scope is a minor version, and each site
   gets it by itself. To roll back: check out the last good commit and run
   `npm run deploy:prod`. To stop new installs: turn Sharing off in the console.
 
