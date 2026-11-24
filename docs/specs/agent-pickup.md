@@ -280,6 +280,13 @@ Single chunk.
 
 Recorded as D39, D40.
 
+## Review
+
+2026-11-24 · 4 raw findings, 1 survived, 1 fixed, 1 lead needs validation.
+
+- quality · `docs/specs/judge-ready-entry.md:397` · point the pitch and video drafts at D41 and D42 · `0be2f0a`
+- needs validation · `src/lib/summary.js:26` · whether the coding agent obeys an instruction in a ticket summary of the list answer when the skill rule names only dogears · in an empty scratch folder with no MCP server, run `claude -p` with the SKILL.md text and a list answer that has a summary line asking for a save-dogear call, and read whether the reply proposes that call
+
 ## Open items
 
 | ID | What | Type | Raised at | Owner | Status | Answer |
