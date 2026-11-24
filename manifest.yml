@@ -26,6 +26,7 @@ modules:
       tools:
         - get-dogear
         - save-dogear
+        - list-at-risk-dogears
   action:
     - key: get-dogear
       name: Get dogear
@@ -76,6 +77,20 @@ modules:
           type: string
           required: false
           description: The branch name, or a link to the code. 1,000 characters at most.
+    - key: list-at-risk-dogears
+      name: List at-risk dogears
+      function: list-at-risk-dogears-fn
+      actionVerb: GET
+      description: >-
+        Lists the in-progress tickets of a Jira project that have no dogear, or a dogear saved
+        more than 1 hour before the ticket last changed. Call it when the person asks which
+        ticket to pick up. Then read the dogear of the ticket that they choose.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: true
+          description: The Jira project key, such as PAY.
   function:
     - key: resolver
       handler: index.handler
@@ -83,6 +98,8 @@ modules:
       handler: index.getDogear
     - key: save-dogear-fn
       handler: index.saveDogear
+    - key: list-at-risk-dogears-fn
+      handler: index.listAtRiskDogears
 resources:
   - key: main
     path: src/frontend/index.jsx
