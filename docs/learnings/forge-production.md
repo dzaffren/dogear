@@ -19,7 +19,9 @@
   access". Treat the consent as apart for each environment.
 - A pick-up brief works in production with no billing step: the model answered in 3
   seconds on app version 2.0.0.
-- `forge logs` does not work in production. Read the logs in the developer console.
+- `forge logs -e production --since 24h` works, and shows the logs of every site that
+  installed the app. A short `--since` window can miss a run: widen it before deciding a
+  run left no log.
 - In production, the MCP tool names have no suffix: `get-dogear` and `save-dogear`. They
   show only after the admin switch is on for that install and after a new MCP sign-in. A
   sign-in from before the install lists only the tools it knew.

@@ -1,6 +1,6 @@
 # Judge-ready entry
 
-**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Built · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** stand-note, agent-checkpoint, at-risk-list, pick-up-brief, dogear-brand
@@ -338,10 +338,9 @@ No new dependency, and no new code in `src/`.
   `e2e/.auth/` stay out of git. The production signing key is only in Forge. Any site admin
   with the link can install the app. The scopes do not change. Dzafran's Gmail address
   stays in the five merged pull requests (O20).
-- **Proof in production:** the logs of the production environment in the developer console
-  show `dogear saved issue=` with the ticket key of the rehearsal. `forge logs` does not
-  work in production. If the console shows no logs of another person's site, the proof is
-  the panel's line "Saved by" on the rehearsal site.
+- **Proof in production:** `bash scripts/forge.sh logs -e production` shows
+  `dogear saved issue=` with the ticket key of the rehearsal, from the other person's site
+  too.
 - **Rollout:** no flag. A later deploy with no new scope is a minor version, and each site
   gets it by itself. To roll back: check out the last good commit and run
   `npm run deploy:prod`. To stop new installs: turn Sharing off in the console.
@@ -411,6 +410,8 @@ Recorded as D32, D33, D34, D35, D36, D37, D38.
 | O20 | The five merged pull requests keep their old commits on GitHub, with Dzafran's Gmail address. A force-push of `main` does not remove them. | flag | spec p3 | user | Accepted risk | Force-push `main` and make this repo public. The address is gone from `main`, and it stays readable in the pull requests. Dzafran chose this over a new repo with a clean history. Drafted in D37. 2026-11-24 |
 | O21 | The sharing form of the developer console asked for a support contact, a privacy policy, terms of service, a company and a personal data answer. The plan expected only a privacy policy. | flag | build | user | Decided alone | Chose: with Dzafran's answers on 2026-11-24, add `PRIVACY.md`, and fill the form with the GitHub issues page as the support contact, the privacy policy on GitHub, no terms, no company, and "No" for personal data, because the account ID stays in Jira on the customer's site. Other: answer "Yes" for personal data, or give an email as the contact. Undo: change the fields in Distribution in the developer console. 2026-11-24 |
 | O22 | The sharing form fetches the privacy link with node-fetch, and refused the `main` address, where `PRIVACY.md` arrives only at the merge. | flag | build | user | Decided alone | Chose: the form has the branch's address, `https://github.com/dzaffren/dogear/blob/feat/judge-ready-entry/PRIVACY.md`, which answers 200. Other: merge first, then fill the form. Undo: after the merge and before the branch is deleted, Dzafran changes the field to the `main` address. `/ship` must not delete the branch until then. 2026-11-24 |
+| O23 | The rehearsal checked the icon in the light theme only. | flag | build | build | Decided alone | Chose: the dark theme stays proven by the rendered sample at 16 and 24 pixels on `#1D2125` (O16), and the build goes on. Other: switch the rehearsal site to the dark theme and look before `/ship`. Undo: if the icon is hard to see, add a dark variant of `static/icons/dogear.svg`. 2026-11-24 |
+| O24 | The rehearsal skipped part 3, connecting a coding agent. | flag | build | build | Decided alone | Chose: part 3 stays proven by the spike in production (O19: the tool names, the sign-in, a read) and by the 19 Playwright tests on development, which call both tools and see the save in the panel. Other: run part 3 on the rehearsal site before `/ship`. Undo: run it then and fix the guide for what it finds. 2026-11-24 |
 
 _Never delete this section or its rows. See references/ledger.md._
 
