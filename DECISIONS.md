@@ -358,3 +358,21 @@ and nobody tried it), no icon in Jira (the panel and the tab keep the generic ic
 Supersedes: D31
 Source: docs/specs/judge-ready-entry.md
 Status: active
+
+## D39 · 2026-11-24 · The agent asks before it picks up a ticket from the list
+
+Why: a ticket on the list often has another person as its assignee, and the person should
+choose what their agent takes on. The skill shows the list and asks which ticket to start.
+Rejected: start on the top ticket (it takes another person's work with no word), start
+alone only on a ticket with no assignee (two rules where one does).
+Source: docs/specs/agent-pickup.md
+Status: active
+
+## D40 · 2026-11-24 · The agent's at-risk list has no note texts
+
+Why: the agent reads the dogear of the one ticket that the person picks, with `get-dogear`.
+Each line stays short, as on the Dogears tab, which keeps the texts on the server.
+Rejected: each line with its Next (up to 1,000 more characters a line in the agent's
+context).
+Source: docs/specs/agent-pickup.md
+Status: active

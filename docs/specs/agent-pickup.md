@@ -207,7 +207,7 @@ The project key comes from the agent, so it is untrusted input. It reaches the J
 after it matches the shape of a Jira key, `^[A-Z][A-Z0-9_]+$`. A key of another shape
 gets the "no project" answer with no Jira call.
 
-Relies on: D1, D12, D13, D14, D17, D18, D41, D42
+Relies on: D1, D12, D13, D14, D17, D18, D39, D40
 
 ### Changes
 
@@ -244,7 +244,7 @@ No new dependency, scope, config or storage.
 - **Security:** any person whose agent has the Dogear server can call the tool. It reads as
   that person (D13), so it lists only tickets that they can view. The project key is the
   only input, and it reaches the JQL only in the shape of a Jira key. The answer has no
-  note texts (D42). It touches no secret except the signing key, through `riskRows`.
+  note texts (D40). It touches no secret except the signing key, through `riskRows`.
 - **Proof it works**: `bash scripts/forge.sh logs -e production` shows
   `at-risk list via=agent project=` from a judge's site.
 - **Rollout**: no flag. The tool is new, so nothing that works today changes. To roll back:
@@ -273,28 +273,12 @@ Single chunk.
 | Risk | Mitigation |
 | ---- | ---------- |
 | An MCP sign-in from before the deploy does not list the third tool. | The guide's part 3 signs in after the install, so a judge gets all three. The e2e setup signs in again after the deploy. |
-| The agent starts on a ticket with no word to the person. | The skill rule says to ask (D41). Claude Code also asks before each tool call that it has no permission for. |
+| The agent starts on a ticket with no word to the person. | The skill rule says to ask (D39). Claude Code also asks before each tool call that it has no permission for. |
 | A judge's ticket list is long, and the answer fills the agent's context. | 10 lines at most (O2). |
 
 ### Decisions to record
 
-## D41 · 2026-11-24 · The agent asks before it picks up a ticket from the list
-
-Why: a ticket on the list often has another person as its assignee, and the person should
-choose what their agent takes on. The skill shows the list and asks which ticket to start.
-Rejected: start on the top ticket (it takes another person's work with no word), start
-alone only on a ticket with no assignee (two rules where one does).
-Source: docs/specs/agent-pickup.md
-Status: active
-
-## D42 · 2026-11-24 · The agent's at-risk list has no note texts
-
-Why: the agent reads the dogear of the one ticket that the person picks, with `get-dogear`.
-Each line stays short, as on the Dogears tab, which keeps the texts on the server.
-Rejected: each line with its Next (up to 1,000 more characters a line in the agent's
-context).
-Source: docs/specs/agent-pickup.md
-Status: active
+Recorded as D39, D40.
 
 ## Open items
 
