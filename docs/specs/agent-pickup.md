@@ -1,6 +1,6 @@
 # Agent pickup
 
-**Version:** v1 · **Status:** Refined · **Type:** Feature · **Project type:** Web UI
+**Version:** v1 · **Status:** Built · **Type:** Feature · **Project type:** Web UI
 
 **Shape doc:** docs/specs/ticket-handover/shape.md
 **Depends on:** agent-checkpoint, at-risk-list, judge-ready-entry
@@ -261,8 +261,8 @@ No new dependency, scope, config or storage.
 | 5, many | `atRiskText` with 14 rows, and with 100 checked of about 240 | `npm test` |
 
 The e2e test that walks the slice is the new test in `e2e/at-risk-list.spec.js`. Before it
-runs: `npm run deploy`, then `npm run e2e:mcp-login`, because a sign-in from before the
-deploy lists only the tools it knew (`docs/learnings/forge-production.md`).
+runs: `npm run deploy`. The build found that the sign-in from before the deploy already
+calls the new tool, so no new `npm run e2e:mcp-login` is needed.
 
 ### Chunks
 
@@ -272,7 +272,7 @@ Single chunk.
 
 | Risk | Mitigation |
 | ---- | ---------- |
-| An MCP sign-in from before the deploy does not list the third tool. | The guide's part 3 signs in after the install, so a judge gets all three. The e2e setup signs in again after the deploy. |
+| An MCP sign-in from before the deploy does not list the third tool. | The build disproved it on development on 2026-11-24: the old sign-in called `list-at-risk-dogears`. A judge signs in after the install in any case. |
 | The agent starts on a ticket with no word to the person. | The skill rule says to ask (D39). Claude Code also asks before each tool call that it has no permission for. |
 | A judge's ticket list is long, and the answer fills the agent's context. | 10 lines at most (O2). |
 
