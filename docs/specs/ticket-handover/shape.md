@@ -49,7 +49,8 @@ flowchart LR
     S3 -- "if done by 2026-12-15" --> S4
     S1 -- "enough to submit" --> S4
     S4 -- "name, logo and icon" --> S5[5 judge-ready-entry]
-    S5 -- "a rehearsed production app" --> S6[6 submit-entry]
+    S5 -- "a rehearsed production app" --> S7[7 agent-pickup]
+    S7 -- "the agent finds stale handovers" --> S6[6 submit-entry]
 ```
 
 | # | Slice | What ships | Why this order |
@@ -61,6 +62,7 @@ flowchart LR
 | 4 | dogear-brand | The app has the name Dogear, a logo and an icon. The guide, the Devpost entry and the video share one look. | Split from judge-ready-entry on 2026-11-23. The production deploy, the guide and the video carry the name and the icon, so it ships first. |
 | 5 | judge-ready-entry | A judge installs from the link, follows the guide, and sees a worked example in two minutes. The repo is public, with the skill file. | Required. Start it no later than 2026-12-15, in whatever state slices 2 and 3 are. |
 | 6 | submit-entry | The demo video is public on YouTube, and the Devpost form is submitted. | Split from judge-ready-entry on 2026-11-23. Required. The video records the production app, so it comes after the rehearsal. |
+| 7 | agent-pickup | A coding agent asks which tickets of a project have a missing or stale dogear, and picks one up. | Added on 2026-11-24 after a judge review scored innovation 3 of 5. It joins the at-risk list to the agent, and ships before submit-entry so the video can show it. |
 
 ## Not doing
 
