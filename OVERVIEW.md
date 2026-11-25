@@ -1,6 +1,6 @@
 # Dogear
 
-**Status:** Active · **Updated:** 2026-11-24 by /ship judge-ready-entry
+**Status:** Active · **Updated:** 2026-11-24 by /ship agent-pickup
 
 Dogear is a Forge app for Jira. It keeps a dogear on each ticket: a short, current note of
 where the work stands. A teammate who picks up the ticket carries on from it. An entry for
@@ -33,6 +33,7 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 | pick-up-brief | Shipped | A person opens a ticket with no dogear, selects one button, and gets a brief that AI builds from what Jira has. | none |
 | dogear-brand | Shipped | The app and its note get one name, Dogear, with a logo and one brand kit for the guide, the Devpost entry and the video. | none |
 | judge-ready-entry | Shipped | A Codegeist judge installs Dogear from a link, follows a guide, and sees it work in two minutes. | none |
+| agent-pickup | Shipped | A coding agent asks Dogear which tickets of a project have no dogear, or one that is behind the work, and then picks one up from its dogear. | none |
 
 ## More
 

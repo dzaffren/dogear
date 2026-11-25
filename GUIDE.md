@@ -44,8 +44,8 @@ for a full capture. Branch: `fix/partial-capture-refund`.
 
 ## 3. Connect a coding agent
 
-A coding agent reads and saves the dogear through two MCP tools, `get-dogear` and
-`save-dogear`. The tools act as you, with your Jira permissions. Do the steps in this
+A coding agent reads and saves the dogear through three MCP tools: `get-dogear`,
+`save-dogear`, and `list-at-risk-dogears`, which lists the tickets that need a dogear. The tools act as you, with your Jira permissions. Do the steps in this
 order: a sign-in from before step 1 does not show the tools.
 
 1. In Atlassian Administration, go to Apps, Sites, your site, Connected apps. Open
@@ -57,7 +57,7 @@ order: a sign-in from before step 1 does not show the tools.
    ```
 
 3. In Claude Code, run `/mcp`, select `dogear`, and sign in with your Atlassian account.
-   It lists `get-dogear` and `save-dogear`.
+   It lists `get-dogear`, `save-dogear` and `list-at-risk-dogears`.
 4. Add the skill file, so that Claude Code keeps the dogear by itself. From the folder of a
    code repo:
 
@@ -72,6 +72,9 @@ order: a sign-in from before step 1 does not show the tools.
    - "Read the dogear of KAN-1." Claude Code answers with the dogear from part 2.
    - "Save the dogear of KAN-1 with Next: Add a test for a capture of 40 of 100 MYR."
      Open the ticket: the Dogear panel shows that Next, and says that an agent saved it.
+6. Make a second ticket with the summary "Refund webhooks retry forever", and move it to
+   In Progress. Then ask: "Which tickets in KAN need a dogear?" Claude Code lists that
+   ticket with "No dogear", and asks which one to start.
 
 ### For another agent
 
@@ -93,6 +96,8 @@ current with the `dogear` MCP tools.
   field that is still true.
 - Write for a teammate who did not see this session. Keep each field under 1,000
   characters.
+- When I ask which ticket to pick up, list the tickets of the project that need a dogear.
+  Show me the list, and ask which one to start before you read its dogear.
 ```
 
 ## If a step fails

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { deleteNote, findOrCreateIssue, jira, mainAccountId, moveTo, setNote, touch } from './jira.js';
+import { callTool } from './mcp.js';
 
 // The tests run on project SNR (D20), where only this file changes the tickets. The main
 // account sets the notes through the Jira API, so Dogear did not sign them, and a row
@@ -114,6 +115,30 @@ test('no ticket is at risk', async ({ page }) => {
   await expect(page.getByText('No ticket is at risk', { exact: true })).toBeVisible();
   await expect(page.getByText('Each of the 3 in-progress tickets has a current dogear.', { exact: true })).toBeVisible();
   await expect(page.getByRole('table')).toHaveCount(0);
+});
+
+test('an agent lists the tickets at risk, picks one up, and it leaves the list', async () => {
+  expect(await callTool('list-at-risk-dogears', { projectKey: 'SNR' })).toBe(
+    [
+      'Tickets in SNR that need a dogear:',
+      `- ${keys.partial} · Add partial refunds · ${mainName} · No dogear`,
+      `- ${keys.endpoint} · Add refund endpoint · Unassigned · Dogear is 2 days behind, saved outside Dogear`,
+      'Checked 3 in-progress tickets in SNR.',
+    ].join('\n')
+  );
+
+  expect(await callTool('get-dogear', { issueKey: keys.endpoint })).toContain(`Next: ${texts.next}`);
+  expect(await callTool('save-dogear', { issueKey: keys.endpoint, ...texts, next: 'Write the idempotency test' })).toBe(
+    `Saved the dogear on ${keys.endpoint}.`
+  );
+
+  const after = await callTool('list-at-risk-dogears', { projectKey: 'snr' });
+  expect(after).toContain(keys.partial);
+  expect(after).not.toContain(keys.endpoint);
+});
+
+test('the agent list says when it sees no project', async () => {
+  expect(await callTool('list-at-risk-dogears', { projectKey: 'ZZQ' })).toBe('Jira has no project ZZQ that you can see.');
 });
 
 test('shows the load error', async ({ page }) => {

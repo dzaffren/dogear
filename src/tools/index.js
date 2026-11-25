@@ -2,12 +2,18 @@ import api, { NeedsAuthenticationError, route } from '@forge/api';
 import { savedLine } from '../lib/age';
 import { cleanNote, FIELDS, LABELS, MAX_LENGTH, PROPERTY_KEY, tooLong } from '../lib/note';
 import { isSigned, sign } from '../lib/signature';
-import { displayName } from '../resolvers';
+import { atRiskText } from '../lib/summary';
+import { displayName, findAtRisk } from '../resolvers';
 
 const SAVE_FAILED = 'Jira did not answer the save. The dogear was not saved. Try again.';
 const READ_FAILED = 'Jira did not answer the read. Try again.';
+const SEARCH_FAILED = 'Jira did not answer the search. Try again.';
+
+// The shape of a Jira project key. The key comes from the agent, and it goes into JQL.
+const PROJECT_KEY = /^[A-Z][A-Z0-9_]+$/;
 
 const noTicket = (issueKey) => `Jira has no ticket ${issueKey} that you can see.`;
+const noProject = (projectKey) => `Jira has no project ${projectKey} that you can see.`;
 
 const count = (n) => n.toLocaleString('en-US');
 
@@ -78,5 +84,26 @@ export const saveDogear = async (payload, context) => {
     if (error instanceof NeedsAuthenticationError) return allowAccess('save');
     console.log(`dogear save failed issue=${issueKey}: ${error.message}`);
     return SAVE_FAILED;
+  }
+};
+
+// The at-risk list of the agent: the tickets of one project with no dogear, or a dogear that
+// is behind, as on the Dogears tab. A project that the person cannot browse reads as no
+// project, as Jira answers 404 for both.
+export const listAtRiskDogears = async (payload) => {
+  const given = String(payload.projectKey ?? '');
+  const projectKey = given.toUpperCase();
+  if (!PROJECT_KEY.test(projectKey)) return noProject(given);
+  try {
+    const project = await api.asUser().requestJira(route`/rest/api/3/project/${projectKey}`);
+    if (project.status === 404) return noProject(projectKey);
+    if (!project.ok) return SEARCH_FAILED;
+    const found = await findAtRisk(projectKey);
+    console.log(`at-risk list via=agent project=${projectKey} checked=${found.checked} atRisk=${found.rows.length}`);
+    return atRiskText(projectKey, found);
+  } catch (error) {
+    if (error instanceof NeedsAuthenticationError) return allowAccess('list');
+    console.log(`at-risk list failed project=${projectKey}: ${error.message}`);
+    return SEARCH_FAILED;
   }
 };

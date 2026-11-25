@@ -95,11 +95,11 @@ const searchJira = async (searchRoute, body) => {
   return response.json();
 };
 
-// The at-risk list of the project page. One search as the person returns the most recently
-// updated in-progress tickets with their notes (D18). Jira leaves out each ticket that the
-// person cannot view. The note texts stay on the server: the page gets only the rows.
-export const getAtRisk = async ({ context }) => {
-  const projectKey = projectKeyOf(context);
+// The tickets at risk in one project, for the Dogears tab and the agent's list tool. One
+// search as the person returns the most recently updated in-progress tickets with their notes
+// (D18). Jira leaves out each ticket that the person cannot view. The note texts stay on the
+// server: the callers get only the rows. The caller gives a checked project key.
+export const findAtRisk = async (projectKey) => {
   const jql = `project = "${projectKey}" AND statusCategory = "In Progress" ORDER BY updated DESC`;
   const { issues, isLast } = await searchJira(route`/rest/api/3/search/jql`, {
     jql,
@@ -112,9 +112,15 @@ export const getAtRisk = async ({ context }) => {
   const inProgress = isLast
     ? issues.length
     : Math.max(issues.length, (await searchJira(route`/rest/api/3/search/approximate-count`, { jql })).count);
-  const rows = riskRows(issues, process.env.NOTE_SIGNING_KEY);
-  console.log(`at-risk list project=${projectKey} checked=${issues.length} atRisk=${rows.length}`);
-  return { rows, checked: issues.length, inProgress, now: new Date().toISOString() };
+  return { rows: riskRows(issues, process.env.NOTE_SIGNING_KEY), checked: issues.length, inProgress };
+};
+
+// The at-risk list of the project page.
+export const getAtRisk = async ({ context }) => {
+  const projectKey = projectKeyOf(context);
+  const { rows, checked, inProgress } = await findAtRisk(projectKey);
+  console.log(`at-risk list project=${projectKey} checked=${checked} atRisk=${rows.length}`);
+  return { rows, checked, inProgress, now: new Date().toISOString() };
 };
 
 const readJson = async (response, what) => {

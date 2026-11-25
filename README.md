@@ -31,6 +31,7 @@ Codegeist 2026, which closes on 2026-12-22 at 12:00 Pacific Time.
 - A person opens a ticket with no dogear, selects one button, and gets a brief that AI builds from what Jira has.
 - The app and its note get one name, Dogear, with a logo and one brand kit for the guide, the Devpost entry and the video.
 - A Codegeist judge installs Dogear from a link, follows a guide, and sees it work in two minutes.
+- A coding agent asks Dogear which tickets of a project have no dogear, or one that is behind the work, and then picks one up from its dogear.
 
 ## Docs
 
@@ -50,8 +51,9 @@ to make the project `SNR`, which the e2e test of this list uses.
 
 ## Connect a coding agent
 
-A coding agent, such as Claude Code, reads and saves the dogear through two MCP
-tools: `get-dogear` and `save-dogear`. Part 3 of the [guide](GUIDE.md) connects one. The
+A coding agent, such as Claude Code, reads and saves the dogear through three MCP
+tools: `get-dogear`, `save-dogear` and `list-at-risk-dogears`, which lists the tickets of a
+project that need a dogear. Part 3 of the [guide](GUIDE.md) connects one. The
 rules for the agent are in the skill file, [skills/dogear/SKILL.md](skills/dogear/SKILL.md).
 
 In the development environment, each tool name ends in `_development`.

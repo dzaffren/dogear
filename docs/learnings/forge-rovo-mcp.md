@@ -19,3 +19,6 @@
   new refresh token each time. A test script can keep an MCP login.
 - Atlassian's MCP OAuth server lets a client register itself (dynamic client registration),
   so a script needs no app in the developer console for its login.
+- A new tool in the `tools` list of a deployed `rovo:mcp` module shows to an MCP sign-in
+  from before the deploy: the e2e login called `list-at-risk-dogears` with no new sign-in
+  (2026-11-24). A sign-in from before the install of an environment still does not.

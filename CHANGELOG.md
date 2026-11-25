@@ -20,6 +20,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Install Dogear on any Jira site from its installation link, and try it in two minutes with the guide, `GUIDE.md`.
 - The Dogear panel and the Dogears tab show the Dogear icon.
 - Give a coding agent the rules for the dogear with one skill file, `skills/dogear/SKILL.md`.
+- Ask a coding agent which tickets of a project need a dogear: it lists them, asks which one to start, and carries on from that ticket's dogear.
 
 ### Changed
 

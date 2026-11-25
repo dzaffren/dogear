@@ -8,6 +8,8 @@ const jira = vi.hoisted(() => ({
   consent: true,
   putStatus: 200,
   readStatus: 200,
+  search: { issues: [], isLast: true },
+  searchStatus: 200,
   calls: [],
 }));
 
@@ -35,7 +37,9 @@ vi.mock('@forge/api', () => {
     }
     if (path === '/rest/api/3/user?accountId=acc-aisyah') return json(200, { displayName: 'Aisyah Rahman' });
     if (path === '/rest/api/3/user?accountId=acc-hafiz') return json(200, { displayName: 'Hafiz Omar' });
-    if (path.includes('PAY-999')) return json(404, {});
+    if (path === '/rest/api/3/project/PAY') return json(200, { key: 'PAY' });
+    if (path === '/rest/api/3/search/jql' && method === 'POST') return json(jira.searchStatus, jira.search);
+    if (path.includes('PAY-999') || path.startsWith('/rest/api/3/project/')) return json(404, {});
     return json(500, {});
   };
   const route = (strings, ...values) =>
@@ -52,7 +56,7 @@ vi.mock('@forge/api', () => {
 vi.mock('@forge/llm', () => ({ chat: vi.fn() }));
 vi.mock('@forge/kvs', () => ({ kvs: { get: vi.fn(), set: vi.fn() } }));
 
-const { getDogear, saveDogear } = await import('../src/tools/index.js');
+const { getDogear, listAtRiskDogears, saveDogear } = await import('../src/tools/index.js');
 const { isSigned, sign } = await import('../src/lib/signature.js');
 
 const KEY = 'test-signing-key';
@@ -76,7 +80,16 @@ const aisyahNote = signed({
 });
 
 beforeEach(() => {
-  Object.assign(jira, { property: null, canEdit: true, consent: true, putStatus: 200, readStatus: 200, calls: [] });
+  Object.assign(jira, {
+    property: null,
+    canEdit: true,
+    consent: true,
+    putStatus: 200,
+    readStatus: 200,
+    search: { issues: [], isLast: true },
+    searchStatus: 200,
+    calls: [],
+  });
   vi.useFakeTimers({ now: new Date('2026-11-26T01:15:00.000Z'), toFake: ['Date'] });
   vi.stubEnv('NOTE_SIGNING_KEY', KEY);
 });
@@ -253,6 +266,78 @@ describe('a person who did not allow access yet', () => {
     jira.consent = false;
     expect(await getDogear({ issueKey: 'PAY-142' }, context('acc-meiling'))).toBe(
       'Open the Dogear panel on a Jira ticket once and select Allow access. Then read again.'
+    );
+  });
+});
+
+// A ticket of a Jira search, with the fields and the property that findAtRisk asks for.
+const searchIssue = (key, summary, assignee, updated, note) => ({
+  key,
+  fields: { summary, assignee: assignee && { displayName: assignee }, updated },
+  properties: note ? { 'stand-note': note } : {},
+});
+
+describe('listAtRiskDogears', () => {
+  const behind = signed({ v: 1, ...aisyahTexts, savedBy: 'acc-aisyah', savedAt: '2026-11-24T01:00:00.000Z' });
+  const current = { ...behind, savedAt: '2026-11-26T01:00:00.000Z' };
+
+  it('lists the tickets of the project that need a dogear, as the Dogears tab does', async () => {
+    jira.search = {
+      isLast: true,
+      issues: [
+        searchIssue('PAY-161', 'Refund webhooks', 'Mei Ling Tan', '2026-11-26T00:30:00.000Z', current),
+        searchIssue('PAY-142', 'Add refund endpoint', 'Aisyah Rahman', '2026-11-26T01:00:00.000Z', {
+          ...behind,
+          sig: sign('PAY-142', behind, KEY),
+        }),
+        searchIssue('PAY-150', 'Add partial refunds', 'Hafiz Omar', '2026-11-25T09:00:00.000Z', null),
+      ],
+    };
+    expect(await listAtRiskDogears({ projectKey: 'PAY' })).toBe(
+      [
+        'Tickets in PAY that need a dogear:',
+        '- PAY-150 · Add partial refunds · Hafiz Omar · No dogear',
+        '- PAY-142 · Add refund endpoint · Aisyah Rahman · Dogear is 2 days behind',
+        'Checked 3 in-progress tickets in PAY.',
+      ].join('\n')
+    );
+  });
+
+  it('searches the project in upper case, as the person', async () => {
+    await listAtRiskDogears({ projectKey: 'pay' });
+    const search = jira.calls.find((call) => call.path === '/rest/api/3/search/jql');
+    expect(JSON.parse(search.body).jql).toBe('project = "PAY" AND statusCategory = "In Progress" ORDER BY updated DESC');
+    expect(jira.calls.every((call) => call.as === 'user')).toBe(true);
+  });
+
+  it('says when no ticket needs a dogear', async () => {
+    jira.search = { isLast: true, issues: [searchIssue('PAY-161', 'Refund webhooks', null, '2026-11-26T00:30:00.000Z', current)] };
+    expect(await listAtRiskDogears({ projectKey: 'PAY' })).toBe(
+      'No in-progress ticket in PAY needs a dogear. Checked 1 in-progress ticket in PAY.'
+    );
+  });
+
+  it('says when the person cannot see the project', async () => {
+    expect(await listAtRiskDogears({ projectKey: 'HR' })).toBe('Jira has no project HR that you can see.');
+    expect(jira.calls.some((call) => call.path === '/rest/api/3/search/jql')).toBe(false);
+  });
+
+  it('calls Jira with no key that is not in the shape of a project key', async () => {
+    for (const projectKey of ['pay-142!', 'PAY" OR project != "X', '', '9PAY']) {
+      expect(await listAtRiskDogears({ projectKey })).toBe(`Jira has no project ${projectKey} that you can see.`);
+    }
+    expect(jira.calls).toEqual([]);
+  });
+
+  it('says when Jira does not answer the search', async () => {
+    jira.searchStatus = 500;
+    expect(await listAtRiskDogears({ projectKey: 'PAY' })).toBe('Jira did not answer the search. Try again.');
+  });
+
+  it('returns the consent text to a person who did not allow access yet', async () => {
+    jira.consent = false;
+    expect(await listAtRiskDogears({ projectKey: 'PAY' })).toBe(
+      'Open the Dogear panel on a Jira ticket once and select Allow access. Then list again.'
     );
   });
 });
